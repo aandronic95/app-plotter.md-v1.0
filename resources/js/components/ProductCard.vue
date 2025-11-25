@@ -4,6 +4,7 @@ import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { ShoppingCart, Heart } from 'lucide-vue-next';
 import { Link } from '@inertiajs/vue3';
 import { ref } from 'vue';
+import { useTranslations } from '@/composables/useTranslations';
 
 interface Product {
     id: number;
@@ -20,6 +21,7 @@ const props = defineProps<{
     product: Product;
 }>();
 
+const { t } = useTranslations();
 const loading = ref(false);
 
 const formatPrice = (price: number) => {
@@ -35,7 +37,7 @@ const addToCart = async () => {
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
         
         if (!csrfToken) {
-            alert('Eroare: Token CSRF lipsă. Te rugăm să reîmprospătezi pagina.');
+            alert(t('error_csrf_missing'));
             loading.value = false;
             return;
         }
@@ -56,8 +58,8 @@ const addToCart = async () => {
         });
 
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ message: 'Eroare necunoscută' }));
-            alert(errorData.message || 'Eroare la adăugarea produsului în coș');
+            const errorData = await response.json().catch(() => ({ message: t('error_unknown') }));
+            alert(errorData.message || t('error_adding_to_cart'));
             return;
         }
 
@@ -70,7 +72,7 @@ const addToCart = async () => {
         // alert('Produs adăugat în coș cu succes!');
     } catch (error) {
         console.error('Error adding to cart:', error);
-        alert('Eroare la adăugarea produsului în coș. Te rugăm să încerci din nou.');
+        alert(t('error_adding_to_cart_retry'));
     } finally {
         loading.value = false;
     }
@@ -131,10 +133,10 @@ const addToCart = async () => {
                 @click="addToCart"
             >
                 <ShoppingCart class="mr-2 h-4 w-4" />
-                {{ loading ? 'Se adaugă...' : 'Adaugă în coș' }}
+                {{ loading ? t('adding_to_cart') : t('add_to_cart') }}
             </Button>
             <Button variant="outline" size="sm" as-child>
-                <Link :href="`/products/${product.slug || product.id}`">Detalii</Link>
+                <Link :href="`/products/${product.slug || product.id}`">{{ t('details') }}</Link>
             </Button>
         </CardFooter>
     </Card>

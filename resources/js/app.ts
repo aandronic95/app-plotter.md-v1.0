@@ -27,3 +27,31 @@ createInertiaApp({
 
 // This will set light / dark mode on page load...
 initializeTheme();
+
+// Suppress Chrome extension runtime errors that don't affect the application
+if (typeof window !== 'undefined') {
+    // Suppress "Unchecked runtime.lastError" messages from browser extensions
+    const originalError = console.error;
+    console.error = (...args: any[]) => {
+        const message = args[0]?.toString() || '';
+        if (
+            message.includes('runtime.lastError') ||
+            message.includes('message port closed')
+        ) {
+            // Silently ignore extension-related errors
+            return;
+        }
+        originalError.apply(console, args);
+    };
+
+    // Handle unhandled promise rejections from extensions
+    window.addEventListener('unhandledrejection', (event) => {
+        const message = event.reason?.message || event.reason?.toString() || '';
+        if (
+            message.includes('runtime.lastError') ||
+            message.includes('message port closed')
+        ) {
+            event.preventDefault();
+        }
+    });
+}

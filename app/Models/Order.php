@@ -67,6 +67,18 @@ class Order extends Model
                 $order->order_number = 'ORD-'.strtoupper(Str::random(8));
             }
         });
+
+        static::updating(function (Order $order): void {
+            // Verifică dacă payment_status a fost schimbat la 'paid'
+            if ($order->isDirty('payment_status') && $order->payment_status === 'paid') {
+                // Verifică dacă comanda are un user asociat
+                if ($order->user_id && $order->user) {
+                    // Calculează și adaugă punctele de fidelitate (3% din total)
+                    $points = User::calculateLoyaltyPoints((float) $order->total);
+                    $order->user->addLoyaltyPoints($points);
+                }
+            }
+        });
     }
 
     /**

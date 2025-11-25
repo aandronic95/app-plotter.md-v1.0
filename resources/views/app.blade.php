@@ -37,11 +37,37 @@
         <link rel="icon" href="/favicon.svg" type="image/svg+xml">
         <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
 
         @vite(['resources/js/app.ts', "resources/js/pages/{$page['component']}.vue"])
         @inertiaHead
+        
+        {{-- Script pentru a ascunde datele sensibile din data-page după încărcarea Inertia --}}
+        <script>
+            (function() {
+                // Șterge atributul data-page după ce Inertia a încărcat datele
+                function removeDataPage() {
+                    const appElement = document.getElementById('app');
+                    if (appElement && appElement.hasAttribute('data-page')) {
+                        // Așteaptă puțin pentru ca Inertia să citească datele
+                        setTimeout(function() {
+                            appElement.removeAttribute('data-page');
+                        }, 100);
+                    }
+                }
+                
+                // Încearcă imediat și după ce DOM-ul este gata
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', removeDataPage);
+                } else {
+                    removeDataPage();
+                }
+                
+                // Fallback pentru cazul în care Inertia se încarcă mai târziu
+                window.addEventListener('load', function() {
+                    setTimeout(removeDataPage, 500);
+                });
+            })();
+        </script>
     </head>
     <body class="font-sans antialiased">
         @inertia

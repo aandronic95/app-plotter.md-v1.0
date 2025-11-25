@@ -3,8 +3,9 @@ import AppFooter from '@/components/AppFooter.vue';
 import PublicHeader from '@/components/PublicHeader.vue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Head, Link, useForm } from '@inertiajs/vue3';
-import { ArrowLeft } from 'lucide-vue-next';
+import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
+import { ArrowLeft, MapPin, Star } from 'lucide-vue-next';
+import { ref, computed } from 'vue';
 
 interface CartItem {
     id: number;
@@ -15,19 +16,39 @@ interface CartItem {
     subtotal: number;
 }
 
+interface DeliveryAddress {
+    id: number;
+    name?: string;
+    phone: string;
+    address: string;
+    city: string;
+    postal_code?: string;
+    country: string;
+    is_default: boolean;
+    full_address: string;
+}
+
 interface Props {
     items: CartItem[];
     subtotal: number;
     tax: number;
     shippingCost: number;
     total: number;
+    deliveryAddresses?: DeliveryAddress[];
 }
 
 const props = defineProps<Props>();
+const page = usePage();
+const auth = computed(() => page.props.auth);
+
+const selectedAddressId = ref<number | null>(
+    props.deliveryAddresses?.find(a => a.is_default)?.id || null
+);
+const useSavedAddress = ref(!!selectedAddressId.value);
 
 const form = useForm({
-    shipping_name: '',
-    shipping_email: '',
+    shipping_name: auth.value?.user?.name || '',
+    shipping_email: auth.value?.user?.email || '',
     shipping_phone: '',
     shipping_address: '',
     shipping_city: '',
@@ -41,6 +62,26 @@ const formatPrice = (price: number) => {
         style: 'currency',
         currency: 'MDL',
     }).format(price);
+};
+
+const selectAddress = (address: DeliveryAddress) => {
+    selectedAddressId.value = address.id;
+    form.shipping_phone = address.phone;
+    form.shipping_address = address.address;
+    form.shipping_city = address.city;
+    form.shipping_postal_code = address.postal_code || '';
+    form.shipping_country = address.country;
+    useSavedAddress.value = true;
+};
+
+const useNewAddress = () => {
+    useSavedAddress.value = false;
+    selectedAddressId.value = null;
+    form.shipping_phone = '';
+    form.shipping_address = '';
+    form.shipping_city = '';
+    form.shipping_postal_code = '';
+    form.shipping_country = 'Republica Moldova';
 };
 
 const submit = () => {
@@ -73,9 +114,68 @@ const submit = () => {
                     <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
                         <!-- Shipping Form -->
                         <div class="lg:col-span-2 space-y-6">
+                            <!-- Saved Addresses (if user is logged in and has addresses) -->
+                            <Card v-if="auth.user && props.deliveryAddresses && props.deliveryAddresses.length > 0">
+                                <CardHeader>
+                                    <CardTitle>Adrese salvate</CardTitle>
+                                </CardHeader>
+                                <CardContent class="space-y-3">
+                                    <div
+                                        v-for="address in props.deliveryAddresses"
+                                        :key="address.id"
+                                        class="rounded-lg border p-3 cursor-pointer transition-all"
+                                        :class="
+                                            selectedAddressId === address.id && useSavedAddress
+                                                ? 'border-primary bg-primary/5'
+                                                : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
+                                        "
+                                        @click="selectAddress(address)"
+                                    >
+                                        <div class="flex items-start justify-between">
+                                            <div class="flex-1">
+                                                <div class="flex items-center gap-2 mb-1">
+                                                    <h4 class="font-medium text-gray-900 dark:text-white">
+                                                        {{ address.name || 'Adresă de livrare' }}
+                                                    </h4>
+                                                    <span
+                                                        v-if="address.is_default"
+                                                        class="flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary"
+                                                    >
+                                                        <Star class="h-3 w-3 fill-primary" />
+                                                        Implicită
+                                                    </span>
+                                                </div>
+                                                <p class="text-sm text-gray-600 dark:text-gray-400">
+                                                    {{ address.phone }}
+                                                </p>
+                                                <p class="text-sm text-gray-600 dark:text-gray-400">
+                                                    {{ address.full_address }}
+                                                </p>
+                                            </div>
+                                            <input
+                                                type="radio"
+                                                :checked="selectedAddressId === address.id && useSavedAddress"
+                                                @change="selectAddress(address)"
+                                                class="h-4 w-4 text-primary"
+                                            />
+                                        </div>
+                                    </div>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        class="w-full"
+                                        @click="useNewAddress"
+                                    >
+                                        Folosește o adresă nouă
+                                    </Button>
+                                </CardContent>
+                            </Card>
+
                             <Card>
                                 <CardHeader>
-                                    <CardTitle>Date de livrare</CardTitle>
+                                    <CardTitle>
+                                        {{ useSavedAddress && selectedAddressId ? 'Date de livrare (selectate)' : 'Date de livrare' }}
+                                    </CardTitle>
                                 </CardHeader>
                                 <CardContent class="space-y-4">
                                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -136,7 +236,8 @@ const submit = () => {
                                             v-model="form.shipping_phone"
                                             type="tel"
                                             required
-                                            class="w-full rounded-lg border border-gray-300 px-4 py-2 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                                            :disabled="useSavedAddress && selectedAddressId"
+                                            class="w-full rounded-lg border border-gray-300 px-4 py-2 dark:border-gray-600 dark:bg-gray-800 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
                                             :class="{ 'border-red-500': form.errors.shipping_phone }"
                                         />
                                         <p
@@ -158,7 +259,8 @@ const submit = () => {
                                             v-model="form.shipping_address"
                                             type="text"
                                             required
-                                            class="w-full rounded-lg border border-gray-300 px-4 py-2 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                                            :disabled="useSavedAddress && selectedAddressId"
+                                            class="w-full rounded-lg border border-gray-300 px-4 py-2 dark:border-gray-600 dark:bg-gray-800 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
                                             :class="{ 'border-red-500': form.errors.shipping_address }"
                                         />
                                         <p
@@ -181,7 +283,8 @@ const submit = () => {
                                                 v-model="form.shipping_city"
                                                 type="text"
                                                 required
-                                                class="w-full rounded-lg border border-gray-300 px-4 py-2 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                                                :disabled="useSavedAddress && selectedAddressId"
+                                                class="w-full rounded-lg border border-gray-300 px-4 py-2 dark:border-gray-600 dark:bg-gray-800 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
                                                 :class="{ 'border-red-500': form.errors.shipping_city }"
                                             />
                                             <p
@@ -202,7 +305,8 @@ const submit = () => {
                                                 id="shipping_postal_code"
                                                 v-model="form.shipping_postal_code"
                                                 type="text"
-                                                class="w-full rounded-lg border border-gray-300 px-4 py-2 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                                                :disabled="useSavedAddress && selectedAddressId"
+                                                class="w-full rounded-lg border border-gray-300 px-4 py-2 dark:border-gray-600 dark:bg-gray-800 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
                                                 :class="{ 'border-red-500': form.errors.shipping_postal_code }"
                                             />
                                         </div>
@@ -218,7 +322,8 @@ const submit = () => {
                                                 v-model="form.shipping_country"
                                                 type="text"
                                                 required
-                                                class="w-full rounded-lg border border-gray-300 px-4 py-2 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                                                :disabled="useSavedAddress && selectedAddressId"
+                                                class="w-full rounded-lg border border-gray-300 px-4 py-2 dark:border-gray-600 dark:bg-gray-800 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
                                                 :class="{ 'border-red-500': form.errors.shipping_country }"
                                             />
                                         </div>

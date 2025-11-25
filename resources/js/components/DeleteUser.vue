@@ -48,7 +48,7 @@ const passwordInput = useTemplateRef('passwordInput');
                     <Form
                         v-bind="ProfileController.destroy.form()"
                         reset-on-success
-                        @error="() => passwordInput?.$el?.focus()"
+                        @error="() => passwordInput?.focus()"
                         :options="{
                             preserveScroll: true,
                         }"

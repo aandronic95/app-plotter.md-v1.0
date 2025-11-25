@@ -4,7 +4,10 @@ import PublicHeader from '@/components/PublicHeader.vue';
 import CategoriesSidebar from '@/components/CategoriesSidebar.vue';
 import ProductCard from '@/components/ProductCard.vue';
 import PromotionCarousel from '@/components/PromotionCarousel.vue';
+import ContentTabs from '@/components/ContentTabs.vue';
 import { Head } from '@inertiajs/vue3';
+import { useTranslations } from '@/composables/useTranslations';
+import { ref, computed, onMounted } from 'vue';
 
 interface Product {
     id: number;
@@ -35,10 +38,41 @@ interface Props {
 }
 
 defineProps<Props>();
+
+const { t } = useTranslations();
+const activeTab = ref('promotions');
+
+// Fetch promotions count
+const promotionsCount = ref(0);
+
+const fetchPromotionsCount = async () => {
+    try {
+        const response = await fetch('/api/promotions?active_only=true');
+        const data = await response.json();
+        if (data.data && Array.isArray(data.data)) {
+            promotionsCount.value = data.data.length;
+        }
+    } catch (error) {
+        console.error('Error fetching promotions count:', error);
+    }
+};
+
+// Fetch count on mount
+onMounted(() => {
+    fetchPromotionsCount();
+});
+
+const tabs = computed(() => [
+    { id: 'promotions', label: 'Promoții', count: promotionsCount.value, route: '/promotions' },
+    { id: 'news', label: 'Noutăți', route: '/news' },
+    { id: 'events', label: 'Evenimente', route: '/events' },
+    { id: 'tips', label: 'Sfatuti utile', route: '/tips' },
+    { id: 'reviews', label: 'Review-uri', route: '/reviews' },
+]);
 </script>
 
 <template>
-    <Head title="Acasă" />
+    <Head :title="t('home')" />
     <div class="flex min-h-screen flex-col">
         <!-- Header with Main Menu -->
         <PublicHeader />
@@ -51,6 +85,8 @@ defineProps<Props>();
                     <PromotionCarousel />
                 </div>
 
+
+
                 <!-- Content Grid: Categories (stânga) + Products (dreapta) -->
                 <div class="grid grid-cols-1 gap-6 lg:grid-cols-4">
                     <!-- Categories Sidebar - Col 3 (stânga) -->
@@ -60,9 +96,17 @@ defineProps<Props>();
 
                     <!-- Products Grid - Col 3 (dreapta) -->
                     <div class="lg:col-span-3">
+                                        <!-- Content Tabs -->
+                <div class="mb-6">
+                    <ContentTabs
+                        :tabs="tabs"
+                        :default-tab="activeTab"
+                        @update:active-tab="activeTab = $event"
+                    />
+                </div>
                         <div class="mb-6 flex items-center justify-between">
                             <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
-                                Produse Populare
+                                {{ t('popular_products') }}
                             </h2>
                         </div>
                         <div
@@ -80,7 +124,7 @@ defineProps<Props>();
                             class="flex flex-col items-center justify-center py-12"
                         >
                             <p class="text-lg text-gray-500 dark:text-gray-400">
-                                Nu există produse disponibile momentan.
+                                {{ t('no_products_available') }}
                             </p>
                         </div>
                     </div>

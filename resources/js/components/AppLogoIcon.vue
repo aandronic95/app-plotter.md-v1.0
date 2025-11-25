@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import type { HTMLAttributes } from 'vue';
+import { useSiteSettings } from '@/composables/useSiteSettings';
+import { computed, onMounted } from 'vue';
 
 defineOptions({
     inheritAttrs: false,
@@ -7,13 +9,39 @@ defineOptions({
 
 interface Props {
     className?: HTMLAttributes['class'];
+    useCustomIcon?: boolean;
 }
 
-defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+    useCustomIcon: false,
+});
+
+const { siteSettings, fetchSiteSettings } = useSiteSettings();
+
+const customIcon = computed(() => {
+    if (props.useCustomIcon && siteSettings.value?.site_logo_icon) {
+        return siteSettings.value.site_logo_icon;
+    }
+    return null;
+});
+
+onMounted(() => {
+    if (props.useCustomIcon) {
+        fetchSiteSettings();
+    }
+});
 </script>
 
 <template>
+    <img
+        v-if="customIcon"
+        :src="customIcon"
+        alt="Logo"
+        :class="className"
+        v-bind="$attrs"
+    />
     <svg
+        v-else
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 40 42"
         :class="className"

@@ -54,12 +54,31 @@ class OrderController extends Controller
         $shippingCost = $subtotal > 500 ? 0 : 50; // Transport gratuit peste 500 lei
         $total = $subtotal + $tax + $shippingCost;
 
+        // Obține adresele salvate ale utilizatorului (dacă este autentificat)
+        $deliveryAddresses = [];
+        if (auth()->check()) {
+            $deliveryAddresses = auth()->user()->deliveryAddresses()->get()->map(function ($address) {
+                return [
+                    'id' => $address->id,
+                    'name' => $address->name,
+                    'phone' => $address->phone,
+                    'address' => $address->address,
+                    'city' => $address->city,
+                    'postal_code' => $address->postal_code,
+                    'country' => $address->country,
+                    'is_default' => $address->is_default,
+                    'full_address' => $address->full_address,
+                ];
+            });
+        }
+
         return Inertia::render('Checkout', [
             'items' => $items,
             'subtotal' => $subtotal,
             'tax' => $tax,
             'shippingCost' => $shippingCost,
             'total' => $total,
+            'deliveryAddresses' => $deliveryAddresses,
         ]);
     }
 

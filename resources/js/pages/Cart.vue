@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Head, Link } from '@inertiajs/vue3';
 import { ShoppingCart, Trash2, Plus, Minus, ArrowLeft } from 'lucide-vue-next';
 import { onMounted, ref } from 'vue';
+import { useTranslations } from '@/composables/useTranslations';
 
 interface CartItem {
     id: number;
@@ -31,6 +32,7 @@ const cart = ref<CartData>({
 });
 
 const loading = ref(false);
+const { t } = useTranslations();
 
 const fetchCart = async () => {
     try {
@@ -64,18 +66,18 @@ const updateQuantity = async (productId: number, quantity: number) => {
             await fetchCart();
         } else {
             const data = await response.json();
-            alert(data.message || 'Eroare la actualizarea cantității');
+            alert(data.message || t('error_updating_quantity'));
         }
     } catch (error) {
         console.error('Error updating quantity:', error);
-        alert('Eroare la actualizarea cantității');
+        alert(t('error_updating_quantity'));
     } finally {
         loading.value = false;
     }
 };
 
 const removeItem = async (productId: number) => {
-    if (!confirm('Sigur dorești să ștergi acest produs din coș?')) {
+    if (!confirm(t('remove_item_confirm'))) {
         return;
     }
 
@@ -93,7 +95,7 @@ const removeItem = async (productId: number) => {
         }
     } catch (error) {
         console.error('Error removing item:', error);
-        alert('Eroare la ștergerea produsului');
+        alert(t('error_removing_item'));
     } finally {
         loading.value = false;
     }
@@ -112,7 +114,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <Head title="Coș de cumpărături" />
+    <Head :title="t('cart_title')" />
     <div class="flex min-h-screen flex-col">
         <PublicHeader />
 
@@ -124,12 +126,12 @@ onMounted(() => {
                         class="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
                     >
                         <ArrowLeft class="mr-2 h-4 w-4" />
-                        Înapoi la produse
+                        {{ t('back_to_products') }}
                     </Link>
                 </div>
 
                 <h1 class="mb-6 text-3xl font-bold text-gray-900 dark:text-white">
-                    Coș de cumpărături
+                    {{ t('cart_title') }}
                 </h1>
 
                 <div
@@ -138,10 +140,10 @@ onMounted(() => {
                 >
                     <ShoppingCart class="mb-4 h-16 w-16 text-gray-400" />
                     <p class="mb-4 text-lg text-gray-500 dark:text-gray-400">
-                        Coșul tău este gol
+                        {{ t('cart_empty') }}
                     </p>
                     <Link href="/">
-                        <Button>Continuă cumpărăturile</Button>
+                        <Button>{{ t('continue_shopping') }}</Button>
                     </Link>
                 </div>
 
@@ -176,7 +178,7 @@ onMounted(() => {
                                                 {{ item.name }}
                                             </Link>
                                             <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                                                {{ formatPrice(item.price) }} / bucată
+                                                {{ formatPrice(item.price) }} {{ t('per_item') }}
                                             </p>
                                         </div>
                                         <div class="mt-4 flex items-center justify-between">
@@ -225,12 +227,12 @@ onMounted(() => {
                     <div class="lg:col-span-1">
                         <Card class="sticky top-24">
                             <CardHeader>
-                                <CardTitle>Rezumat comandă</CardTitle>
+                                <CardTitle>{{ t('order_summary') }}</CardTitle>
                             </CardHeader>
                             <CardContent class="space-y-4">
                                 <div class="flex justify-between text-sm">
                                     <span class="text-gray-600 dark:text-gray-400">
-                                        Subtotal
+                                        {{ t('subtotal') }}
                                     </span>
                                     <span class="font-medium">
                                         {{ formatPrice(cart.total) }}
@@ -238,21 +240,21 @@ onMounted(() => {
                                 </div>
                                 <div class="flex justify-between text-sm">
                                     <span class="text-gray-600 dark:text-gray-400">
-                                        Transport
+                                        {{ t('shipping') }}
                                     </span>
                                     <span class="font-medium">
-                                        {{ cart.total > 500 ? 'Gratuit' : formatPrice(50) }}
+                                        {{ cart.total > 500 ? t('free') : formatPrice(50) }}
                                     </span>
                                 </div>
                                 <div class="border-t pt-4">
                                     <div class="flex justify-between text-lg font-bold">
-                                        <span>Total</span>
+                                        <span>{{ t('total') }}</span>
                                         <span>
                                             {{ formatPrice(cart.total + (cart.total > 500 ? 0 : 50) + cart.total * 0.19) }}
                                         </span>
                                     </div>
                                     <p class="mt-1 text-xs text-gray-500">
-                                        TVA inclus (19%)
+                                        {{ t('vat_included') }}
                                     </p>
                                 </div>
                                 <Link
@@ -263,7 +265,7 @@ onMounted(() => {
                                         class="w-full"
                                         size="lg"
                                     >
-                                        Finalizează comanda
+                                        {{ t('complete_order') }}
                                     </Button>
                                 </Link>
                                 <Link
@@ -274,7 +276,7 @@ onMounted(() => {
                                         variant="outline"
                                         class="w-full"
                                     >
-                                        Continuă cumpărăturile
+                                        {{ t('continue_shopping') }}
                                     </Button>
                                 </Link>
                             </CardContent>

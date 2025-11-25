@@ -1,0 +1,40 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Models\SiteSetting;
+use Illuminate\Http\JsonResponse;
+
+class SiteSettingController extends Controller
+{
+    /**
+     * Get current site settings.
+     */
+    public function index(): JsonResponse
+    {
+        $settings = SiteSetting::current();
+
+        return response()->json([
+            'data' => [
+                'site_name' => $settings->site_name,
+                'site_description' => $settings->site_description,
+                'site_logo' => $settings->logo_url,
+                'site_logo_icon' => $settings->logo_icon_url,
+                'site_favicon' => $settings->favicon_url,
+                'site_email' => $settings->site_email,
+                'site_phone' => $settings->site_phone,
+                'site_address' => $settings->site_address,
+                'site_facebook' => $settings->site_facebook,
+                'site_instagram' => $settings->site_instagram,
+                'site_twitter' => $settings->site_twitter,
+                'site_linkedin' => $settings->site_linkedin,
+                'site_meta_keywords' => $settings->site_meta_keywords,
+                'site_meta_description' => $settings->site_meta_description,
+                'site_google_analytics' => $settings->site_google_analytics,
+            ],
+        ]);
+    }
+}

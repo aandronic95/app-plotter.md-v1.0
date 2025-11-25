@@ -51,6 +51,16 @@ class UserResource extends Resource
                             ->label('Email verificat la')
                             ->displayFormat('d.m.Y H:i')
                             ->nullable(),
+
+                        Forms\Components\Select::make('role')
+                            ->label('Rol')
+                            ->options([
+                                'admin' => 'Administrator',
+                                'user' => 'Utilizator',
+                            ])
+                            ->default('user')
+                            ->required()
+                            ->native(false),
                     ])->columns(2),
 
                 Section::make('Parolă')
@@ -96,6 +106,22 @@ class UserResource extends Resource
                     ->boolean()
                     ->sortable(),
 
+                Tables\Columns\TextColumn::make('role')
+                    ->label('Rol')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'admin' => 'danger',
+                        'user' => 'info',
+                        default => 'gray',
+                    })
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'admin' => 'Administrator',
+                        'user' => 'Utilizator',
+                        default => $state,
+                    })
+                    ->sortable()
+                    ->searchable(),
+
                 Tables\Columns\TextColumn::make('orders_count')
                     ->label('Comenzi')
                     ->counts('orders')
@@ -116,6 +142,13 @@ class UserResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
+                Tables\Filters\SelectFilter::make('role')
+                    ->label('Rol')
+                    ->options([
+                        'admin' => 'Administrator',
+                        'user' => 'Utilizator',
+                    ]),
+
                 Tables\Filters\Filter::make('email_verified_at')
                     ->label('Email verificat')
                     ->query(fn ($query) => $query->whereNotNull('email_verified_at')),

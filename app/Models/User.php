@@ -25,6 +25,13 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
+        'loyalty_points',
+        'phone',
+        'address',
+        'city',
+        'postal_code',
+        'country',
     ];
 
     /**
@@ -50,6 +57,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
+            'loyalty_points' => 'integer',
         ];
     }
 
@@ -59,6 +67,23 @@ class User extends Authenticatable
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class)->orderBy('created_at', 'desc');
+    }
+
+    /**
+     * Get the delivery addresses for the user.
+     */
+    public function deliveryAddresses(): HasMany
+    {
+        return $this->hasMany(DeliveryAddress::class)->orderBy('is_default', 'desc')->orderBy('created_at', 'desc');
+    }
+
+    /**
+     * Get the default delivery address.
+     */
+    public function defaultDeliveryAddress(): ?DeliveryAddress
+    {
+        return $this->deliveryAddresses()->where('is_default', true)->first()
+            ?? $this->deliveryAddresses()->first();
     }
 
     /**
@@ -75,5 +100,45 @@ class User extends Authenticatable
     public function getTotalOrdersAttribute(): int
     {
         return $this->orders()->count();
+    }
+
+    /**
+     * Add loyalty points to user.
+     */
+    public function addLoyaltyPoints(int $points): void
+    {
+        $this->increment('loyalty_points', $points);
+    }
+
+    /**
+     * Calculate loyalty points from order total (3% of total).
+     */
+    public static function calculateLoyaltyPoints(float $total): int
+    {
+        return (int) round($total * 0.03);
+    }
+
+    /**
+     * Get formatted loyalty points.
+     */
+    public function getFormattedLoyaltyPointsAttribute(): string
+    {
+        return number_format($this->loyalty_points, 0, ',', '.') . ' puncte';
+    }
+
+    /**
+     * Check if user is admin.
+     */
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    /**
+     * Check if user is regular user.
+     */
+    public function isUser(): bool
+    {
+        return $this->role === 'user';
     }
 }

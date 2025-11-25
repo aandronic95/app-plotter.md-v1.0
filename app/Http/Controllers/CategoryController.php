@@ -30,6 +30,47 @@ class CategoryController extends Controller
     }
 
     /**
+     * Display a listing of all categories with their subcategories.
+     */
+    public function index(): Response
+    {
+        $categories = Category::where('is_active', true)
+            ->whereNull('parent_id')
+            ->with(['children' => function ($query) {
+                $query->where('is_active', true)
+                    ->orderBy('sort_order')
+                    ->withCount('activeProducts');
+            }])
+            ->withCount('activeProducts')
+            ->orderBy('sort_order')
+            ->get()
+            ->map(function (Category $category) {
+                return [
+                    'id' => $category->id,
+                    'name' => $category->name,
+                    'slug' => $category->slug,
+                    'description' => $category->description,
+                    'image' => $this->getImageUrl($category->image),
+                    'products_count' => $category->active_products_count,
+                    'children' => $category->children->map(function (Category $child) {
+                        return [
+                            'id' => $child->id,
+                            'name' => $child->name,
+                            'slug' => $child->slug,
+                            'description' => $child->description,
+                            'image' => $this->getImageUrl($child->image),
+                            'products_count' => $child->active_products_count,
+                        ];
+                    }),
+                ];
+            });
+
+        return Inertia::render('Categories/Index', [
+            'categories' => $categories,
+        ]);
+    }
+
+    /**
      * Display products for a specific category.
      */
     public function show(string $slug, Request $request): Response
