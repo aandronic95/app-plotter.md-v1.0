@@ -412,5 +412,30 @@ class OrderResource extends Resource
             'edit' => Pages\EditOrder::route('/{record}/edit'),
         ];
     }
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->isAdmin() ?? false;
+    }
+
+    public static function canCreate(): bool
+    {
+        return auth()->user()?->isAdmin() ?? false;
+    }
+
+    public static function canView($record): bool
+    {
+        return auth()->user()?->isAdmin() ?? false;
+    }
+
+    public static function canUpdate($record): bool
+    {
+        return auth()->user()?->isAdmin() ?? false;
+    }
+
+    public static function canDelete($record): bool
+    {
+        return auth()->user()?->isAdmin() ?? false;
+    }
 }
 

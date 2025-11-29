@@ -216,10 +216,30 @@ class SiteSettingResource extends Resource
         return true;
     }
 
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->isAdmin() ?? false;
+    }
+
     public static function canCreate(): bool
     {
-        // Permite doar un singur record
-        return SiteSetting::count() === 0;
+        // Permite doar un singur record și doar pentru admini
+        return auth()->user()?->isAdmin() ?? false && SiteSetting::count() === 0;
+    }
+
+    public static function canView($record): bool
+    {
+        return auth()->user()?->isAdmin() ?? false;
+    }
+
+    public static function canUpdate($record): bool
+    {
+        return auth()->user()?->isAdmin() ?? false;
+    }
+
+    public static function canDelete($record): bool
+    {
+        return auth()->user()?->isAdmin() ?? false;
     }
 }
 

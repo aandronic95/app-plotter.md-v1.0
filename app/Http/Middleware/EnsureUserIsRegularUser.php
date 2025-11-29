@@ -17,8 +17,13 @@ class EnsureUserIsRegularUser
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!$request->user() || !$request->user()->isUser()) {
-            abort(403, 'Acces interzis. Această pagină este disponibilă doar pentru utilizatori obișnuiți.');
+        if (!$request->user()) {
+            abort(403, 'Acces interzis. Această pagină necesită autentificare.');
+        }
+
+        // Permite atât utilizatorilor obișnuiți, cât și adminilor
+        if (!$request->user()->isUser() && !$request->user()->isAdmin()) {
+            abort(403, 'Acces interzis. Această pagină este disponibilă doar pentru utilizatori obișnuiți sau administratori.');
         }
 
         return $next($request);

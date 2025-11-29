@@ -69,6 +69,11 @@ class Order extends Model
         });
 
         static::updating(function (Order $order): void {
+            $originalStatus = $order->getOriginal('status');
+            $originalPaymentStatus = $order->getOriginal('payment_status');
+            $newStatus = $order->status;
+            $newPaymentStatus = $order->payment_status;
+
             // Verifică dacă payment_status a fost schimbat la 'paid'
             if ($order->isDirty('payment_status') && $order->payment_status === 'paid') {
                 // Verifică dacă comanda are un user asociat
@@ -78,6 +83,25 @@ class Order extends Model
                     $order->user->addLoyaltyPoints($points);
                 }
             }
+
+            // Restaurează stocul dacă comanda este anulată
+            // Verifică dacă payment_status nu era deja 'refunded' pentru a evita dublarea
+            if ($order->isDirty('status') && $newStatus === 'cancelled' && $originalStatus !== 'cancelled') {
+                if ($originalPaymentStatus !== 'refunded') {
+                    $order->restoreStock();
+                }
+            }
+
+            // Restaurează stocul dacă comanda este returnată (refunded)
+            // Verifică dacă statusul nu este deja 'cancelled' pentru a evita dublarea
+            if ($order->isDirty('payment_status') && $newPaymentStatus === 'refunded' && $originalPaymentStatus !== 'refunded') {
+                if ($originalStatus !== 'cancelled' && $newStatus !== 'cancelled') {
+                    $order->restoreStock();
+                }
+            }
+
+            // Dacă statusul se schimbă de la 'cancelled' sau payment_status de la 'refunded' la altceva,
+            // nu trebuie să facem nimic (stocul a fost deja restaurat anterior)
         });
     }
 
@@ -159,5 +183,33 @@ class Order extends Model
     public function getFormattedSubtotalAttribute(): string
     {
         return number_format((float) $this->subtotal, 2, ',', '.') . ' LEI';
+    }
+
+    /**
+     * Restore stock for all products in this order.
+     */
+    public function restoreStock(): void
+    {
+        // Încarcă orderItems dacă nu sunt deja încărcate
+        if (!$this->relationLoaded('orderItems')) {
+            $this->load('orderItems');
+        }
+
+        foreach ($this->orderItems as $orderItem) {
+            if ($orderItem->product_id) {
+                $product = Product::find($orderItem->product_id);
+                
+                if ($product) {
+                    $product->stock_quantity += $orderItem->quantity;
+                    
+                    // Reactivează produsul dacă stocul devine > 0
+                    if ($product->stock_quantity > 0) {
+                        $product->in_stock = true;
+                    }
+                    
+                    $product->save();
+                }
+            }
+        }
     }
 }
