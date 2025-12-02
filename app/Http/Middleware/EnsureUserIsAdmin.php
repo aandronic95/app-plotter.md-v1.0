@@ -17,7 +17,13 @@ class EnsureUserIsAdmin
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!$request->user() || !$request->user()->isAdmin()) {
+        $user = $request->user();
+        
+        if (!$user) {
+            abort(403, 'Acces interzis. Doar administratorii pot accesa această pagină.');
+        }
+
+        if (!$user->isAdmin()) {
             abort(403, 'Acces interzis. Doar administratorii pot accesa această pagină.');
         }
 

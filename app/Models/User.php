@@ -58,6 +58,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
             'loyalty_points' => 'integer',
+            // Don't cast role to ensure we can check both string and integer values
         ];
     }
 
@@ -140,7 +141,27 @@ class User extends Authenticatable
      */
     public function isAdmin(): bool
     {
-        return $this->role === 'admin' || $this->role === 1 || $this->role === '1';
+        // Check for string 'admin'
+        if ($this->role === 'admin') {
+            return true;
+        }
+        
+        // Check for integer 1
+        if ($this->role === 1) {
+            return true;
+        }
+        
+        // Check for string '1'
+        if ($this->role === '1') {
+            return true;
+        }
+        
+        // Check for loose comparison (handles type coercion)
+        if ($this->role == 1) {
+            return true;
+        }
+        
+        return false;
     }
 
     /**
