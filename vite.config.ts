@@ -64,9 +64,7 @@ export default defineConfig({
             },
             output: {
                 manualChunks: (id) => {
-                    // Split node_modules into separate chunks
                     if (id.includes('node_modules')) {
-                        // Split large libraries into separate chunks
                         if (id.includes('vue')) {
                             return 'vue-vendor';
                         }
@@ -82,7 +80,6 @@ export default defineConfig({
                         if (id.includes('@tailwindcss')) {
                             return 'tailwind-vendor';
                         }
-                        // All other node_modules
                         return 'vendor';
                     }
                 },
