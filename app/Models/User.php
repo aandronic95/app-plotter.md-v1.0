@@ -178,6 +178,19 @@ class User extends Authenticatable
      */
     public function canAccessPanel(\Filament\Panel $panel): bool
     {
-        return $this->isAdmin();
+        $isAdmin = $this->isAdmin();
+        
+        // Debug logging (remove after fixing)
+        if (!$isAdmin) {
+            \Log::warning('User cannot access Filament panel', [
+                'user_id' => $this->id,
+                'email' => $this->email,
+                'role' => $this->role,
+                'role_type' => gettype($this->role),
+                'isAdmin_result' => $isAdmin,
+            ]);
+        }
+        
+        return $isAdmin;
     }
 }
