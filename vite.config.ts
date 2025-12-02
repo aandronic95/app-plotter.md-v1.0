@@ -1,15 +1,14 @@
 import { wayfinder } from '@laravel/vite-plugin-wayfinder';
-import tailwindcss from '@tailwindcss/vite';
 import vue from '@vitejs/plugin-vue';
 import laravel from 'laravel-vite-plugin';
+import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vite';
 import { execSync } from 'child_process';
 
-// Find PHP executable
+// Detect PHP executable
 function findPhpPath(): string {
-    // Common PHP paths on Windows
     const possiblePaths = [
-        'php',
+        'php', // Linux/macOS
         'C:\\php\\php.exe',
         'C:\\xampp\\php\\php.exe',
         'C:\\wamp64\\bin\\php\\php8.2.0\\php.exe',
@@ -25,16 +24,14 @@ function findPhpPath(): string {
         }
     }
 
-    // Fallback to 'php' and let the system PATH handle it
     return 'php';
 }
 
 export default defineConfig({
     plugins: [
         laravel({
-            input: ['resources/js/app.ts'],
-            ssr: 'resources/js/ssr.ts',
-            refresh: true,
+            input: ['resources/js/app.ts'], // principal JS/TS entry
+            refresh: true,                  // hot reload
         }),
         tailwindcss(),
         wayfinder({
@@ -50,4 +47,18 @@ export default defineConfig({
             },
         }),
     ],
+    resolve: {
+        alias: {
+            '@': '/resources/js',
+        },
+    },
+    build: {
+        outDir: 'public/build',
+        emptyOutDir: true,
+        rollupOptions: {
+            input: {
+                app: 'resources/js/app.ts',
+            },
+        },
+    },
 });
