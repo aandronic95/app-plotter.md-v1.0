@@ -89,10 +89,6 @@ const timeRemaining = computed(() => {
 
 // Handle promotion click
 const handlePromotionClick = (promotion: Promotion) => {
-    if (!promotion.link) {
-        return;
-    }
-
     // Check if it's an external link
     if (promotion.external_link) {
         window.open(promotion.external_link, '_blank');
@@ -190,13 +186,15 @@ onUnmounted(() => {
         <div
             class="relative flex transition-transform duration-500 ease-in-out"
             :style="{
-                transform: `translateX(-${currentIndex * 100}%)`,
+                transform: `translateX(-${(currentIndex * 100) / activePromotions.length}%)`,
+                width: `${activePromotions.length * 100}%`,
             }"
         >
             <div
-                v-for="promotion in activePromotions"
+                v-for="(promotion, index) in activePromotions"
                 :key="promotion.id"
-                class="min-w-full"
+                class="flex-shrink-0"
+                :style="{ width: `${100 / activePromotions.length}%` }"
             >
                 <div
                     class="relative h-64 w-full bg-gradient-to-r from-blue-600 to-purple-600 md:h-96 cursor-pointer"
@@ -211,7 +209,7 @@ onUnmounted(() => {
                     
                     <!-- Countdown Timer - Top Right -->
                     <div
-                        v-if="promotion.id === currentPromotion?.id && timeRemaining && !timeRemaining.expired"
+                        v-if="index === currentIndex && timeRemaining && !timeRemaining.expired"
                         class="absolute right-4 top-4 z-10 rounded-xl bg-gradient-to-r from-red-600 to-red-500 px-5 py-3 shadow-2xl ring-2 ring-white/30 backdrop-blur-sm"
                         :class="{ 'animate-pulse': timeRemaining.hours < 24 }"
                     >
@@ -250,7 +248,7 @@ onUnmounted(() => {
                             {{ promotion.description }}
                         </p>
                         <Button
-                            v-if="promotion.link"
+                            v-if="promotion.external_link || promotion.page_id || promotion.product_id"
                             size="lg"
                             class="bg-white text-gray-900 hover:bg-gray-100"
                             @click.stop="handlePromotionClick(promotion)"

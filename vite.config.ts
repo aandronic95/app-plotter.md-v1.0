@@ -55,9 +55,32 @@ export default defineConfig({
     build: {
         outDir: 'public/build',
         emptyOutDir: true,
+        chunkSizeWarningLimit: 1000,
         rollupOptions: {
             input: {
                 app: 'resources/js/app.ts',
+            },
+            output: {
+                manualChunks: (id) => {
+                    // Split node_modules into separate chunks
+                    if (id.includes('node_modules')) {
+                        // Split large libraries into separate chunks
+                        if (id.includes('vue')) {
+                            return 'vue-vendor';
+                        }
+                        if (id.includes('@inertiajs')) {
+                            return 'inertia-vendor';
+                        }
+                        if (id.includes('lucide-vue-next')) {
+                            return 'lucide-vendor';
+                        }
+                        if (id.includes('reka-ui')) {
+                            return 'reka-vendor';
+                        }
+                        // All other node_modules
+                        return 'vendor';
+                    }
+                },
             },
         },
     },
