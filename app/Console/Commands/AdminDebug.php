@@ -79,7 +79,7 @@ class AdminDebug extends Command
         $this->info('=== Lista Adminilor ===');
         $this->line('');
 
-        $admins = User::all()->filter(fn ($user) => $user->isAdmin());
+        $admins = User::all()->filter(fn ($user) => $user->hasRole('admin'));
 
         if ($admins->isEmpty()) {
             $this->warn('Nu există admini în baza de date!');
@@ -93,7 +93,7 @@ class AdminDebug extends Command
                 'Nume' => $admin->name,
                 'Email' => $admin->email,
                 'Roluri' => $admin->getRoleNames()->implode(', '),
-                'Is Admin' => $admin->isAdmin() ? 'DA' : 'NU',
+                'Is Admin' => $admin->hasRole('admin') ? 'DA' : 'NU',
                 'Creat la' => $admin->created_at->format('Y-m-d H:i:s'),
             ];
         }
@@ -130,7 +130,7 @@ class AdminDebug extends Command
         $this->line("Nume: {$user->name}");
         $this->line("Email: {$user->email}");
         $this->line("Roluri: " . $user->getRoleNames()->implode(', '));
-        $this->line("Is Admin: " . ($user->isAdmin() ? 'DA' : 'NU'));
+        $this->line("Is Admin: " . ($user->hasRole('admin') ? 'DA' : 'NU'));
         
         // Test canAccessPanel
         try {
@@ -233,7 +233,7 @@ class AdminDebug extends Command
             $this->line("Nume: {$user->name}");
             $this->line("Email: {$user->email}");
             $this->line("Roluri: " . $user->getRoleNames()->implode(', '));
-            $this->line("Is Admin: " . ($user->isAdmin() ? 'DA' : 'NU'));
+            $this->line("Is Admin: " . ($user->hasRole('admin') ? 'DA' : 'NU'));
             $this->line("Parolă: {$password}");
             $this->line('');
             $this->warn('⚠️  NU UITA să schimbi parola după prima autentificare!');

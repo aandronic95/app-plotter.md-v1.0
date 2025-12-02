@@ -305,27 +305,27 @@ class ProductResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()?->isAdmin() ?? false;
+        return auth()->user()?->hasRole('admin') ?? false;
     }
 
     public static function canCreate(): bool
     {
-        return auth()->user()?->isAdmin() ?? false;
+        return auth()->user()?->hasRole('admin') ?? false;
     }
 
     public static function canView($record): bool
     {
-        return auth()->user()?->isAdmin() ?? false;
+        return auth()->user()?->hasRole('admin') ?? false;
     }
 
     public static function canUpdate($record): bool
     {
-        return auth()->user()?->isAdmin() ?? false;
+        return auth()->user()?->hasRole('admin') ?? false;
     }
 
     public static function canDelete($record): bool
     {
-        return auth()->user()?->isAdmin() ?? false;
+        return auth()->user()?->hasRole('admin') ?? false;
     }
 }
 

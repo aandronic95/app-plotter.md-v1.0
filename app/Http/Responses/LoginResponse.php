@@ -22,7 +22,7 @@ class LoginResponse implements LoginResponseContract
     {
         $user = $request->user();
 
-        if ($user && $user->isAdmin()) {
+        if ($user && $user->hasRole('admin')) {
             return $request->wantsJson()
                 ? new JsonResponse(['redirect' => '/admin'], 200)
                 : redirect('/admin');

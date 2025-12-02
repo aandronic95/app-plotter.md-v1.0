@@ -22,7 +22,8 @@ class EnsureUserIsRegularUser
         }
 
         // Permite atât utilizatorilor obișnuiți, cât și adminilor
-        if (!$request->user()->isUser() && !$request->user()->isAdmin()) {
+        $user = $request->user();
+        if (!$user->hasRole('user') && !$user->hasRole('admin')) {
             abort(403, 'Acces interzis. Această pagină este disponibilă doar pentru utilizatori obișnuiți sau administratori.');
         }
 

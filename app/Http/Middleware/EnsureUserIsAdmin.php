@@ -23,7 +23,7 @@ class EnsureUserIsAdmin
             abort(403, 'Acces interzis. Doar administratorii pot accesa această pagină.');
         }
 
-        if (!$user->isAdmin()) {
+        if (!$user->hasRole('admin')) {
             abort(403, 'Acces interzis. Doar administratorii pot accesa această pagină.');
         }
 

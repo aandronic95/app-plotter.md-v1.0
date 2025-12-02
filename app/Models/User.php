@@ -136,28 +136,12 @@ class User extends Authenticatable
     }
 
     /**
-     * Check if user is admin.
-     * Uses Spatie Permission roles.
-     */
-    public function isAdmin(): bool
-    {
-        return $this->hasRole('admin');
-    }
-
-    /**
-     * Check if user is regular user.
-     */
-    public function isUser(): bool
-    {
-        return $this->hasRole('user');
-    }
-
-    /**
      * Check if user can access Filament admin panel.
      * This method is required by Filament.
+     * Only users with 'admin' role can access the panel.
      */
     public function canAccessPanel(\Filament\Panel $panel): bool
     {
-        return $this->hasRole('admin') || $this->hasPermissionTo('access admin panel');
+        return $this->hasRole('admin');
     }
 }

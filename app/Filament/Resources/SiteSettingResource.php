@@ -218,28 +218,28 @@ class SiteSettingResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()?->isAdmin() ?? false;
+        return auth()->user()?->hasRole('admin') ?? false;
     }
 
     public static function canCreate(): bool
     {
         // Permite doar un singur record și doar pentru admini
-        return auth()->user()?->isAdmin() ?? false && SiteSetting::count() === 0;
+        return auth()->user()?->hasRole('admin') ?? false && SiteSetting::count() === 0;
     }
 
     public static function canView($record): bool
     {
-        return auth()->user()?->isAdmin() ?? false;
+        return auth()->user()?->hasRole('admin') ?? false;
     }
 
     public static function canUpdate($record): bool
     {
-        return auth()->user()?->isAdmin() ?? false;
+        return auth()->user()?->hasRole('admin') ?? false;
     }
 
     public static function canDelete($record): bool
     {
-        return auth()->user()?->isAdmin() ?? false;
+        return auth()->user()?->hasRole('admin') ?? false;
     }
 }
 
