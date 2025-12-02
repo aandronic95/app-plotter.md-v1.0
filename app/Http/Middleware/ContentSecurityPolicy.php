@@ -43,7 +43,7 @@ class ContentSecurityPolicy
             "base-uri 'self'",
             "form-action 'self'",
             "object-src 'none'",
-            "upgrade-insecure-requests",
+            // Removed upgrade-insecure-requests to allow both HTTP and HTTPS
         ];
 
         $csp = implode('; ', $directives);
