@@ -14,6 +14,8 @@ use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
 
 class UserResource extends Resource
 {
@@ -51,17 +53,28 @@ class UserResource extends Resource
                             ->label('Email verificat la')
                             ->displayFormat('d.m.Y H:i')
                             ->nullable(),
-
-                        Forms\Components\Select::make('role')
-                            ->label('Rol')
-                            ->options([
-                                'admin' => 'Administrator',
-                                'user' => 'Utilizator',
-                            ])
-                            ->default('user')
-                            ->required()
-                            ->native(false),
                     ])->columns(2),
+
+                Section::make('Roluri și Permisiuni')
+                    ->schema([
+                        Forms\Components\Select::make('roles')
+                            ->label('Roluri')
+                            ->relationship('roles', 'name')
+                            ->multiple()
+                            ->preload()
+                            ->searchable()
+                            ->native(false)
+                            ->helperText('Selectați rolurile pentru acest utilizator'),
+
+                        Forms\Components\Select::make('permissions')
+                            ->label('Permisiuni directe')
+                            ->relationship('permissions', 'name')
+                            ->multiple()
+                            ->preload()
+                            ->searchable()
+                            ->native(false)
+                            ->helperText('Permisiuni atribuite direct utilizatorului (în plus față de cele din roluri)'),
+                    ])->columns(1),
 
                 Section::make('Parolă')
                     ->schema([
@@ -106,21 +119,23 @@ class UserResource extends Resource
                     ->boolean()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('role')
-                    ->label('Rol')
+                Tables\Columns\TextColumn::make('roles.name')
+                    ->label('Roluri')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
                         'admin' => 'danger',
                         'user' => 'info',
                         default => 'gray',
                     })
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'admin' => 'Administrator',
-                        'user' => 'Utilizator',
-                        default => $state,
-                    })
-                    ->sortable()
+                    ->separator(',')
                     ->searchable(),
+
+                Tables\Columns\TextColumn::make('permissions_count')
+                    ->label('Permisiuni')
+                    ->counts('permissions')
+                    ->badge()
+                    ->color('success')
+                    ->sortable(),
 
                 Tables\Columns\TextColumn::make('orders_count')
                     ->label('Comenzi')
@@ -142,12 +157,11 @@ class UserResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('role')
+                Tables\Filters\SelectFilter::make('roles')
                     ->label('Rol')
-                    ->options([
-                        'admin' => 'Administrator',
-                        'user' => 'Utilizator',
-                    ]),
+                    ->relationship('roles', 'name')
+                    ->multiple()
+                    ->preload(),
 
                 Tables\Filters\Filter::make('email_verified_at')
                     ->label('Email verificat')
@@ -205,27 +219,27 @@ class UserResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()?->isAdmin() ?? false;
+        return auth()->user()?->hasPermissionTo('view users') ?? false;
     }
 
     public static function canCreate(): bool
     {
-        return auth()->user()?->isAdmin() ?? false;
+        return auth()->user()?->hasPermissionTo('create users') ?? false;
     }
 
     public static function canView($record): bool
     {
-        return auth()->user()?->isAdmin() ?? false;
+        return auth()->user()?->hasPermissionTo('view users') ?? false;
     }
 
     public static function canUpdate($record): bool
     {
-        return auth()->user()?->isAdmin() ?? false;
+        return auth()->user()?->hasPermissionTo('edit users') ?? false;
     }
 
     public static function canDelete($record): bool
     {
-        return auth()->user()?->isAdmin() ?? false;
+        return auth()->user()?->hasPermissionTo('delete users') ?? false;
     }
 }
 

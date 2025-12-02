@@ -43,8 +43,8 @@ class SetUserRole extends Command
             return Command::FAILURE;
         }
 
-        $user->role = $role;
-        $user->save();
+        // Remove all existing roles and assign the new one
+        $user->syncRoles([$role]);
 
         $roleLabel = $role === 'admin' ? 'Administrator' : 'Utilizator';
         $this->info("Rolul utilizatorului {$user->name} ({$email}) a fost setat la: {$roleLabel}");

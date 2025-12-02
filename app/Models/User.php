@@ -10,11 +10,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, TwoFactorAuthenticatable;
+    use HasFactory, Notifiable, TwoFactorAuthenticatable, HasRoles;
 
     /**
      * The attributes that are mass assignable.
@@ -25,7 +26,6 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'role',
         'loyalty_points',
         'phone',
         'address',
@@ -137,31 +137,11 @@ class User extends Authenticatable
 
     /**
      * Check if user is admin.
-     * Users with role = 1 are always considered admin.
+     * Uses Spatie Permission roles.
      */
     public function isAdmin(): bool
     {
-        // Check for string 'admin'
-        if ($this->role === 'admin') {
-            return true;
-        }
-        
-        // Check for integer 1
-        if ($this->role === 1) {
-            return true;
-        }
-        
-        // Check for string '1'
-        if ($this->role === '1') {
-            return true;
-        }
-        
-        // Check for loose comparison (handles type coercion)
-        if ($this->role == 1) {
-            return true;
-        }
-        
-        return false;
+        return $this->hasRole('admin');
     }
 
     /**
@@ -169,7 +149,7 @@ class User extends Authenticatable
      */
     public function isUser(): bool
     {
-        return $this->role === 'user';
+        return $this->hasRole('user');
     }
 
     /**
@@ -178,19 +158,6 @@ class User extends Authenticatable
      */
     public function canAccessPanel(\Filament\Panel $panel): bool
     {
-        $isAdmin = $this->isAdmin();
-        
-        // Debug logging (remove after fixing)
-        if (!$isAdmin) {
-            \Log::warning('User cannot access Filament panel', [
-                'user_id' => $this->id,
-                'email' => $this->email,
-                'role' => $this->role,
-                'role_type' => gettype($this->role),
-                'isAdmin_result' => $isAdmin,
-            ]);
-        }
-        
-        return $isAdmin;
+        return $this->hasRole('admin') || $this->hasPermissionTo('access admin panel');
     }
 }

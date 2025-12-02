@@ -92,14 +92,14 @@ class AdminDebug extends Command
                 'ID' => $admin->id,
                 'Nume' => $admin->name,
                 'Email' => $admin->email,
-                'Role' => $admin->role,
+                'Roluri' => $admin->getRoleNames()->implode(', '),
                 'Is Admin' => $admin->isAdmin() ? 'DA' : 'NU',
                 'Creat la' => $admin->created_at->format('Y-m-d H:i:s'),
             ];
         }
 
         $this->table(
-            ['ID', 'Nume', 'Email', 'Role', 'Is Admin', 'Creat la'],
+            ['ID', 'Nume', 'Email', 'Roluri', 'Is Admin', 'Creat la'],
             $tableData
         );
 
@@ -129,7 +129,7 @@ class AdminDebug extends Command
         $this->line("ID: {$user->id}");
         $this->line("Nume: {$user->name}");
         $this->line("Email: {$user->email}");
-        $this->line("Role: {$user->role} (type: " . gettype($user->role) . ")");
+        $this->line("Roluri: " . $user->getRoleNames()->implode(', '));
         $this->line("Is Admin: " . ($user->isAdmin() ? 'DA' : 'NU'));
         
         // Test canAccessPanel
@@ -163,7 +163,7 @@ class AdminDebug extends Command
         $this->line("ID: {$user->id}");
         $this->line("Nume: {$user->name}");
         $this->line("Email: {$user->email}");
-        $this->line("Role: {$user->role}");
+        $this->line("Roluri: " . $user->getRoleNames()->implode(', '));
 
         if (!$this->confirm('Ești sigur că vrei să ștergi acest utilizator?', false)) {
             $this->info('Operațiune anulată.');
@@ -202,8 +202,7 @@ class AdminDebug extends Command
             $this->error("Un utilizator cu email-ul {$email} există deja!");
             if ($this->confirm('Vrei să actualizezi rolul la admin?', false)) {
                 $user = User::where('email', $email)->first();
-                $user->role = 'admin';
-                $user->save();
+                $user->syncRoles(['admin']);
                 $this->info("✓ Rolul utilizatorului {$email} a fost actualizat la 'admin'!");
                 return Command::SUCCESS;
             }
@@ -223,15 +222,17 @@ class AdminDebug extends Command
                 'name' => $name,
                 'email' => $email,
                 'password' => Hash::make($password),
-                'role' => 'admin',
                 'email_verified_at' => now(),
             ]);
+
+            // Assign admin role
+            $user->assignRole('admin');
 
             $this->info('=== Admin Creat cu Succes ===');
             $this->line("ID: {$user->id}");
             $this->line("Nume: {$user->name}");
             $this->line("Email: {$user->email}");
-            $this->line("Role: {$user->role}");
+            $this->line("Roluri: " . $user->getRoleNames()->implode(', '));
             $this->line("Is Admin: " . ($user->isAdmin() ? 'DA' : 'NU'));
             $this->line("Parolă: {$password}");
             $this->line('');
