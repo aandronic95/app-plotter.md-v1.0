@@ -56,6 +56,8 @@ export default defineConfig({
         outDir: 'public/build',
         emptyOutDir: true,
         chunkSizeWarningLimit: 1000,
+        sourcemap: false,
+        minify: 'esbuild',
         rollupOptions: {
             input: {
                 app: 'resources/js/app.ts',
@@ -76,6 +78,9 @@ export default defineConfig({
                         }
                         if (id.includes('reka-ui')) {
                             return 'reka-vendor';
+                        }
+                        if (id.includes('@tailwindcss')) {
+                            return 'tailwind-vendor';
                         }
                         // All other node_modules
                         return 'vendor';
