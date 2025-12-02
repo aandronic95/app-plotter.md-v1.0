@@ -223,5 +223,17 @@ return [
     'slug' => 'Слаг',
     'view_all_products' => 'Посмотреть все товары',
     'view_all_available_categories' => 'Посмотреть все доступные категории',
+    
+    // Wishlist
+    'my_wishlist' => 'Избранное',
+    'wishlist_description' => 'Ваши любимые товары',
+    'no_wishlist_items' => 'У вас нет товаров в избранном',
+    'no_wishlist_items_description' => 'Добавьте товары в избранное, чтобы получить к ним более легкий доступ.',
+    'remove_from_wishlist' => 'Удалить из избранного',
+    'remove_from_wishlist_confirm' => 'Вы уверены, что хотите удалить этот товар из избранного?',
+    'product_added_to_wishlist' => 'Товар успешно добавлен в избранное.',
+    'product_removed_from_wishlist' => 'Товар успешно удален из избранного.',
+    'error_adding_to_wishlist' => 'Ошибка добавления товара в избранное.',
+    'error_removing_from_wishlist' => 'Ошибка удаления товара из избранного.',
 ];
 

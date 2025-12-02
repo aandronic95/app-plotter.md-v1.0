@@ -73,6 +73,12 @@ Route::middleware(['auth', EnsureUserIsRegularUser::class])->group(function () {
     Route::put('profile/addresses/{id}', [ProfileController::class, 'updateAddress'])->name('profile.addresses.update');
     Route::delete('profile/addresses/{id}', [ProfileController::class, 'deleteAddress'])->name('profile.addresses.delete');
     Route::post('profile/addresses/{id}/set-default', [ProfileController::class, 'setDefaultAddress'])->name('profile.addresses.set-default');
+    
+    // Wishlist routes
+    Route::get('wishlist', [\App\Http\Controllers\WishlistController::class, 'index'])->name('wishlist.index');
+    Route::post('wishlist', [\App\Http\Controllers\WishlistController::class, 'store'])->name('wishlist.store');
+    Route::delete('wishlist/{productId}', [\App\Http\Controllers\WishlistController::class, 'destroy'])->name('wishlist.destroy');
+    Route::get('wishlist/check/{productId}', [\App\Http\Controllers\WishlistController::class, 'check'])->name('wishlist.check');
 });
 
 Route::get('dashboard', function () {

@@ -194,13 +194,19 @@ class ProductController extends Controller
             $sortOrder = 'desc';
         }
 
-        // Apply sorting
+        // Apply sorting - always put in-stock products first, then out-of-stock at the end
         if ($sortBy === 'is_featured') {
-            // Featured products first, then by sort_order
+            // Featured products first, then by in_stock, then by sort_order
             $query->orderBy('is_featured', 'desc')
+                ->orderBy('in_stock', 'desc') // Products in stock first
                 ->orderBy('sort_order', 'asc')
                 ->orderBy('created_at', 'desc');
         } else {
+            // Always sort by in_stock first (unless explicitly sorting by in_stock)
+            if ($sortBy !== 'in_stock') {
+                $query->orderBy('in_stock', 'desc'); // Products in stock first
+            }
+            // Then sort by the requested field
             $query->orderBy($sortBy, $sortOrder);
             // Secondary sort for consistency
             if ($sortBy !== 'sort_order') {
@@ -228,6 +234,7 @@ class ProductController extends Controller
                 'description' => $product->short_description ?? $product->description,
                 'discount' => $product->discount,
                 'in_stock' => $product->in_stock,
+                'inStock' => $product->in_stock, // Also include camelCase for frontend compatibility
                 'stock_quantity' => $product->stock_quantity,
                 'is_featured' => $product->is_featured,
                 'category' => $product->category ? [

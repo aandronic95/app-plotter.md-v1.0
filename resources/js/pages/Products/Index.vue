@@ -18,6 +18,8 @@ interface Product {
     image: string;
     description?: string;
     discount?: number;
+    inStock?: boolean;
+    in_stock?: boolean;
 }
 
 interface Category {
@@ -206,19 +208,52 @@ const handlePagination = async (url: string | null) => {
     
     isLoading.value = true;
     try {
-        // URL is already in the correct format from API (/api/products?...)
-        // Just use it directly
-        const response = await axios.get(url);
+        // URL from API should be in format /api/products?... with all filters
+        // Normalize the URL to ensure it's correct
+        let apiUrl = url.trim();
         
-        if (response.data && response.data.data) {
+        // If it's an absolute URL, extract path and query
+        if (apiUrl.startsWith('http://') || apiUrl.startsWith('https://')) {
+            try {
+                const urlObj = new URL(apiUrl);
+                apiUrl = urlObj.pathname + urlObj.search;
+            } catch (e) {
+                console.error('Invalid URL format:', apiUrl);
+                return;
+            }
+        }
+        
+        // Ensure it starts with /api/products
+        if (!apiUrl.startsWith('/api/products')) {
+            // If it's just a query string, prepend the base path
+            if (apiUrl.startsWith('?')) {
+                apiUrl = '/api/products' + apiUrl;
+            } else if (apiUrl.startsWith('/')) {
+                // If it starts with / but not /api/products, try to extract query
+                const parts = apiUrl.split('?');
+                if (parts.length > 1) {
+                    apiUrl = '/api/products?' + parts[1];
+                } else {
+                    apiUrl = '/api/products';
+                }
+            } else {
+                // If it doesn't start with /, it might be just query params
+                apiUrl = '/api/products?' + apiUrl;
+            }
+        }
+        
+        const response = await axios.get(apiUrl);
+        
+        if (response.data) {
             products.value = {
-                data: response.data.data,
+                data: response.data.data || [],
                 links: response.data.links || [],
                 meta: response.data.meta || {},
             };
         }
     } catch (error) {
         console.error('Error fetching paginated products:', error);
+        // Optionally show user-friendly error message
     } finally {
         isLoading.value = false;
     }
@@ -370,21 +405,21 @@ const handlePagination = async (url: string | null) => {
 
                         <!-- Pagination -->
                         <div
-                            v-if="products.links && products.links.length > 3 && !isLoading"
+                            v-if="products.links && Array.isArray(products.links) && products.links.length > 3 && !isLoading"
                             class="mt-8 flex justify-center"
                         >
-                            <nav class="flex gap-2">
+                            <nav class="flex gap-2 flex-wrap justify-center">
                                 <button
-                                    v-for="link in products.links"
-                                    :key="link.label"
+                                    v-for="(link, index) in products.links"
+                                    :key="`${link.label}-${index}`"
                                     @click="link.url && handlePagination(link.url)"
-                                    :disabled="!link.url"
+                                    :disabled="!link.url || isLoading"
                                     :class="[
-                                        'rounded-lg px-4 py-2',
+                                        'rounded-lg px-4 py-2 text-sm font-medium transition-colors',
                                         link.active
                                             ? 'bg-gray-900 text-white dark:bg-gray-700'
                                             : 'bg-white text-gray-700 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700',
-                                        !link.url && 'pointer-events-none opacity-50',
+                                        (!link.url || isLoading) && 'pointer-events-none opacity-50 cursor-not-allowed',
                                     ]"
                                 >
                                     <span v-html="link.label" />

@@ -58,6 +58,10 @@ class HandleInertiaRequests extends Middleware
             'translations' => [
                 'common' => trans('common', [], $locale),
             ],
+            'flash' => [
+                'success' => $request->session()->get('success'),
+                'error' => $request->session()->get('error'),
+            ],
         ];
     }
     

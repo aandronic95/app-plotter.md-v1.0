@@ -223,5 +223,17 @@ return [
     'slug' => 'Slug',
     'view_all_products' => 'View All Products',
     'view_all_available_categories' => 'View all available categories',
+    
+    // Wishlist
+    'my_wishlist' => 'Wishlist',
+    'wishlist_description' => 'Your favorite products',
+    'no_wishlist_items' => 'You have no items in your wishlist',
+    'no_wishlist_items_description' => 'Add products to your favorites to access them more easily.',
+    'remove_from_wishlist' => 'Remove from wishlist',
+    'remove_from_wishlist_confirm' => 'Are you sure you want to remove this product from wishlist?',
+    'product_added_to_wishlist' => 'Product added to wishlist successfully.',
+    'product_removed_from_wishlist' => 'Product removed from wishlist successfully.',
+    'error_adding_to_wishlist' => 'Error adding product to wishlist.',
+    'error_removing_from_wishlist' => 'Error removing product from wishlist.',
 ];
 

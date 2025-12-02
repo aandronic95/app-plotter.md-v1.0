@@ -86,6 +86,14 @@ class Product extends Model
     }
 
     /**
+     * Get the wishlist items for the product.
+     */
+    public function wishlist(): HasMany
+    {
+        return $this->hasMany(Wishlist::class);
+    }
+
+    /**
      * Calculate the discount percentage if original price exists.
      */
     public function getDiscountAttribute(): ?int
@@ -144,11 +152,39 @@ class Product extends Model
     }
 
     /**
+     * Set the stock quantity and automatically update in_stock status.
+     */
+    public function setStockQuantityAttribute(int $value): void
+    {
+        $this->attributes['stock_quantity'] = $value;
+        
+        // Actualizează automat statusul in_stock bazat pe stock_quantity
+        if ($value <= 0) {
+            $this->attributes['in_stock'] = false;
+        } elseif ($value > 0) {
+            // Dacă stocul devine > 0, reactivează produsul
+            $this->attributes['in_stock'] = true;
+        }
+    }
+
+    /**
      * Boot the model.
      */
     protected static function boot(): void
     {
         parent::boot();
+
+        // Actualizează automat in_stock când stock_quantity se schimbă
+        static::updating(function (Product $product) {
+            // Dacă stock_quantity este modificat, actualizează in_stock
+            if ($product->isDirty('stock_quantity')) {
+                if ($product->stock_quantity <= 0) {
+                    $product->in_stock = false;
+                } elseif ($product->stock_quantity > 0) {
+                    $product->in_stock = true;
+                }
+            }
+        });
 
         static::saved(function (Product $product) {
             // Only move images from temp on create, not on update

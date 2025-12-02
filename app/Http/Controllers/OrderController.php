@@ -19,7 +19,7 @@ class OrderController extends Controller
     /**
      * Show checkout page.
      */
-    public function checkout(): Response
+    public function checkout(): Response|\Illuminate\Http\RedirectResponse
     {
         $cart = Session::get('cart', []);
 
@@ -85,7 +85,7 @@ class OrderController extends Controller
     /**
      * Store order.
      */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): \Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
     {
         $request->validate([
             'shipping_name' => 'required|string|max:255',
@@ -171,11 +171,8 @@ class OrderController extends Controller
                     'subtotal' => $item['price'] * $item['quantity'],
                 ]);
 
-                // Actualizează stocul
+                // Actualizează stocul (in_stock se actualizează automat prin mutator/observer)
                 $item['product']->stock_quantity -= $item['quantity'];
-                if ($item['product']->stock_quantity <= 0) {
-                    $item['product']->in_stock = false;
-                }
                 $item['product']->save();
             }
 
@@ -184,12 +181,19 @@ class OrderController extends Controller
             // Golește coșul
             Session::forget('cart');
 
-            return redirect()->route('orders.show', $order->id)
-                ->with('success', 'Comanda a fost plasată cu succes!');
+            // Set flash message before redirect
+            Session::flash('success', 'Comanda a fost plasată cu succes!');
+
+            // Use Inertia::location() for redirect to work with Inertia
+            return Inertia::location(route('orders.show', $order->id));
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->route('checkout')
-                ->with('error', 'A apărut o eroare la procesarea comenzii. Te rugăm să încerci din nou.');
+            
+            // Set flash message before redirect
+            Session::flash('error', 'A apărut o eroare la procesarea comenzii. Te rugăm să încerci din nou.');
+            
+            // Use Inertia::location() for redirect to work with Inertia
+            return Inertia::location(route('checkout'));
         }
     }
 

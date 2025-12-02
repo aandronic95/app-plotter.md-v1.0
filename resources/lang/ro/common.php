@@ -223,5 +223,17 @@ return [
     'slug' => 'Slug',
     'view_all_products' => 'Vezi toate produsele',
     'view_all_available_categories' => 'Vezi toate categoriile disponibile',
+    
+    // Wishlist
+    'my_wishlist' => 'Wishlist',
+    'wishlist_description' => 'Produsele tale favorite',
+    'no_wishlist_items' => 'Nu aveți produse în wishlist',
+    'no_wishlist_items_description' => 'Adăugați produse la favorite pentru a le accesa mai ușor.',
+    'remove_from_wishlist' => 'Elimină din wishlist',
+    'remove_from_wishlist_confirm' => 'Sigur doriți să eliminați acest produs din wishlist?',
+    'product_added_to_wishlist' => 'Produsul a fost adăugat în wishlist.',
+    'product_removed_from_wishlist' => 'Produsul a fost eliminat din wishlist.',
+    'error_adding_to_wishlist' => 'Eroare la adăugarea produsului în wishlist.',
+    'error_removing_from_wishlist' => 'Eroare la eliminarea produsului din wishlist.',
 ];
 

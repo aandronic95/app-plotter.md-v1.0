@@ -58,8 +58,8 @@ class HomeController extends Controller
             });
 
         $products = Product::where('is_active', true)
-            ->where('in_stock', true)
             ->orderBy('is_featured', 'desc')
+            ->orderBy('in_stock', 'desc') // Products in stock first
             ->orderBy('sort_order')
             ->orderBy('created_at', 'desc')
             ->limit(12)
@@ -74,6 +74,7 @@ class HomeController extends Controller
                     'image' => $this->getImageUrl($product->image),
                     'description' => $product->short_description ?? $product->description,
                     'discount' => $product->discount,
+                    'inStock' => $product->in_stock,
                 ];
             });
 

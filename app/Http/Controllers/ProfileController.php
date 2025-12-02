@@ -6,14 +6,32 @@ namespace App\Http\Controllers;
 
 use App\Models\DeliveryAddress;
 use App\Models\Order;
+use App\Models\Wishlist;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class ProfileController extends Controller
 {
+    /**
+     * Get image URL from path.
+     */
+    private function getImageUrl(?string $image): string
+    {
+        if (empty($image)) {
+            return '/images/placeholder.jpg';
+        }
+
+        if (str_starts_with($image, 'http://') || str_starts_with($image, 'https://')) {
+            return $image;
+        }
+
+        return Storage::disk('public')->url($image);
+    }
+
     /**
      * Show the user's profile page.
      */
@@ -27,6 +45,36 @@ class ProfileController extends Controller
             ->paginate(10);
 
         $deliveryAddresses = $user->deliveryAddresses()->get();
+
+        $wishlistItems = Wishlist::where('user_id', $user->id)
+            ->with('product')
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function (Wishlist $item) {
+                $product = $item->product;
+                if (!$product) {
+                    return null;
+                }
+
+                return [
+                    'id' => $item->id,
+                    'product_id' => $product->id,
+                    'product' => [
+                        'id' => $product->id,
+                        'name' => $product->name,
+                        'slug' => $product->slug,
+                        'price' => (float) $product->price,
+                        'original_price' => $product->original_price ? (float) $product->original_price : null,
+                        'image' => $this->getImageUrl($product->image),
+                        'discount' => $product->discount,
+                        'in_stock' => $product->in_stock,
+                        'stock_quantity' => $product->stock_quantity,
+                    ],
+                    'created_at' => $item->created_at->format('d.m.Y H:i'),
+                ];
+            })
+            ->filter()
+            ->values();
 
         return Inertia::render('Profile', [
             'user' => [
@@ -59,6 +107,7 @@ class ProfileController extends Controller
                     'items_count' => $order->orderItems->sum('quantity'),
                 ];
             }),
+            'wishlist' => $wishlistItems,
         ]);
     }
 

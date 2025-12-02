@@ -66,6 +66,8 @@ const loading = ref(false);
 const isModalOpen = ref(false);
 const currentImageIndex = ref(0);
 const recentlyViewedProducts = ref<RelatedProduct[]>([]);
+const isInWishlist = ref(false);
+const wishlistLoading = ref(false);
 
 // Calculează toate imaginile disponibile (imaginea principală + imagini suplimentare)
 const allImages = computed(() => {
@@ -174,10 +176,103 @@ const loadRecentlyViewed = () => {
     }
 };
 
+const checkWishlistStatus = async () => {
+    try {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        
+        if (!csrfToken) {
+            return;
+        }
+
+        const response = await fetch(`/wishlist/check/${props.product.id}`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            credentials: 'same-origin',
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            isInWishlist.value = data.in_wishlist || false;
+        }
+    } catch (error) {
+        console.error('Error checking wishlist status:', error);
+    }
+};
+
+const toggleWishlist = async () => {
+    if (wishlistLoading.value) return;
+
+    wishlistLoading.value = true;
+    try {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        
+        if (!csrfToken) {
+            alert(t('error_csrf_missing'));
+            wishlistLoading.value = false;
+            return;
+        }
+
+        if (isInWishlist.value) {
+            // Remove from wishlist
+            const response = await fetch(`/wishlist/${props.product.id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                credentials: 'same-origin',
+            });
+
+            if (response.ok) {
+                isInWishlist.value = false;
+                alert(t('common.product_removed_from_wishlist'));
+            } else {
+                const errorData = await response.json().catch(() => ({ message: t('error_unknown') }));
+                alert(errorData.message || t('common.error_removing_from_wishlist'));
+            }
+        } else {
+            // Add to wishlist
+            const response = await fetch('/wishlist', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({
+                    product_id: props.product.id,
+                }),
+            });
+
+            if (response.ok) {
+                isInWishlist.value = true;
+                alert(t('common.product_added_to_wishlist'));
+            } else {
+                const errorData = await response.json().catch(() => ({ message: t('error_unknown') }));
+                alert(errorData.message || t('common.error_adding_to_wishlist'));
+            }
+        }
+    } catch (error) {
+        console.error('Error toggling wishlist:', error);
+        alert(t('common.error_unknown'));
+    } finally {
+        wishlistLoading.value = false;
+    }
+};
+
 onMounted(() => {
     window.addEventListener('keydown', handleKeyDown);
     saveToRecentlyViewed();
     loadRecentlyViewed();
+    checkWishlistStatus();
 });
 
 onUnmounted(() => {
@@ -382,10 +477,17 @@ const addToCart = async () => {
                             <Button
                                 variant="outline"
                                 size="lg"
-                                :disabled="isOutOfStock"
-                                :class="{ 'opacity-50 cursor-not-allowed': isOutOfStock }"
+                                :disabled="isOutOfStock || wishlistLoading"
+                                :class="{ 
+                                    'opacity-50 cursor-not-allowed': isOutOfStock || wishlistLoading,
+                                    'bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400': isInWishlist && !isOutOfStock && !wishlistLoading
+                                }"
+                                @click="toggleWishlist"
                             >
-                                <Heart class="h-5 w-5" />
+                                <Heart 
+                                    class="h-5 w-5" 
+                                    :class="{ 'fill-current': isInWishlist }"
+                                />
                             </Button>
                         </div>
                     </div>

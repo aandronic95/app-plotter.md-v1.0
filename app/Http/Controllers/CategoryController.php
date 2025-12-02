@@ -105,7 +105,6 @@ class CategoryController extends Controller
             });
 
         $query = Product::where('is_active', true)
-            ->where('in_stock', true)
             ->where('category_id', $category->id);
 
         // Search functionality
@@ -121,7 +120,9 @@ class CategoryController extends Controller
         $sortBy = $request->get('sort_by', 'created_at');
         $sortOrder = $request->get('sort_order', 'desc');
 
-        $query->orderBy($sortBy, $sortOrder);
+        // Always put in-stock products first, then out-of-stock at the end
+        $query->orderBy('in_stock', 'desc') // Products in stock first
+            ->orderBy($sortBy, $sortOrder);
 
         $products = $query->paginate(12)->through(function (Product $product) {
             return [
@@ -133,6 +134,7 @@ class CategoryController extends Controller
                 'image' => $this->getImageUrl($product->image),
                 'description' => $product->short_description ?? $product->description,
                 'discount' => $product->discount,
+                'inStock' => $product->in_stock,
             ];
         });
 

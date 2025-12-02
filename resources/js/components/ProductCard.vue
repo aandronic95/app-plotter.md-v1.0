@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { ShoppingCart, Heart } from 'lucide-vue-next';
 import { Link } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useTranslations } from '@/composables/useTranslations';
 
 interface Product {
@@ -15,6 +15,8 @@ interface Product {
     image: string;
     description?: string;
     discount?: number;
+    inStock?: boolean;
+    in_stock?: boolean;
 }
 
 const props = defineProps<{
@@ -23,6 +25,13 @@ const props = defineProps<{
 
 const { t } = useTranslations();
 const loading = ref(false);
+const isInWishlist = ref(false);
+const wishlistLoading = ref(false);
+
+// Check if product is in stock (support both camelCase and snake_case)
+const isInStock = computed(() => {
+    return props.product.inStock !== false && props.product.in_stock !== false;
+});
 
 const formatPrice = (price: number) => {
     return new Intl.NumberFormat('ro-MD', {
@@ -77,6 +86,98 @@ const addToCart = async () => {
         loading.value = false;
     }
 };
+
+const checkWishlistStatus = async () => {
+    if (!props.product.id) return;
+    
+    try {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        
+        if (!csrfToken) {
+            return;
+        }
+
+        const response = await fetch(`/wishlist/check/${props.product.id}`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            credentials: 'same-origin',
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            isInWishlist.value = data.in_wishlist || false;
+        }
+    } catch (error) {
+        console.error('Error checking wishlist status:', error);
+    }
+};
+
+const toggleWishlist = async (event: Event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    if (wishlistLoading.value || !props.product.id) return;
+
+    wishlistLoading.value = true;
+    try {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        
+        if (!csrfToken) {
+            alert(t('error_csrf_missing'));
+            wishlistLoading.value = false;
+            return;
+        }
+
+        if (isInWishlist.value) {
+            // Remove from wishlist
+            const response = await fetch(`/wishlist/${props.product.id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                credentials: 'same-origin',
+            });
+
+            if (response.ok) {
+                isInWishlist.value = false;
+            }
+        } else {
+            // Add to wishlist
+            const response = await fetch('/wishlist', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({
+                    product_id: props.product.id,
+                }),
+            });
+
+            if (response.ok) {
+                isInWishlist.value = true;
+            }
+        }
+    } catch (error) {
+        console.error('Error toggling wishlist:', error);
+    } finally {
+        wishlistLoading.value = false;
+    }
+};
+
+onMounted(() => {
+    checkWishlistStatus();
+});
 </script>
 
 <template>
@@ -88,7 +189,13 @@ const addToCart = async () => {
                 class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
             />
             <div
-                v-if="product.discount"
+                v-if="!isInStock"
+                class="absolute left-2 top-2 rounded bg-gray-600 px-2 py-1 text-xs font-bold text-white"
+            >
+                Nu este în stoc
+            </div>
+            <div
+                v-else-if="product.discount"
                 class="absolute left-2 top-2 rounded bg-red-500 px-2 py-1 text-xs font-bold text-white"
             >
                 -{{ product.discount }}%
@@ -96,9 +203,17 @@ const addToCart = async () => {
             <Button
                 variant="ghost"
                 size="icon"
-                class="absolute right-2 top-2 bg-white/80 opacity-0 transition-opacity hover:bg-white group-hover:opacity-100"
+                :disabled="wishlistLoading"
+                :class="[
+                    'absolute right-2 top-2 bg-white/80 opacity-0 transition-opacity hover:bg-white group-hover:opacity-100',
+                    isInWishlist && 'text-red-600 hover:text-red-700',
+                ]"
+                @click="toggleWishlist"
             >
-                <Heart class="h-4 w-4" />
+                <Heart 
+                    class="h-4 w-4" 
+                    :class="{ 'fill-current': isInWishlist }"
+                />
             </Button>
         </div>
         <CardHeader class="flex-1">
@@ -129,11 +244,11 @@ const addToCart = async () => {
             <Button
                 class="flex-1"
                 size="sm"
-                :disabled="loading"
+                :disabled="loading || !isInStock"
                 @click="addToCart"
             >
                 <ShoppingCart class="mr-2 h-4 w-4" />
-                {{ loading ? t('adding_to_cart') : t('add_to_cart') }}
+                {{ !isInStock ? 'Nu este în stoc' : (loading ? t('adding_to_cart') : t('add_to_cart')) }}
             </Button>
             <Button variant="outline" size="sm" as-child>
                 <Link :href="`/products/${product.slug || product.id}`">{{ t('details') }}</Link>

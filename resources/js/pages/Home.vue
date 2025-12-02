@@ -18,6 +18,8 @@ interface Product {
     image: string;
     description?: string;
     discount?: number;
+    inStock?: boolean;
+    in_stock?: boolean;
 }
 
 interface Category {

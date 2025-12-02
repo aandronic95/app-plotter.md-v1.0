@@ -3,9 +3,10 @@ import AppFooter from '@/components/AppFooter.vue';
 import PublicHeader from '@/components/PublicHeader.vue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
-import { ArrowLeft, MapPin, Star } from 'lucide-vue-next';
-import { ref, computed } from 'vue';
+import { ArrowLeft, MapPin, Star, CheckCircle, AlertCircle, X } from 'lucide-vue-next';
+import { ref, computed, watch, onMounted } from 'vue';
 
 interface CartItem {
     id: number;
@@ -40,6 +41,52 @@ interface Props {
 const props = defineProps<Props>();
 const page = usePage();
 const auth = computed(() => page.props.auth);
+
+// Flash messages
+const flash = computed(() => page.props.flash as { success?: string; error?: string } | undefined);
+const showSuccessMessage = ref(false);
+const showErrorMessage = ref(false);
+const successMessage = ref('');
+const errorMessage = ref('');
+
+// Watch for flash messages
+watch(flash, (newFlash) => {
+    console.log('Flash messages:', newFlash);
+    if (newFlash?.success) {
+        successMessage.value = newFlash.success;
+        showSuccessMessage.value = true;
+        setTimeout(() => {
+            showSuccessMessage.value = false;
+        }, 5000);
+    }
+    if (newFlash?.error) {
+        errorMessage.value = newFlash.error;
+        showErrorMessage.value = true;
+        setTimeout(() => {
+            showErrorMessage.value = false;
+        }, 5000);
+    }
+}, { immediate: true });
+
+// Also check on mount
+import { onMounted } from 'vue';
+onMounted(() => {
+    console.log('Page props flash:', page.props.flash);
+    if (flash.value?.success) {
+        successMessage.value = flash.value.success;
+        showSuccessMessage.value = true;
+        setTimeout(() => {
+            showSuccessMessage.value = false;
+        }, 5000);
+    }
+    if (flash.value?.error) {
+        errorMessage.value = flash.value.error;
+        showErrorMessage.value = true;
+        setTimeout(() => {
+            showErrorMessage.value = false;
+        }, 5000);
+    }
+});
 
 const selectedAddressId = ref<number | null>(
     props.deliveryAddresses?.find(a => a.is_default)?.id || null
@@ -85,7 +132,22 @@ const useNewAddress = () => {
 };
 
 const submit = () => {
-    form.post('/orders');
+    form.post('/orders', {
+        onSuccess: () => {
+            // Inertia will handle the redirect automatically via Inertia::location()
+            // Flash message will be available on the redirected page
+        },
+        onError: (errors) => {
+            // Errors are handled by form.errors
+            if (errors.message) {
+                errorMessage.value = errors.message;
+                showErrorMessage.value = true;
+                setTimeout(() => {
+                    showErrorMessage.value = false;
+                }, 5000);
+            }
+        },
+    });
 };
 </script>
 
@@ -109,6 +171,54 @@ const submit = () => {
                 <h1 class="mb-6 text-3xl font-bold text-gray-900 dark:text-white">
                     Finalizare comandă
                 </h1>
+
+                <!-- Success Message -->
+                <div
+                    v-if="showSuccessMessage"
+                    class="mb-6 relative rounded-lg border bg-green-50 p-4 dark:bg-green-900/20 dark:border-green-800"
+                >
+                    <div class="flex items-start gap-3">
+                        <CheckCircle class="h-5 w-5 text-green-600 dark:text-green-400 mt-0.5" />
+                        <div class="flex-1">
+                            <h4 class="text-sm font-semibold text-green-800 dark:text-green-200 mb-1">
+                                Succes!
+                            </h4>
+                            <p class="text-sm text-green-700 dark:text-green-300">
+                                {{ successMessage }}
+                            </p>
+                        </div>
+                        <button
+                            @click="showSuccessMessage = false"
+                            class="text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-200"
+                        >
+                            <X class="h-4 w-4" />
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Error Message -->
+                <div
+                    v-if="showErrorMessage"
+                    class="mb-6 relative rounded-lg border border-red-200 bg-red-50 p-4 dark:bg-red-900/20 dark:border-red-800"
+                >
+                    <div class="flex items-start gap-3">
+                        <AlertCircle class="h-5 w-5 text-red-600 dark:text-red-400 mt-0.5" />
+                        <div class="flex-1">
+                            <h4 class="text-sm font-semibold text-red-800 dark:text-red-200 mb-1">
+                                Eroare
+                            </h4>
+                            <p class="text-sm text-red-700 dark:text-red-300">
+                                {{ errorMessage }}
+                            </p>
+                        </div>
+                        <button
+                            @click="showErrorMessage = false"
+                            class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-200"
+                        >
+                            <X class="h-4 w-4" />
+                        </button>
+                    </div>
+                </div>
 
                 <form @submit.prevent="submit">
                     <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">

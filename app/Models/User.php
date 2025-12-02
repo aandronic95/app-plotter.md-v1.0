@@ -78,6 +78,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Get the wishlist items for the user.
+     */
+    public function wishlist(): HasMany
+    {
+        return $this->hasMany(Wishlist::class)->orderBy('created_at', 'desc');
+    }
+
+    /**
      * Get the default delivery address.
      */
     public function defaultDeliveryAddress(): ?DeliveryAddress

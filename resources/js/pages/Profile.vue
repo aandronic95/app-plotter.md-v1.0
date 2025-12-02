@@ -6,9 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
-import { User, Package, Gift, Edit2, Save, X, MapPin, Phone, Mail, Plus, Trash2, Star } from 'lucide-vue-next';
+import { User, Package, Gift, Edit2, Save, X, MapPin, Phone, Mail, Plus, Trash2, Star, Heart } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
 import { useTranslations } from '@/composables/useTranslations';
+import ProductCard from '@/components/ProductCard.vue';
 
 interface UserData {
     id: number;
@@ -39,6 +40,23 @@ interface Order {
     items_count: number;
 }
 
+interface WishlistItem {
+    id: number;
+    product_id: number;
+    product: {
+        id: number;
+        name: string;
+        slug: string;
+        price: number;
+        original_price?: number;
+        image: string;
+        discount?: number;
+        in_stock: boolean;
+        stock_quantity: number;
+    };
+    created_at: string;
+}
+
 interface Props {
     user: UserData;
     deliveryAddresses: DeliveryAddress[];
@@ -47,6 +65,7 @@ interface Props {
         links: any[];
         meta: any;
     };
+    wishlist: WishlistItem[];
 }
 
 const props = defineProps<Props>();
@@ -166,6 +185,42 @@ const setDefaultAddress = (id: number) => {
     router.post(`/profile/addresses/${id}/set-default`, {
         preserveScroll: true,
     });
+};
+
+const removeFromWishlist = async (productId: number) => {
+    if (confirm(t('common.remove_from_wishlist_confirm'))) {
+        try {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+            
+            if (!csrfToken) {
+                alert(t('error_csrf_missing'));
+                return;
+            }
+
+            const response = await fetch(`/wishlist/${productId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                credentials: 'same-origin',
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ message: t('error_unknown') }));
+                alert(errorData.message || t('common.error_removing_from_wishlist'));
+                return;
+            }
+
+            // Reload page to refresh wishlist
+            router.reload();
+        } catch (error) {
+            console.error('Error removing from wishlist:', error);
+            alert(t('common.error_removing_from_wishlist'));
+        }
+    }
 };
 </script>
 
@@ -437,8 +492,93 @@ const setDefaultAddress = (id: number) => {
                         </Card>
                     </div>
 
-                    <!-- Right Column: Orders -->
-                    <div class="lg:col-span-2">
+                    <!-- Right Column: Wishlist & Orders -->
+                    <div class="lg:col-span-2 space-y-6">
+                        <!-- Wishlist Card -->
+                        <Card>
+                            <CardHeader>
+                                <CardTitle class="flex items-center gap-2">
+                                    <Heart class="h-5 w-5" />
+                                    {{ t('common.my_wishlist') }}
+                                </CardTitle>
+                                <CardDescription>
+                                    {{ t('common.wishlist_description') }}
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <div v-if="props.wishlist && props.wishlist.length > 0" class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                                    <div
+                                        v-for="item in props.wishlist"
+                                        :key="item.id"
+                                        class="group relative rounded-lg border border-gray-200 p-4 transition-all hover:border-primary hover:shadow-md dark:border-gray-700"
+                                    >
+                                        <button
+                                            @click="removeFromWishlist(item.product_id)"
+                                            class="absolute right-2 top-2 z-10 rounded-full bg-white/80 p-1.5 opacity-0 transition-opacity hover:bg-red-100 hover:text-red-600 group-hover:opacity-100 dark:bg-gray-800"
+                                            :title="t('common.remove_from_wishlist')"
+                                        >
+                                            <X class="h-4 w-4" />
+                                        </button>
+                                        <Link :href="`/products/${item.product.slug}`" class="block">
+                                            <div class="aspect-square w-full overflow-hidden rounded-lg bg-gray-100 mb-3">
+                                                <img
+                                                    :src="item.product.image"
+                                                    :alt="item.product.name"
+                                                    class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                                />
+                                            </div>
+                                            <h3 class="mb-2 line-clamp-2 font-semibold text-gray-900 dark:text-white">
+                                                {{ item.product.name }}
+                                            </h3>
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-lg font-bold text-gray-900 dark:text-white">
+                                                    {{ formatPrice(item.product.price) }}
+                                                </span>
+                                                <span
+                                                    v-if="item.product.original_price"
+                                                    class="text-sm text-gray-500 line-through"
+                                                >
+                                                    {{ formatPrice(item.product.original_price) }}
+                                                </span>
+                                                <span
+                                                    v-if="item.product.discount"
+                                                    class="rounded bg-red-500 px-2 py-0.5 text-xs font-bold text-white"
+                                                >
+                                                    -{{ item.product.discount }}%
+                                                </span>
+                                            </div>
+                                            <div class="mt-2">
+                                                <span
+                                                    :class="[
+                                                        item.product.in_stock
+                                                            ? 'text-green-600 dark:text-green-400'
+                                                            : 'text-red-600 dark:text-red-400',
+                                                        'text-sm font-medium',
+                                                    ]"
+                                                >
+                                                    {{ item.product.in_stock ? t('common.in_stock') : t('common.out_of_stock') }}
+                                                </span>
+                                            </div>
+                                        </Link>
+                                    </div>
+                                </div>
+
+                                <div v-else class="py-12 text-center">
+                                    <Heart class="mx-auto h-12 w-12 text-gray-400" />
+                                    <p class="mt-4 text-lg font-medium text-gray-900 dark:text-white">
+                                        {{ t('common.no_wishlist_items') }}
+                                    </p>
+                                    <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                                        {{ t('common.no_wishlist_items_description') }}
+                                    </p>
+                                    <Link href="/products">
+                                        <Button class="mt-4">{{ t('common.view_products') }}</Button>
+                                    </Link>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <!-- Orders Card -->
                         <Card>
                             <CardHeader>
                                 <CardTitle class="flex items-center gap-2">

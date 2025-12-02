@@ -200,13 +200,8 @@ class Order extends Model
                 $product = Product::find($orderItem->product_id);
                 
                 if ($product) {
+                    // Actualizează stocul (in_stock se actualizează automat prin mutator/observer)
                     $product->stock_quantity += $orderItem->quantity;
-                    
-                    // Reactivează produsul dacă stocul devine > 0
-                    if ($product->stock_quantity > 0) {
-                        $product->in_stock = true;
-                    }
-                    
                     $product->save();
                 }
             }
