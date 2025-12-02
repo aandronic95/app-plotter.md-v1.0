@@ -43,11 +43,30 @@ class SetUserRole extends Command
             return Command::FAILURE;
         }
 
+        // Ensure the role exists
+        try {
+            $roleModel = \Spatie\Permission\Models\Role::firstOrCreate(
+                ['name' => $role, 'guard_name' => 'web']
+            );
+        } catch (\Exception $e) {
+            $this->error("Eroare la crearea rolului: " . $e->getMessage());
+            $this->warn("Asigură-te că ai rulat migrațiile: php artisan migrate");
+            return Command::FAILURE;
+        }
+
         // Remove all existing roles and assign the new one
         $user->syncRoles([$role]);
 
         $roleLabel = $role === 'admin' ? 'Administrator' : 'Utilizator';
-        $this->info("Rolul utilizatorului {$user->name} ({$email}) a fost setat la: {$roleLabel}");
+        $this->info("✓ Rolul utilizatorului {$user->name} ({$email}) a fost setat la: {$roleLabel}");
+        
+        // Verify
+        $user->refresh();
+        if ($user->hasRole($role)) {
+            $this->info("✓ Verificare: Utilizatorul are acum rolul '{$role}'");
+        } else {
+            $this->warn("⚠ Avertisment: Rolul nu pare să fie atribuit corect.");
+        }
 
         return Command::SUCCESS;
     }
