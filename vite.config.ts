@@ -30,7 +30,7 @@ function findPhpPath(): string {
 export default defineConfig({
     plugins: [
         laravel({
-            input: ['resources/js/app.ts'], // principal JS/TS entry
+            input: ['resources/js/app.ts'], // principal JS/TS entryeee
             refresh: true,                  // hot reload
         }),
         tailwindcss(),
