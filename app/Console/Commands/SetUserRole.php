@@ -57,6 +57,9 @@ class SetUserRole extends Command
         // Remove all existing roles and assign the new one
         $user->syncRoles([$role]);
 
+        // Clear permission cache
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+
         $roleLabel = $role === 'admin' ? 'Administrator' : 'Utilizator';
         $this->info("✓ Rolul utilizatorului {$user->name} ({$email}) a fost setat la: {$roleLabel}");
         
@@ -64,9 +67,26 @@ class SetUserRole extends Command
         $user->refresh();
         if ($user->hasRole($role)) {
             $this->info("✓ Verificare: Utilizatorul are acum rolul '{$role}'");
+            
+            // If admin role, verify canAccessPanel
+            if ($role === 'admin') {
+                try {
+                    $panel = \Filament\Facades\Filament::getPanel('admin');
+                    if ($user->canAccessPanel($panel)) {
+                        $this->info("✓ Utilizatorul poate accesa panoul admin");
+                    } else {
+                        $this->warn("⚠ Utilizatorul nu poate accesa panoul admin (verifică metoda canAccessPanel)");
+                    }
+                } catch (\Exception $e) {
+                    // Ignore if Filament is not fully loaded
+                }
+            }
         } else {
             $this->warn("⚠ Avertisment: Rolul nu pare să fie atribuit corect.");
         }
+
+        $this->newLine();
+        $this->comment("💡 Curăță cache-ul dacă este necesar: php artisan permission:cache-reset");
 
         return Command::SUCCESS;
     }
