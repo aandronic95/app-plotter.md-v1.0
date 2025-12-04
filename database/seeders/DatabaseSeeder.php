@@ -13,17 +13,24 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create admin user
-        User::factory()->admin()->create([
+        // Rulează mai întâi seeder-ul pentru roluri și permisiuni
+        $this->call([
+            RolePermissionSeeder::class,
+        ]);
+
+        // Creează utilizatorul admin
+        $admin = User::factory()->admin()->create([
             'name' => 'Admin',
             'email' => 'admin@example.com',
         ]);
+        $admin->assignRole('admin');
 
-        // Create regular user
-        User::factory()->create([
+        // Creează utilizator obișnuit
+        $user = User::factory()->create([
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
+        $user->assignRole('user');
 
         $this->call([
             CategorySeeder::class,
