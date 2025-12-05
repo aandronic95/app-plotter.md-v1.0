@@ -230,3 +230,4 @@ https://devhub.md/test-admin-access
 - Dacă `canAccessPanel()` returnează `true` în tinker, problema este probabil cache sau configurație server
 - Filament verifică `canAccessPanel()` înainte de a permite accesul
 - Cache-ul Spatie Permission poate cauza probleme dacă nu este resetat după modificări de roluri
+

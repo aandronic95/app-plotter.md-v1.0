@@ -34,6 +34,9 @@ class SiteSettingController extends Controller
                 'site_meta_keywords' => $settings->site_meta_keywords,
                 'site_meta_description' => $settings->site_meta_description,
                 'site_google_analytics' => $settings->site_google_analytics,
+                'show_login_modal' => $settings->show_login_modal ?? true,
+                'show_site_name' => $settings->show_site_name ?? true,
+                'show_logo' => $settings->show_logo ?? true,
             ],
         ]);
     }

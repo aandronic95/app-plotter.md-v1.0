@@ -16,6 +16,9 @@ interface SiteSettings {
     site_meta_keywords: string | null;
     site_meta_description: string | null;
     site_google_analytics: string | null;
+    show_login_modal: boolean;
+    show_site_name: boolean;
+    show_logo: boolean;
 }
 
 const siteSettings = ref<SiteSettings | null>(null);
@@ -51,6 +54,9 @@ export const useSiteSettings = () => {
                 site_meta_keywords: null,
                 site_meta_description: null,
                 site_google_analytics: null,
+                show_login_modal: true,
+                show_site_name: true,
+                show_logo: true,
             };
             return siteSettings.value;
         } finally {

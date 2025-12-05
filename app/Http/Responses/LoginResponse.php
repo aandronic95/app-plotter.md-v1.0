@@ -20,17 +20,19 @@ class LoginResponse implements LoginResponseContract
      */
     public function toResponse($request): Response
     {
-        $user = $request->user();
-
-        if ($user && $user->hasRole('admin')) {
-            return $request->wantsJson()
-                ? new JsonResponse(['redirect' => '/admin'], 200)
-                : redirect('/admin');
+        $redirect = redirect()->route('home');
+        
+        // Check if login modal is enabled in site settings
+        $settings = \App\Models\SiteSetting::current();
+        
+        if ($settings->show_login_modal) {
+            // Add flash message for login success with benefits
+            $redirect->with('login_success', true);
         }
-
+        
         return $request->wantsJson()
-            ? new JsonResponse(['redirect' => '/profile'], 200)
-            : redirect('/profile');
+            ? new JsonResponse(['redirect' => route('home'), 'login_success' => $settings->show_login_modal], 200)
+            : $redirect;
     }
 }
 

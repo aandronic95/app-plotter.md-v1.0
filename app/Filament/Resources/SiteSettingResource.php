@@ -155,6 +155,27 @@ class SiteSettingResource extends Resource
                             ->helperText('ID-ul de tracking Google Analytics')
                             ->columnSpanFull(),
                     ]),
+
+                Section::make('Setări utilizator')
+                    ->schema([
+                        Forms\Components\Toggle::make('show_login_modal')
+                            ->label('Afișează modal după logare')
+                            ->helperText('Afișează modalul cu beneficii după autentificarea utilizatorilor')
+                            ->default(true)
+                            ->columnSpanFull(),
+
+                        Forms\Components\Toggle::make('show_site_name')
+                            ->label('Afișează numele site-ului')
+                            ->helperText('Afișează numele site-ului în header')
+                            ->default(true)
+                            ->columnSpanFull(),
+
+                        Forms\Components\Toggle::make('show_logo')
+                            ->label('Afișează logo-ul')
+                            ->helperText('Afișează logo-ul în header')
+                            ->default(true)
+                            ->columnSpanFull(),
+                    ]),
             ]);
     }
 

@@ -18,6 +18,14 @@ const logoIcon = computed(() => {
     return siteSettings.value?.site_logo_icon;
 });
 
+const showSiteName = computed(() => {
+    return siteSettings.value?.show_site_name ?? true;
+});
+
+const showLogo = computed(() => {
+    return siteSettings.value?.show_logo ?? true;
+});
+
 onMounted(() => {
     fetchSiteSettings();
 });
@@ -25,6 +33,7 @@ onMounted(() => {
 
 <template>
     <div
+        v-if="showLogo"
         class="flex aspect-square size-8 items-center justify-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground"
     >
         <AppLogoIcon 
@@ -38,7 +47,7 @@ onMounted(() => {
             class="size-5 object-contain"
         />
     </div>
-    <div class="ml-1 grid flex-1 text-left text-sm">
+    <div v-if="showSiteName" class="ml-1 grid flex-1 text-left text-sm">
         <span class="mb-0.5 truncate leading-tight font-semibold"
             >{{ appName }}</span
         >

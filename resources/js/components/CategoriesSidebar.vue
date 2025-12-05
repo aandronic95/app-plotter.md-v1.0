@@ -139,7 +139,7 @@ watch(
 </script>
 
 <template>
-    <div class="w-full bg-white dark:bg-gray-800">
+    <div class="w-full dark:bg-gray-800 bg-gradient-to-b from-gray-50 to-white">
         <nav class="space-y-0">
             <div
                 v-for="category in categories"

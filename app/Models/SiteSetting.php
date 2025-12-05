@@ -30,6 +30,9 @@ class SiteSetting extends Model
         'site_meta_keywords',
         'site_meta_description',
         'site_google_analytics',
+        'show_login_modal',
+        'show_site_name',
+        'show_logo',
     ];
 
     /**

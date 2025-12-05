@@ -152,6 +152,40 @@ class Product extends Model
     }
 
     /**
+     * Get the image URL.
+     */
+    public function getImageUrlAttribute(): ?string
+    {
+        if (empty($this->image)) {
+            return null;
+        }
+
+        if (str_starts_with($this->image, 'http://') || str_starts_with($this->image, 'https://')) {
+            return $this->image;
+        }
+
+        return Storage::disk('public')->url($this->image);
+    }
+
+    /**
+     * Get the images URLs array.
+     */
+    public function getImagesUrlsAttribute(): array
+    {
+        if (empty($this->images) || !is_array($this->images)) {
+            return [];
+        }
+
+        return array_map(function ($image) {
+            if (str_starts_with($image, 'http://') || str_starts_with($image, 'https://')) {
+                return $image;
+            }
+
+            return Storage::disk('public')->url($image);
+        }, $this->images);
+    }
+
+    /**
      * Set the stock quantity and automatically update in_stock status.
      */
     public function setStockQuantityAttribute(int $value): void
@@ -187,22 +221,20 @@ class Product extends Model
         });
 
         static::saved(function (Product $product) {
-            // Only move images from temp on create, not on update
-            if (!$product->wasRecentlyCreated) {
-                return;
+            $tempPath = 'images/products/temp';
+            $productPath = "images/products/{$product->slug}";
+
+            // Ensure product directory exists
+            if ($product->slug) {
+                Storage::disk('public')->makeDirectory($productPath);
             }
 
-            $tempPath = 'products/temp';
-            $productPath = "products/{$product->slug}";
-
-            // Move main image from temp to product folder
+            // Move main image from temp to product folder (for both create and update)
             if ($product->image && Storage::disk('public')->exists($product->image)) {
                 $imagePath = $product->image;
                 if (str_contains($imagePath, $tempPath)) {
                     $imageName = basename($imagePath);
                     $newImagePath = "{$productPath}/{$imageName}";
-                    
-                    Storage::disk('public')->makeDirectory($productPath);
                     
                     if (Storage::disk('public')->move($imagePath, $newImagePath)) {
                         $product->withoutEvents(function () use ($product, $newImagePath) {
@@ -212,7 +244,7 @@ class Product extends Model
                 }
             }
 
-            // Move additional images from temp to product folder
+            // Move additional images from temp to product folder (for both create and update)
             if ($product->images && is_array($product->images)) {
                 $movedImages = [];
                 $needsUpdate = false;
@@ -222,8 +254,6 @@ class Product extends Model
                         if (str_contains($imagePath, $tempPath)) {
                             $imageName = basename($imagePath);
                             $newImagePath = "{$productPath}/{$imageName}";
-                            
-                            Storage::disk('public')->makeDirectory($productPath);
                             
                             if (Storage::disk('public')->move($imagePath, $newImagePath)) {
                                 $movedImages[] = $newImagePath;
@@ -252,8 +282,8 @@ class Product extends Model
             if ($product->isDirty('slug') && $product->getOriginal('slug')) {
                 $oldSlug = $product->getOriginal('slug');
                 $newSlug = $product->slug;
-                $oldPath = "products/{$oldSlug}";
-                $newPath = "products/{$newSlug}";
+                $oldPath = "images/products/{$oldSlug}";
+                $newPath = "images/products/{$newSlug}";
 
                 // Move main image
                 if ($product->image && Storage::disk('public')->exists($product->image)) {
@@ -308,7 +338,7 @@ class Product extends Model
 
         static::deleting(function (Product $product) {
             // Delete product images folder when product is deleted
-            $productPath = "products/{$product->slug}";
+            $productPath = "images/products/{$product->slug}";
             
             if (Storage::disk('public')->exists($productPath)) {
                 Storage::disk('public')->deleteDirectory($productPath);

@@ -72,3 +72,4 @@ echo "2. Reîncarcă Nginx/Apache: sudo systemctl reload nginx (sau apache2)"
 echo "3. Testează accesul: https://devhub.md/admin/login"
 echo "4. Șterge cookie-urile din browser și încearcă din nou"
 echo ""
+

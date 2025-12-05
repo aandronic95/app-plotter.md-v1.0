@@ -5,6 +5,7 @@ import CategoriesSidebar from '@/components/CategoriesSidebar.vue';
 import ProductCard from '@/components/ProductCard.vue';
 import PromotionCarousel from '@/components/PromotionCarousel.vue';
 import ContentTabs from '@/components/ContentTabs.vue';
+import LoginSuccessModal from '@/components/LoginSuccessModal.vue';
 import { Head } from '@inertiajs/vue3';
 import { useTranslations } from '@/composables/useTranslations';
 import { ref, computed, onMounted } from 'vue';
@@ -137,5 +138,8 @@ const tabs = computed(() => [
         <!-- Footer -->
         <AppFooter />
     </div>
+
+    <!-- Login Success Modal -->
+    <LoginSuccessModal />
 </template>
 

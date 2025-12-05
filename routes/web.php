@@ -110,6 +110,13 @@ Route::get('api/promotions/{promotion}', [PromotionController::class, 'show'])->
 Route::put('api/promotions/{promotion}', [PromotionController::class, 'update'])->name('api.promotions.update');
 Route::delete('api/promotions/{promotion}', [PromotionController::class, 'destroy'])->name('api.promotions.destroy');
 
+// Adminer route (protected by admin middleware)
+Route::middleware(['auth', \App\Http\Middleware\EnsureUserIsAdmin::class])
+    ->prefix('adminer')
+    ->group(function () {
+        Route::get('/', [\App\Http\Controllers\AdminerController::class, 'index'])->name('adminer.index');
+    });
+
 // Page slug route (must be last to avoid conflicts with other routes)
 Route::get('{slug}', [PublicPageController::class, 'show'])->name('pages.show');
 

@@ -130,26 +130,36 @@ class ProductResource extends Resource
                             ->image()
                             ->disk('public')
                             ->directory(fn ($record) => $record && $record->slug
-                                ? "products/{$record->slug}" 
-                                : 'products/temp')
+                                ? "images/products/{$record->slug}" 
+                                : 'images/products/temp')
                             ->visibility('public')
                             ->maxSize(5120)
                             ->imageEditor()
-                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif']),
+                            ->deletable()
+                            ->downloadable()
+                            ->previewable()
+                            ->openable()
+                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
+                            ->helperText('Puteți șterge imaginea existentă făcând click pe butonul de ștergere'),
 
                         Forms\Components\FileUpload::make('images')
                             ->label('Imagini suplimentare')
                             ->image()
                             ->disk('public')
                             ->directory(fn ($record) => $record && $record->slug
-                                ? "products/{$record->slug}" 
-                                : 'products/temp')
+                                ? "images/products/{$record->slug}" 
+                                : 'images/products/temp')
                             ->visibility('public')
                             ->multiple()
                             ->maxFiles(10)
                             ->maxSize(5120)
                             ->imageEditor()
-                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif']),
+                            ->deletable()
+                            ->downloadable()
+                            ->previewable()
+                            ->openable()
+                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
+                            ->helperText('Puteți șterge imaginile existente făcând click pe butonul de ștergere pentru fiecare imagine'),
                     ])->columns(2),
 
                 Section::make('Setări')
