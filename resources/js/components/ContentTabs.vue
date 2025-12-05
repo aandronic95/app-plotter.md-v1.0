@@ -79,35 +79,60 @@ const setActiveTab = (tabId: string) => {
 };
 
 const isActive = (tabId: string) => activeTab.value === tabId;
+
+// Scroll active tab into view on mobile
+const tabsContainer = ref<HTMLElement | null>(null);
+const scrollToActiveTab = () => {
+    if (!tabsContainer.value) return;
+    const activeButton = tabsContainer.value.querySelector('[data-active="true"]') as HTMLElement;
+    if (activeButton) {
+        activeButton.scrollIntoView({
+            behavior: 'smooth',
+            block: 'nearest',
+            inline: 'center',
+        });
+    }
+};
+
+// Watch for active tab changes and scroll to it
+watch(activeTab, () => {
+    setTimeout(scrollToActiveTab, 100);
+});
 </script>
 
 <template>
-    <div class="inline-flex rounded-lg bg-gray-100 p-1 dark:bg-gray-800">
-        <button
-            v-for="(tab, index) in tabs"
-            :key="tab.id"
-            @click="setActiveTab(tab.id)"
-            :class="[
-                'relative flex items-center justify-center px-4 py-2 text-sm font-medium transition-colors',
-                isActive(tab.id)
-                    ? 'rounded-md bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-white'
-                    : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200',
-                index > 0 && 'border-l border-gray-300 dark:border-gray-600',
-            ]"
+    <div class="w-full overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <div
+            ref="tabsContainer"
+            class="flex w-full rounded-lg bg-gray-100 p-1 dark:bg-gray-800"
         >
-            <span>{{ tab.label }}</span>
-            <span
-                v-if="tab.count !== undefined"
+            <button
+                v-for="(tab, index) in tabs"
+                :key="tab.id"
+                @click="setActiveTab(tab.id)"
+                :data-active="isActive(tab.id)"
                 :class="[
-                    'ml-2',
+                    'relative flex flex-1 items-center justify-center whitespace-nowrap px-3 py-2 text-xs font-medium transition-colors sm:px-4 sm:text-sm',
                     isActive(tab.id)
-                        ? 'text-pink-500 dark:text-pink-400'
-                        : 'text-gray-500 dark:text-gray-400',
+                        ? 'rounded-md bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-white'
+                        : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200',
+                    index > 0 && 'border-l-0 sm:border-l sm:border-gray-300 sm:dark:border-gray-600',
                 ]"
             >
-                ({{ tab.count }})
-            </span>
-        </button>
+                <span>{{ tab.label }}</span>
+                <span
+                    v-if="tab.count !== undefined"
+                    :class="[
+                        'ml-1.5 sm:ml-2',
+                        isActive(tab.id)
+                            ? 'text-pink-500 dark:text-pink-400'
+                            : 'text-gray-500 dark:text-gray-400',
+                    ]"
+                >
+                    ({{ tab.count }})
+                </span>
+            </button>
+        </div>
     </div>
 </template>
 

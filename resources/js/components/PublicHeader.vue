@@ -296,7 +296,7 @@ onUnmounted(() => {
                 <!-- Logo -->
                 <Link :href="home()" class="group flex items-center gap-2 transition-transform duration-200 hover:scale-105">
                     <div
-                        v-if="siteSettings?.site_logo"
+                        v-if="siteSettings?.site_logo && (siteSettings?.show_logo ?? true)"
                         class="flex h-10 w-auto items-center transition-opacity duration-200 group-hover:opacity-90"
                     >
                         <img
@@ -305,9 +305,9 @@ onUnmounted(() => {
                             class="h-full w-auto object-contain"
                         />
                     </div>
-                    <AppLogo v-else />
+                    <AppLogo v-else-if="siteSettings?.show_logo ?? true" />
                     <span
-                        v-if="siteSettings?.site_name"
+                        v-if="siteSettings?.site_name && (siteSettings?.show_site_name ?? true)"
                         class="hidden bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-lg font-bold text-transparent transition-all duration-200 group-hover:from-primary group-hover:to-primary/80 dark:from-white dark:to-gray-300 sm:block"
                     >
                         {{ siteSettings.site_name }}

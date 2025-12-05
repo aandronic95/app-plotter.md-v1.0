@@ -139,7 +139,7 @@ watch(
 </script>
 
 <template>
-    <div class="w-full dark:bg-gray-800 bg-gradient-to-b from-gray-50 to-white">
+    <div class="w-full bg-gradient-to-b from-gray-100 to-white dark:from-gray-700 dark:to-gray-900">
         <nav class="space-y-0">
             <div
                 v-for="category in categories"
@@ -177,16 +177,16 @@ watch(
                             >
                                 <ChevronDown
                                     v-if="isExpanded(category.id)"
-                                    class="h-4 w-4 text-gray-400"
+                                    class="h-4 w-4 text-gray-400 dark:text-gray-500"
                                 />
                                 <ChevronRight
                                     v-else
-                                    class="h-4 w-4 text-gray-400"
+                                    class="h-4 w-4 text-gray-400 dark:text-gray-500"
                                 />
                             </button>
                             <ChevronRight
                                 v-else
-                                class="h-4 w-4 flex-shrink-0 text-gray-400"
+                                class="h-4 w-4 flex-shrink-0 text-gray-400 dark:text-gray-500"
                             />
                         </div>
                     </Link>
