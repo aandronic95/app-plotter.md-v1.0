@@ -20,7 +20,7 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
     limit: 5,
     showTitle: true,
-    title: 'Pagini',
+    title: undefined,
 });
 
 const { t } = useTranslations();
@@ -53,7 +53,7 @@ onMounted(() => {
             v-if="showTitle"
             class="mb-4 text-lg font-semibold text-gray-900 dark:text-white"
         >
-            {{ title }}
+            {{ title || t('pages') }}
         </h3>
         
         <div v-if="isLoading" class="space-y-2">

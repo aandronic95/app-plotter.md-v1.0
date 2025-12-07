@@ -58,7 +58,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <Head title="Promoții" />
+    <Head :title="t('promotions_title')" />
     <div class="flex min-h-screen flex-col">
         <PublicHeader />
 
@@ -67,10 +67,10 @@ onMounted(() => {
                 <!-- Header -->
                 <div class="mb-8">
                     <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
-                        Promoții
+                        {{ t('promotions_title') }}
                     </h1>
                     <p class="mt-2 text-gray-600 dark:text-gray-400">
-                        Descoperă cele mai bune oferte și promoții disponibile
+                        {{ t('discover_best_offers_and_promotions') }}
                     </p>
                 </div>
 
@@ -126,7 +126,7 @@ onMounted(() => {
                         </svg>
                     </div>
                     <p class="text-lg text-gray-500 dark:text-gray-400">
-                        Nu există promoții disponibile momentan.
+                        {{ t('no_promotions_available') }}
                     </p>
                 </div>
             </div>

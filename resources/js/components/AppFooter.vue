@@ -12,6 +12,7 @@ import {
 import { ref, onMounted, computed } from 'vue';
 import { useSiteSettings } from '@/composables/useSiteSettings';
 import { useTranslations } from '@/composables/useTranslations';
+import { useApiCache } from '@/composables/useApiCache';
 
 interface NavigationItem {
     id: number;
@@ -25,55 +26,72 @@ interface NavigationItem {
 const currentYear = new Date().getFullYear();
 const { siteSettings, fetchSiteSettings } = useSiteSettings();
 const { t } = useTranslations();
+const apiCache = useApiCache();
 const footerNavItems = ref<NavigationItem[]>([]);
 const isLoading = ref(true);
 
 // Fallback links dacă API-ul eșuează
-const fallbackFooterLinks = {
+const fallbackFooterLinks = computed(() => ({
     company: [
-        { id: 1, title: 'Despre noi', href: '/about', is_external: false, target: '_self' },
-        { id: 2, title: 'Contact', href: '/contact', is_external: false, target: '_self' },
-        { id: 3, title: 'Cariere', href: '/careers', is_external: false, target: '_self' },
-        { id: 4, title: 'Blog', href: '/blog', is_external: false, target: '_self' },
+        { id: 1, title: t('about_us_nav'), href: '/about', is_external: false, target: '_self' },
+        { id: 2, title: t('contact_nav'), href: '/contact', is_external: false, target: '_self' },
+        { id: 3, title: t('careers'), href: '/careers', is_external: false, target: '_self' },
+        { id: 4, title: t('blog'), href: '/blog', is_external: false, target: '_self' },
     ],
     customer: [
-        { id: 5, title: 'Centru de ajutor', href: '/help', is_external: false, target: '_self' },
-        { id: 6, title: 'Livrare', href: '/shipping', is_external: false, target: '_self' },
-        { id: 7, title: 'Returnări', href: '/returns', is_external: false, target: '_self' },
-        { id: 8, title: 'FAQ', href: '/faq', is_external: false, target: '_self' },
+        { id: 5, title: t('help_center'), href: '/help', is_external: false, target: '_self' },
+        { id: 6, title: t('shipping'), href: '/shipping', is_external: false, target: '_self' },
+        { id: 7, title: t('returns'), href: '/returns', is_external: false, target: '_self' },
+        { id: 8, title: t('faq'), href: '/faq', is_external: false, target: '_self' },
     ],
     legal: [
-        { id: 9, title: 'Termeni și condiții', href: '/terms', is_external: false, target: '_self' },
-        { id: 10, title: 'Politica de confidențialitate', href: '/privacy', is_external: false, target: '_self' },
-        { id: 11, title: 'Cookie-uri', href: '/cookies', is_external: false, target: '_self' },
-        { id: 12, title: 'GDPR', href: '/gdpr', is_external: false, target: '_self' },
+        { id: 9, title: t('terms_and_conditions'), href: '/terms', is_external: false, target: '_self' },
+        { id: 10, title: t('privacy_policy'), href: '/privacy', is_external: false, target: '_self' },
+        { id: 11, title: t('cookies'), href: '/cookies', is_external: false, target: '_self' },
+        { id: 12, title: t('gdpr'), href: '/gdpr', is_external: false, target: '_self' },
     ],
-};
+}));
 
-// Fetch navigation items from API
+// Fetch navigation items from API with cache
 const fetchFooterNavigation = async () => {
     try {
-        const response = await fetch('/api/navigations?group=footer');
-        const data = await response.json();
+        const data = await apiCache.fetchWithCache<{ data: NavigationItem[] }>(
+            '/api/navigations?group=footer',
+            {
+                key: 'nav_footer_api_cache',
+                ttl: 2 * 60 * 60 * 1000, // 2 hours
+                version: '1.0',
+            }
+        );
         
         if (data.data && data.data.length > 0) {
             footerNavItems.value = data.data;
         } else {
             // Dacă nu există elemente în baza de date, folosește fallback
             footerNavItems.value = [
-                ...fallbackFooterLinks.company,
-                ...fallbackFooterLinks.customer,
-                ...fallbackFooterLinks.legal,
+                ...fallbackFooterLinks.value.company,
+                ...fallbackFooterLinks.value.customer,
+                ...fallbackFooterLinks.value.legal,
             ];
         }
     } catch (error) {
         console.error('Error fetching footer navigation:', error);
-        // Folosește fallback dacă API-ul eșuează
-        footerNavItems.value = [
-            ...fallbackFooterLinks.company,
-            ...fallbackFooterLinks.customer,
-            ...fallbackFooterLinks.legal,
-        ];
+        // Try to load from cache as fallback
+        const cached = apiCache.loadFromCache<{ data: NavigationItem[] }>({
+            key: 'nav_footer_api_cache',
+            ttl: 2 * 60 * 60 * 1000,
+        });
+        
+        if (cached?.data && Array.isArray(cached.data) && cached.data.length > 0) {
+            footerNavItems.value = cached.data;
+        } else {
+            // Folosește fallback dacă API-ul eșuează
+            footerNavItems.value = [
+                ...fallbackFooterLinks.value.company,
+                ...fallbackFooterLinks.value.customer,
+                ...fallbackFooterLinks.value.legal,
+            ];
+        }
     } finally {
         isLoading.value = false;
     }
@@ -110,22 +128,25 @@ const footerLinks = computed(() => {
         );
 
         return {
-            company: companyByTitle.length > 0 ? companyByTitle : fallbackFooterLinks.company,
-            customer: customerByTitle.length > 0 ? customerByTitle : fallbackFooterLinks.customer,
-            legal: legalByTitle.length > 0 ? legalByTitle : fallbackFooterLinks.legal,
+            company: companyByTitle.length > 0 ? companyByTitle : fallbackFooterLinks.value.company,
+            customer: customerByTitle.length > 0 ? customerByTitle : fallbackFooterLinks.value.customer,
+            legal: legalByTitle.length > 0 ? legalByTitle : fallbackFooterLinks.value.legal,
         };
     }
 
     return {
-        company: company.length > 0 ? company : fallbackFooterLinks.company,
-        customer: customer.length > 0 ? customer : fallbackFooterLinks.customer,
-        legal: legal.length > 0 ? legal : fallbackFooterLinks.legal,
+        company: company.length > 0 ? company : fallbackFooterLinks.value.company,
+        customer: customer.length > 0 ? customer : fallbackFooterLinks.value.customer,
+        legal: legal.length > 0 ? legal : fallbackFooterLinks.value.legal,
     };
 });
 
-onMounted(() => {
-    fetchSiteSettings();
-    fetchFooterNavigation();
+onMounted(async () => {
+    // Batch requests in parallel
+    await Promise.all([
+        fetchSiteSettings(),
+        fetchFooterNavigation(),
+    ]);
 });
 </script>
 
@@ -353,10 +374,8 @@ onMounted(() => {
                 <div
                     class="flex flex-col items-center justify-between gap-4 md:flex-row"
                 >
-                    <p class="text-sm text-gray-600 dark:text-gray-400">
-                        © {{ currentYear }}
-                        <span v-if="siteSettings?.site_name">{{ siteSettings.site_name }}</span>
-                        <span v-else>{{ t('all_rights_reserved') }}</span>
+                    <p class="text-xs text-gray-500 dark:text-gray-500">
+                        Copyright 2025 devhb.md (<a href="http://devhub.md" target="_blank" rel="noopener noreferrer" class="underline hover:text-gray-700 dark:hover:text-gray-300">http://devhub.md</a>)
                     </p>
                     <div v-if="!isLoading" class="flex flex-wrap gap-4">
                         <Link

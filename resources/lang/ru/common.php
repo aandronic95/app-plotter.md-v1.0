@@ -235,5 +235,76 @@ return [
     'product_removed_from_wishlist' => 'Товар успешно удален из избранного.',
     'error_adding_to_wishlist' => 'Ошибка добавления товара в избранное.',
     'error_removing_from_wishlist' => 'Ошибка удаления товара из избранного.',
+    
+    // Content Tabs
+    'promotions' => 'Акции',
+    'news' => 'Новости',
+    'events' => 'События',
+    'useful_tips' => 'Полезные советы',
+    'reviews' => 'Отзывы',
+    
+    // Promotion Card
+    'days_remaining' => 'Осталось',
+    'day' => 'день',
+    'days' => 'дней',
+    'expired' => 'Истек',
+    'no_deadline' => 'Без срока',
+    'until' => 'До',
+    'hours' => 'часов',
+    'minutes' => 'мин',
+    'seconds' => 'сек',
+    
+    // Login Success Modal
+    'welcome_back' => 'Добро пожаловать!',
+    'login_success_message' => 'Вы успешно вошли! Вот что вы можете сделать сейчас:',
+    'quick_shopping' => 'Быстрые покупки',
+    'quick_shopping_description' => 'Добавляйте товары в корзину и оформляйте заказы легко',
+    'wishlist_feature' => 'Избранное',
+    'wishlist_feature_description' => 'Сохраняйте любимые товары на потом',
+    'exclusive_offers' => 'Эксклюзивные предложения',
+    'exclusive_offers_description' => 'Получайте уведомления об акциях и специальных скидках',
+    'personalized_profile' => 'Персонализированный профиль',
+    'personalized_profile_description' => 'Управляйте адресами и заказами в одном месте',
+    'understood_thanks' => 'Понятно, спасибо!',
+    
+    // Promotions Page
+    'promotions_title' => 'Акции',
+    'discover_best_offers_and_promotions' => 'Откройте для себя лучшие предложения и доступные акции',
+    'no_promotions_available' => 'В данный момент нет доступных акций.',
+    
+    // Pages
+    'pages_title' => 'Страницы',
+    'explore_available_pages' => 'Изучите доступные страницы на сайте',
+    'search_pages' => 'Поиск страниц...',
+    'no_pages_found_for_search' => 'Страницы, соответствующие вашему запросу, не найдены.',
+    'clear_search' => 'Очистить поиск',
+    'read_more' => 'Читать далее →',
+    'page_content_not_available' => 'Содержимое страницы недоступно.',
+    'back_to_pages' => '← Назад к страницам',
+    'published_on' => 'Опубликовано',
+    'created_on' => 'Создано',
+    
+    // Navigation
+    'about_us_nav' => 'О нас',
+    'categories_nav' => 'Категории',
+    'contact_nav' => 'Контакты',
+    'careers' => 'Карьера',
+    'blog' => 'Блог',
+    'help_center' => 'Центр помощи',
+    'shipping' => 'Доставка',
+    'returns' => 'Возвраты',
+    'faq' => 'FAQ',
+    'terms_and_conditions' => 'Условия использования',
+    'privacy_policy' => 'Политика конфиденциальности',
+    'cookies' => 'Куки',
+    'gdpr' => 'GDPR',
+    
+    // Newsletter
+    'newsletter_title' => 'Узнайте первыми о наших эксклюзивных предложениях.',
+    'newsletter_name_placeholder' => 'Имя/Фамилия',
+    'newsletter_phone_placeholder' => 'Тел. например: 079123456',
+    'newsletter_subscribe' => 'Подписаться',
+    'newsletter_privacy_text' => 'Я согласен с',
+    'loading' => 'Обработка...',
 ];
 

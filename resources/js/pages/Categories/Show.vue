@@ -4,7 +4,10 @@ import PublicHeader from '@/components/PublicHeader.vue';
 import CategoriesSidebar from '@/components/CategoriesSidebar.vue';
 import ProductCard from '@/components/ProductCard.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
+import { useSEO } from '@/composables/useSEO';
+import StructuredData from '@/components/StructuredData.vue';
+import { useTranslations } from '@/composables/useTranslations';
 
 interface Product {
     id: number;
@@ -56,6 +59,46 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+const { t } = useTranslations();
+
+const seo = useSEO({
+    title: props.category.name,
+    description: props.category.description || '',
+    url: `/categories/${props.category.slug}`,
+    type: 'website',
+});
+
+const breadcrumbStructuredData = computed(() => {
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+    const items = [
+        {
+            '@type': 'ListItem',
+            position: 1,
+            name: t('home'),
+            item: baseUrl,
+        },
+    ];
+
+    if (props.category.parent) {
+        items.push({
+            '@type': 'ListItem',
+            position: items.length + 1,
+            name: props.category.parent.name,
+            item: `${baseUrl}/categories/${props.category.parent.slug}`,
+        });
+    }
+
+    items.push({
+        '@type': 'ListItem',
+        position: items.length + 1,
+        name: props.category.name,
+        item: `${baseUrl}/categories/${props.category.slug}`,
+    });
+
+    return {
+        itemListElement: items,
+    };
+});
 
 const search = ref(props.filters.search || '');
 const sortBy = ref(props.filters.sort_by || 'created_at');
@@ -93,7 +136,17 @@ const handleSort = () => {
 </script>
 
 <template>
-    <Head :title="category.name" />
+    <Head>
+        <title>{{ seo.title }}</title>
+        <meta name="description" :content="seo.description" />
+        <meta property="og:title" :content="seo.title" />
+        <meta property="og:description" :content="seo.description" />
+        <meta property="og:url" :content="seo.url" />
+        <meta property="og:type" content="website" />
+        <link rel="canonical" :href="seo.url" />
+    </Head>
+    
+    <StructuredData type="BreadcrumbList" :data="breadcrumbStructuredData" />
     <div class="flex min-h-screen flex-col">
         <PublicHeader />
 

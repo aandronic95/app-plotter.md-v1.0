@@ -1,2 +1,13 @@
 User-agent: *
-Disallow:
+Allow: /
+Disallow: /admin/
+Disallow: /adminer/
+Disallow: /dashboard/
+Disallow: /profile/
+Disallow: /cart/
+Disallow: /checkout/
+Disallow: /orders/
+Disallow: /api/
+
+# Sitemap
+Sitemap: https://www.plotter.md/sitemap.xml

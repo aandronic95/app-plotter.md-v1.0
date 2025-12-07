@@ -33,6 +33,10 @@ class SiteSetting extends Model
         'show_login_modal',
         'show_site_name',
         'show_logo',
+        'show_loyalty_points',
+        'show_newsletter_form',
+        'loading_text_main',
+        'loading_text_sub',
     ];
 
     /**

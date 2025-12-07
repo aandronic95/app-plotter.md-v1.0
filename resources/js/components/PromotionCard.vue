@@ -2,6 +2,7 @@
 import { router } from '@inertiajs/vue3';
 import { Calendar } from 'lucide-vue-next';
 import { computed } from 'vue';
+import { useTranslations } from '@/composables/useTranslations';
 
 interface Promotion {
     id: number;
@@ -30,6 +31,8 @@ interface Promotion {
 const props = defineProps<{
     promotion: Promotion;
 }>();
+
+const { t } = useTranslations();
 
 // Calculate days remaining
 const daysRemaining = computed(() => {
@@ -111,16 +114,16 @@ const handleClick = () => {
             >
                 <Calendar class="h-4 w-4" />
                 <span v-if="daysRemaining !== null && daysRemaining > 0">
-                    Mai durează {{ daysRemaining }} {{ daysRemaining === 1 ? 'zi' : 'zile' }}
+                    {{ t('days_remaining') }} {{ daysRemaining }} {{ daysRemaining === 1 ? t('day') : t('days') }}
                 </span>
                 <span v-else-if="daysRemaining === 0" class="text-red-600 dark:text-red-400">
-                    Expirat
+                    {{ t('expired') }}
                 </span>
                 <span v-else class="text-gray-500 dark:text-gray-400">
-                    Fără termen limită
+                    {{ t('no_deadline') }}
                 </span>
                 <span v-if="formattedEndDate" class="mx-1">•</span>
-                <span v-if="formattedEndDate">Până pe {{ formattedEndDate }}</span>
+                <span v-if="formattedEndDate">{{ t('until') }} {{ formattedEndDate }}</span>
             </div>
 
             <!-- Title -->

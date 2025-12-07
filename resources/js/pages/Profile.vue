@@ -7,8 +7,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import { User, Package, Gift, Edit2, Save, X, MapPin, Phone, Mail, Plus, Trash2, Star, Heart } from 'lucide-vue-next';
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useTranslations } from '@/composables/useTranslations';
+import { useSiteSettings } from '@/composables/useSiteSettings';
 import ProductCard from '@/components/ProductCard.vue';
 
 interface UserData {
@@ -71,6 +72,15 @@ interface Props {
 const props = defineProps<Props>();
 
 const { t } = useTranslations();
+const { siteSettings, fetchSiteSettings } = useSiteSettings();
+
+const showLoyaltyPoints = computed(() => {
+    return siteSettings.value?.show_loyalty_points ?? true;
+});
+
+onMounted(() => {
+    fetchSiteSettings();
+});
 
 const isAddingAddress = ref(false);
 const editingAddressId = ref<number | null>(null);
@@ -263,7 +273,7 @@ const removeFromWishlist = async (productId: number) => {
                         </Card>
 
                         <!-- Loyalty Points Card -->
-                        <Card>
+                        <Card v-if="showLoyaltyPoints">
                             <CardHeader>
                                 <CardTitle class="flex items-center gap-2">
                                     <Gift class="h-5 w-5" />

@@ -32,6 +32,8 @@ import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useSiteSettings } from '@/composables/useSiteSettings';
 import { useAppearance } from '@/composables/useAppearance';
 import { useTranslations } from '@/composables/useTranslations';
+import { useApiCache } from '@/composables/useApiCache';
+import { useCacheManager } from '@/composables/useCacheManager';
 import LanguageSwitcher from '@/components/LanguageSwitcher.vue';
 
 interface NavigationItem {
@@ -76,6 +78,7 @@ const expandedCategories = ref<Set<string>>(new Set());
 const { siteSettings, fetchSiteSettings } = useSiteSettings();
 const { appearance, updateAppearance } = useAppearance();
 const { t } = useTranslations();
+const cacheManager = useCacheManager();
 
 // Dark mode toggle
 const isDark = computed(() => {
@@ -108,25 +111,30 @@ const isSearching = ref(false);
 let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 
 // Fallback menu items dacă API-ul eșuează
-const fallbackMenuItems: NavigationItem[] = [
-    { id: 1, title: 'Acasă', href: '/', is_external: false, target: '_self' },
-    { id: 2, title: 'Produse', href: '/products', is_external: false, target: '_self' },
-    { id: 3, title: 'Categorii', href: '/categories', is_external: false, target: '_self' },
-    { id: 4, title: 'Despre noi', href: '/about', is_external: false, target: '_self' },
-    { id: 5, title: 'Contact', href: '/contact', is_external: false, target: '_self' },
-];
+const fallbackMenuItems = computed<NavigationItem[]>(() => [
+    { id: 1, title: t('home'), href: '/', is_external: false, target: '_self' },
+    { id: 2, title: t('products'), href: '/products', is_external: false, target: '_self' },
+    { id: 3, title: t('categories_nav'), href: '/categories', is_external: false, target: '_self' },
+    { id: 4, title: t('about_us_nav'), href: '/about', is_external: false, target: '_self' },
+    { id: 5, title: t('contact_nav'), href: '/contact', is_external: false, target: '_self' },
+]);
 
-// Fetch navigation items from API
+const apiCache = useApiCache();
+
+// Fetch navigation items from API with cache
 const fetchNavigationItems = async () => {
     try {
         isLoading.value = true;
-        const response = await fetch('/api/navigations?group=header');
         
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
+        const data = await apiCache.fetchWithCache<{ data: NavigationItem[] }>(
+            '/api/navigations?group=header',
+            {
+                key: 'nav_header_api_cache',
+                ttl: 2 * 60 * 60 * 1000, // 2 hours
+                version: '1.0',
+            }
+        );
         
-        const data = await response.json();
         console.log('Navigation API response:', data);
         
         if (data.data && Array.isArray(data.data) && data.data.length > 0) {
@@ -135,12 +143,22 @@ const fetchNavigationItems = async () => {
         } else {
             // Dacă nu există elemente în baza de date, folosește fallback
             console.warn('No navigation items found, using fallback');
-            menuItems.value = fallbackMenuItems;
+            menuItems.value = fallbackMenuItems.value;
         }
     } catch (error) {
         console.error('Error fetching navigation items:', error);
-        // Folosește fallback dacă API-ul eșuează
-        menuItems.value = fallbackMenuItems;
+        // Try to load from cache as fallback
+        const cached = apiCache.loadFromCache<{ data: NavigationItem[] }>({
+            key: 'nav_header_api_cache',
+            ttl: 2 * 60 * 60 * 1000,
+        });
+        
+        if (cached?.data && Array.isArray(cached.data) && cached.data.length > 0) {
+            menuItems.value = cached.data;
+        } else {
+            // Folosește fallback dacă API-ul eșuează
+            menuItems.value = fallbackMenuItems.value;
+        }
     } finally {
         isLoading.value = false;
     }
@@ -156,19 +174,36 @@ const fetchCartCount = async () => {
     }
 };
 
-// Fetch categories from API
+// Fetch categories from API with cache
 const fetchCategories = async () => {
     try {
         isCategoriesLoading.value = true;
-        const response = await fetch('/api/navigations/categories?group=header');
-        const data = await response.json();
+        
+        const data = await apiCache.fetchWithCache<{ data: CategoryGroup[] }>(
+            '/api/navigations/categories?group=header',
+            {
+                key: 'nav_categories_header_api_cache',
+                ttl: 2 * 60 * 60 * 1000, // 2 hours
+                version: '1.0',
+            }
+        );
         
         if (data.data && data.data.length > 0) {
             categories.value = data.data;
         }
     } catch (error) {
         console.error('Error fetching categories:', error);
-        categories.value = [];
+        // Try to load from cache as fallback
+        const cached = apiCache.loadFromCache<{ data: CategoryGroup[] }>({
+            key: 'nav_categories_header_api_cache',
+            ttl: 2 * 60 * 60 * 1000,
+        });
+        
+        if (cached?.data && Array.isArray(cached.data) && cached.data.length > 0) {
+            categories.value = cached.data;
+        } else {
+            categories.value = [];
+        }
     } finally {
         isCategoriesLoading.value = false;
     }
@@ -273,11 +308,14 @@ watch(isSearchOpen, (open) => {
     }
 });
 
-onMounted(() => {
-    fetchCartCount();
-    fetchNavigationItems();
-    fetchCategories();
-    fetchSiteSettings();
+onMounted(async () => {
+    // Batch all initial requests in parallel
+    await Promise.all([
+        fetchCartCount(),
+        fetchNavigationItems(),
+        fetchCategories(),
+        fetchSiteSettings(),
+    ]);
     window.addEventListener('cart-updated', handleCartUpdate);
 });
 
@@ -678,7 +716,7 @@ onUnmounted(() => {
                                                 {{ t('my_profile') }}
                                             </Button>
                                         </Link>
-                                        <form @submit.prevent="router.post(logout().url)">
+                                        <form @submit.prevent="() => { cacheManager.invalidateOnAuthChange(); router.post(logout().url); }">
                                             <Button type="submit" class="w-full transition-all duration-200 hover:scale-[1.02]" variant="ghost">
                                                 {{ t('logout') }}
                                             </Button>
@@ -708,7 +746,7 @@ onUnmounted(() => {
                                     {{ t('my_profile') }}
                                 </Button>
                             </Link>
-                            <form @submit.prevent="router.post(logout().url)" class="inline">
+                            <form @submit.prevent="() => { cacheManager.invalidateOnAuthChange(); router.post(logout().url); }" class="inline">
                                 <Button type="submit" variant="ghost" size="sm" class="transition-all duration-200 hover:bg-primary/10 hover:text-primary">
                                     {{ t('logout') }}
                                 </Button>

@@ -175,6 +175,35 @@ class SiteSettingResource extends Resource
                             ->helperText('Afișează logo-ul în header')
                             ->default(true)
                             ->columnSpanFull(),
+
+                        Forms\Components\Toggle::make('show_loyalty_points')
+                            ->label('Afișează punctele de loialitate')
+                            ->helperText('Afișează card-ul cu punctele de loialitate în profilul utilizatorului')
+                            ->default(true)
+                            ->columnSpanFull(),
+
+                        Forms\Components\Toggle::make('show_newsletter_form')
+                            ->label('Afișează formularul de newsletter')
+                            ->helperText('Afișează formularul de abonare la newsletter pe pagina principală')
+                            ->default(true)
+                            ->columnSpanFull(),
+                    ]),
+
+                Section::make('Loading Screen')
+                    ->schema([
+                        Forms\Components\TextInput::make('loading_text_main')
+                            ->label('Text principal loading')
+                            ->maxLength(255)
+                            ->default('tanavius')
+                            ->helperText('Textul principal afișat pe ecranul de loading')
+                            ->columnSpanFull(),
+
+                        Forms\Components\TextInput::make('loading_text_sub')
+                            ->label('Text secundar loading')
+                            ->maxLength(255)
+                            ->default('www.plotter.md')
+                            ->helperText('Textul secundar afișat sub textul principal')
+                            ->columnSpanFull(),
                     ]),
             ]);
     }

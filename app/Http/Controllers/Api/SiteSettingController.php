@@ -37,6 +37,10 @@ class SiteSettingController extends Controller
                 'show_login_modal' => $settings->show_login_modal ?? true,
                 'show_site_name' => $settings->show_site_name ?? true,
                 'show_logo' => $settings->show_logo ?? true,
+                'show_loyalty_points' => $settings->show_loyalty_points ?? true,
+                'show_newsletter_form' => $settings->show_newsletter_form ?? true,
+                'loading_text_main' => $settings->loading_text_main ?? 'tanavius',
+                'loading_text_sub' => $settings->loading_text_sub ?? 'www.plotter.md',
             ],
         ]);
     }

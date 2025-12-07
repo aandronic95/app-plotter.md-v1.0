@@ -7,6 +7,8 @@ import { ShoppingCart, Heart, ArrowLeft, X, ChevronLeft, ChevronRight } from 'lu
 import { Head, Link } from '@inertiajs/vue3';
 import { computed, ref, onMounted, onUnmounted } from 'vue';
 import { useTranslations } from '@/composables/useTranslations';
+import { useSEO } from '@/composables/useSEO';
+import StructuredData from '@/components/StructuredData.vue';
 
 const STORAGE_KEY = 'recently_viewed_products';
 const MAX_RECENT_PRODUCTS = 8;
@@ -50,6 +52,75 @@ interface Props {
 
 const props = defineProps<Props>();
 const { t } = useTranslations();
+
+const seo = useSEO({
+    title: props.product.name,
+    description: props.product.shortDescription || props.product.description || '',
+    image: props.product.image,
+    url: `/products/${props.product.slug}`,
+    type: 'product',
+});
+
+const productStructuredData = computed(() => {
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+    const imageUrl = props.product.image.startsWith('http') 
+        ? props.product.image 
+        : `${baseUrl}${props.product.image}`;
+
+    return {
+        name: props.product.name,
+        description: props.product.shortDescription || props.product.description || '',
+        image: imageUrl,
+        sku: props.product.sku || undefined,
+        brand: {
+            '@type': 'Brand',
+            name: 'PLOTTER.MD',
+        },
+        offers: {
+            '@type': 'Offer',
+            url: `${baseUrl}/products/${props.product.slug}`,
+            priceCurrency: 'MDL',
+            price: props.product.price.toString(),
+            availability: props.product.inStock 
+                ? 'https://schema.org/InStock' 
+                : 'https://schema.org/OutOfStock',
+            itemCondition: 'https://schema.org/NewCondition',
+        },
+        category: props.product.category?.name,
+    };
+});
+
+const breadcrumbStructuredData = computed(() => {
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+    const items = [
+        {
+            '@type': 'ListItem',
+            position: 1,
+            name: t('home'),
+            item: baseUrl,
+        },
+    ];
+
+    if (props.product.category) {
+        items.push({
+            '@type': 'ListItem',
+            position: items.length + 1,
+            name: props.product.category.name,
+            item: `${baseUrl}/categories/${props.product.category.slug}`,
+        });
+    }
+
+    items.push({
+        '@type': 'ListItem',
+        position: items.length + 1,
+        name: props.product.name,
+        item: `${baseUrl}/products/${props.product.slug}`,
+    });
+
+    return {
+        itemListElement: items,
+    };
+});
 
 const formatPrice = (price: number) => {
     return new Intl.NumberFormat('ro-MD', {
@@ -333,7 +404,23 @@ const addToCart = async () => {
 </script>
 
 <template>
-    <Head :title="props.product.name" />
+    <Head>
+        <title>{{ seo.title }}</title>
+        <meta name="description" :content="seo.description" />
+        <meta property="og:title" :content="seo.title" />
+        <meta property="og:description" :content="seo.description" />
+        <meta property="og:image" :content="seo.image" />
+        <meta property="og:url" :content="seo.url" />
+        <meta property="og:type" content="product" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" :content="seo.title" />
+        <meta name="twitter:description" :content="seo.description" />
+        <meta name="twitter:image" :content="seo.image" />
+        <link rel="canonical" :href="seo.url" />
+    </Head>
+    
+    <StructuredData type="Product" :data="productStructuredData" />
+    <StructuredData type="BreadcrumbList" :data="breadcrumbStructuredData" />
     <div class="flex min-h-screen flex-col">
         <PublicHeader />
 
@@ -447,7 +534,7 @@ const addToCart = async () => {
                                             : 'text-green-600 dark:text-green-400',
                                     ]"
                                 >
-                                    {{ isOutOfStock ? 'Nu este în stoc' : 'În stoc' }}
+                                    {{ isOutOfStock ? t('not_in_stock') : t('in_stock') }}
                                 </span>
                             </div>
                             <div

@@ -79,6 +79,7 @@ Route::middleware(['auth', EnsureUserIsRegularUser::class])->group(function () {
     Route::post('wishlist', [\App\Http\Controllers\WishlistController::class, 'store'])->name('wishlist.store');
     Route::delete('wishlist/{productId}', [\App\Http\Controllers\WishlistController::class, 'destroy'])->name('wishlist.destroy');
     Route::get('wishlist/check/{productId}', [\App\Http\Controllers\WishlistController::class, 'check'])->name('wishlist.check');
+    Route::post('wishlist/check-batch', [\App\Http\Controllers\WishlistController::class, 'checkBatch'])->name('wishlist.check-batch');
 });
 
 Route::get('dashboard', function () {
@@ -91,6 +92,12 @@ Route::get('api/navigations/categories', [NavigationController::class, 'categori
 
 // Site Settings API routes
 Route::get('api/site-settings', [SiteSettingController::class, 'index'])->name('api.site-settings.index');
+
+// Sitemap route
+Route::get('sitemap.xml', [\App\Http\Controllers\SitemapController::class, 'index'])->name('sitemap');
+
+// Robots.txt route (dynamic)
+Route::get('robots.txt', [\App\Http\Controllers\RobotsController::class, 'index'])->name('robots');
 
 // Products API routes
 Route::get('api/products', [ApiProductController::class, 'index'])->name('api.products.index');
@@ -109,6 +116,9 @@ Route::post('api/promotions', [PromotionController::class, 'store'])->name('api.
 Route::get('api/promotions/{promotion}', [PromotionController::class, 'show'])->name('api.promotions.show');
 Route::put('api/promotions/{promotion}', [PromotionController::class, 'update'])->name('api.promotions.update');
 Route::delete('api/promotions/{promotion}', [PromotionController::class, 'destroy'])->name('api.promotions.destroy');
+
+// Newsletter API routes
+Route::post('api/newsletter', [\App\Http\Controllers\Api\NewsletterController::class, 'store'])->name('api.newsletter.store');
 
 // Adminer route (protected by admin middleware)
 Route::middleware(['auth', \App\Http\Middleware\EnsureUserIsAdmin::class])

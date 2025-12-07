@@ -2,6 +2,7 @@
 import AppFooter from '@/components/AppFooter.vue';
 import PublicHeader from '@/components/PublicHeader.vue';
 import { Head, Link } from '@inertiajs/vue3';
+import { useTranslations } from '@/composables/useTranslations';
 
 interface Page {
     id: number;
@@ -21,6 +22,7 @@ interface Props {
 }
 
 defineProps<Props>();
+const { t } = useTranslations();
 </script>
 
 <template>
@@ -39,14 +41,14 @@ defineProps<Props>();
                         href="/"
                         class="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
                     >
-                        Acasă
+                        {{ t('home') }}
                     </Link>
                     <span class="mx-2 text-gray-400">/</span>
                     <Link
                         href="/pages"
                         class="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
                     >
-                        Pagini
+                        {{ t('pages') }}
                     </Link>
                     <span class="mx-2 text-gray-400">/</span>
                     <span class="text-gray-900 dark:text-white">{{ page.title }}</span>
@@ -60,14 +62,14 @@ defineProps<Props>();
                         </h1>
                         <div class="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
                             <span v-if="page.published_at">
-                                Publicat: {{ new Date(page.published_at).toLocaleDateString('ro-RO', {
+                                {{ t('published_on') }}: {{ new Date(page.published_at).toLocaleDateString('ro-RO', {
                                     year: 'numeric',
                                     month: 'long',
                                     day: 'numeric',
                                 }) }}
                             </span>
                             <span v-else>
-                                Creat: {{ new Date(page.created_at).toLocaleDateString('ro-RO', {
+                                {{ t('created_on') }}: {{ new Date(page.created_at).toLocaleDateString('ro-RO', {
                                     year: 'numeric',
                                     month: 'long',
                                     day: 'numeric',
@@ -93,7 +95,7 @@ defineProps<Props>();
                         v-else
                         class="text-gray-500 dark:text-gray-400"
                     >
-                        Conținutul paginii nu este disponibil.
+                        {{ t('page_content_not_available') }}
                     </div>
                 </article>
 
@@ -103,7 +105,7 @@ defineProps<Props>();
                         href="/pages"
                         class="inline-flex items-center text-primary-600 hover:text-primary-700 dark:text-primary-400"
                     >
-                        ← Înapoi la pagini
+                        {{ t('back_to_pages') }}
                     </Link>
                 </div>
             </div>

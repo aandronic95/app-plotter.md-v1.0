@@ -153,4 +153,37 @@ class WishlistController extends Controller
             'in_wishlist' => $inWishlist,
         ]);
     }
+
+    /**
+     * Batch check multiple products for wishlist status.
+     */
+    public function checkBatch(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'product_ids' => 'required|array',
+            'product_ids.*' => 'required|integer|exists:products,id',
+        ]);
+
+        $user = $request->user();
+
+        if (!$user) {
+            return response()->json([
+                'data' => [],
+            ]);
+        }
+
+        $wishlistProductIds = Wishlist::where('user_id', $user->id)
+            ->whereIn('product_id', $validated['product_ids'])
+            ->pluck('product_id')
+            ->toArray();
+
+        $result = [];
+        foreach ($validated['product_ids'] as $productId) {
+            $result[$productId] = in_array($productId, $wishlistProductIds, true);
+        }
+
+        return response()->json([
+            'data' => $result,
+        ]);
+    }
 }

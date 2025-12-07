@@ -218,21 +218,21 @@ onUnmounted(() => {
                             <div class="flex items-center gap-2 text-base font-extrabold">
                                 <span v-if="timeRemaining.days > 0" class="flex flex-col items-center">
                                     <span class="rounded-lg bg-white/25 px-2.5 py-1 text-lg font-black shadow-inner">{{ String(timeRemaining.days).padStart(2, '0') }}</span>
-                                    <span class="text-[10px] uppercase leading-tight">zile</span>
+                                    <span class="text-[10px] uppercase leading-tight">{{ t('days') }}</span>
                                 </span>
                                 <span class="flex flex-col items-center">
                                     <span class="rounded-lg bg-white/25 px-2.5 py-1 text-lg font-black shadow-inner">{{ String(timeRemaining.hours).padStart(2, '0') }}</span>
-                                    <span class="text-[10px] uppercase leading-tight">ore</span>
+                                    <span class="text-[10px] uppercase leading-tight">{{ t('hours') }}</span>
                                 </span>
                                 <span class="text-2xl font-bold">:</span>
                                 <span class="flex flex-col items-center">
                                     <span class="rounded-lg bg-white/25 px-2.5 py-1 text-lg font-black shadow-inner">{{ String(timeRemaining.minutes).padStart(2, '0') }}</span>
-                                    <span class="text-[10px] uppercase leading-tight">min</span>
+                                    <span class="text-[10px] uppercase leading-tight">{{ t('minutes') }}</span>
                                 </span>
                                 <span class="text-2xl font-bold">:</span>
                                 <span class="flex flex-col items-center">
                                     <span class="rounded-lg bg-white/25 px-2.5 py-1 text-lg font-black shadow-inner animate-pulse">{{ String(timeRemaining.seconds).padStart(2, '0') }}</span>
-                                    <span class="text-[10px] uppercase leading-tight">sec</span>
+                                    <span class="text-[10px] uppercase leading-tight">{{ t('seconds') }}</span>
                                 </span>
                             </div>
                         </div>

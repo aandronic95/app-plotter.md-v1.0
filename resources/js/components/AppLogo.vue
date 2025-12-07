@@ -34,7 +34,7 @@ onMounted(() => {
 <template>
     <div
         v-if="showLogo"
-        class="flex aspect-square size-8 items-center justify-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground"
+        class="flex aspect-square size-8 items-center justify-center rounded-md bg-transparent text-sidebar-primary-foreground"
     >
         <AppLogoIcon 
             v-if="!logoIcon"

@@ -235,5 +235,76 @@ return [
     'product_removed_from_wishlist' => 'Produsul a fost eliminat din wishlist.',
     'error_adding_to_wishlist' => 'Eroare la adăugarea produsului în wishlist.',
     'error_removing_from_wishlist' => 'Eroare la eliminarea produsului din wishlist.',
+    
+    // Content Tabs
+    'promotions' => 'Promoții',
+    'news' => 'Noutăți',
+    'events' => 'Evenimente',
+    'useful_tips' => 'Sfatuti utile',
+    'reviews' => 'Review-uri',
+    
+    // Promotion Card
+    'days_remaining' => 'Mai durează',
+    'day' => 'zi',
+    'days' => 'zile',
+    'expired' => 'Expirat',
+    'no_deadline' => 'Fără termen limită',
+    'until' => 'Până pe',
+    'hours' => 'ore',
+    'minutes' => 'min',
+    'seconds' => 'sec',
+    
+    // Login Success Modal
+    'welcome_back' => 'Bine ai venit!',
+    'login_success_message' => 'Te-ai logat cu succes! Iată ce poți face acum:',
+    'quick_shopping' => 'Cumpărături rapide',
+    'quick_shopping_description' => 'Adaugă produse în coș și finalizează comenzi cu ușurință',
+    'wishlist_feature' => 'Lista de dorințe',
+    'wishlist_feature_description' => 'Salvează produsele preferate pentru mai târziu',
+    'exclusive_offers' => 'Oferte exclusive',
+    'exclusive_offers_description' => 'Primește notificări despre promoții și reduceri speciale',
+    'personalized_profile' => 'Profil personalizat',
+    'personalized_profile_description' => 'Gestionează adresele și comenzile tale într-un singur loc',
+    'understood_thanks' => 'Înțeles, mulțumesc!',
+    
+    // Promotions Page
+    'promotions_title' => 'Promoții',
+    'discover_best_offers_and_promotions' => 'Descoperă cele mai bune oferte și promoții disponibile',
+    'no_promotions_available' => 'Nu există promoții disponibile momentan.',
+    
+    // Pages
+    'pages_title' => 'Pagini',
+    'explore_available_pages' => 'Explorează paginile disponibile pe site',
+    'search_pages' => 'Caută pagini...',
+    'no_pages_found_for_search' => 'Nu s-au găsit pagini care să corespundă căutării.',
+    'clear_search' => 'Șterge căutarea',
+    'read_more' => 'Citește mai mult →',
+    'page_content_not_available' => 'Conținutul paginii nu este disponibil.',
+    'back_to_pages' => '← Înapoi la pagini',
+    'published_on' => 'Publicat',
+    'created_on' => 'Creat',
+    
+    // Navigation
+    'about_us_nav' => 'Despre noi',
+    'categories_nav' => 'Categorii',
+    'contact_nav' => 'Contact',
+    'careers' => 'Cariere',
+    'blog' => 'Blog',
+    'help_center' => 'Centru de ajutor',
+    'shipping' => 'Livrare',
+    'returns' => 'Returnări',
+    'faq' => 'FAQ',
+    'terms_and_conditions' => 'Termeni și condiții',
+    'privacy_policy' => 'Politica de confidențialitate',
+    'cookies' => 'Cookie-uri',
+    'gdpr' => 'GDPR',
+    
+    // Newsletter
+    'newsletter_title' => 'Află primul despre ofertele noastre exclusive.',
+    'newsletter_name_placeholder' => 'Nume/Prenume',
+    'newsletter_phone_placeholder' => 'Tel. ex: 079123456',
+    'newsletter_subscribe' => 'Abonează-te',
+    'newsletter_privacy_text' => 'Sunt de acord cu',
+    'loading' => 'Se procesează...',
 ];
 

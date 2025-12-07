@@ -6,9 +6,13 @@ import ProductCard from '@/components/ProductCard.vue';
 import PromotionCarousel from '@/components/PromotionCarousel.vue';
 import ContentTabs from '@/components/ContentTabs.vue';
 import LoginSuccessModal from '@/components/LoginSuccessModal.vue';
+import NewsletterForm from '@/components/NewsletterForm.vue';
 import { Head } from '@inertiajs/vue3';
 import { useTranslations } from '@/composables/useTranslations';
-import { ref, computed, onMounted } from 'vue';
+import { useSEO } from '@/composables/useSEO';
+import { useWishlistBatch } from '@/composables/useWishlistBatch';
+import { ref, computed, onMounted, nextTick } from 'vue';
+import StructuredData from '@/components/StructuredData.vue';
 
 interface Product {
     id: number;
@@ -40,10 +44,19 @@ interface Props {
     categories: Category[];
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
 
 const { t } = useTranslations();
+const seo = useSEO();
+const { checkBatch } = useWishlistBatch();
+
+const organizationStructuredData = computed(() => {
+    return seo.structuredData.value;
+});
 const activeTab = ref('promotions');
+
+// Product card refs for batch wishlist checking
+const productCardRefs = ref<Record<number, any>>({});
 
 // Fetch promotions count
 const promotionsCount = ref(0);
@@ -60,22 +73,53 @@ const fetchPromotionsCount = async () => {
     }
 };
 
+// Batch check wishlist status for all products
+const checkWishlistBatch = async () => {
+    if (props.products.length === 0) return;
+    
+    const productIds = props.products.map(p => p.id);
+    const statuses = await checkBatch(productIds);
+    
+    // Update each product card with its wishlist status
+    await nextTick();
+    Object.entries(statuses).forEach(([productId, inWishlist]) => {
+        const cardRef = productCardRefs.value[Number(productId)];
+        if (cardRef && cardRef.setWishlistStatus) {
+            cardRef.setWishlistStatus(inWishlist);
+        }
+    });
+};
+
 // Fetch count on mount
-onMounted(() => {
-    fetchPromotionsCount();
+onMounted(async () => {
+    await Promise.all([
+        fetchPromotionsCount(),
+        checkWishlistBatch(),
+    ]);
 });
 
 const tabs = computed(() => [
-    { id: 'promotions', label: 'Promoții', count: promotionsCount.value, route: '/promotions' },
-    { id: 'news', label: 'Noutăți', route: '/news' },
-    { id: 'events', label: 'Evenimente', route: '/events' },
-    { id: 'tips', label: 'Sfatuti utile', route: '/tips' },
-    { id: 'reviews', label: 'Review-uri', route: '/reviews' },
+    { id: 'promotions', label: t('promotions'), count: promotionsCount.value, route: '/promotions' },
+    { id: 'news', label: t('news'), route: '/news' },
+    { id: 'events', label: t('events'), route: '/events' },
+    { id: 'tips', label: t('useful_tips'), route: '/tips' },
+    { id: 'reviews', label: t('reviews'), route: '/reviews' },
 ]);
 </script>
 
 <template>
-    <Head :title="t('home')" />
+    <Head>
+        <title>{{ seo.title.value }}</title>
+        <meta name="description" :content="seo.description.value" />
+        <meta property="og:title" :content="seo.title.value" />
+        <meta property="og:description" :content="seo.description.value" />
+        <meta property="og:image" :content="seo.image.value" />
+        <meta property="og:url" :content="seo.url.value" />
+        <meta property="og:type" content="website" />
+        <link rel="canonical" :href="seo.url.value" />
+    </Head>
+    
+    <StructuredData type="Organization" :data="organizationStructuredData.value" />
     <div class="flex min-h-screen flex-col">
         <!-- Header with Main Menu -->
         <PublicHeader />
@@ -87,8 +131,6 @@ const tabs = computed(() => [
                 <div class="mb-8">
                     <PromotionCarousel />
                 </div>
-
-
 
                 <!-- Content Grid: Categories (stânga) + Products (dreapta) -->
                 <div class="grid grid-cols-1 gap-6 lg:grid-cols-4">
@@ -113,12 +155,13 @@ const tabs = computed(() => [
                             </h2>
                         </div>
                         <div
-                            v-if="$props.products.length > 0"
+                            v-if="props.products.length > 0"
                             class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
                         >
                             <ProductCard
-                                v-for="product in $props.products"
+                                v-for="product in props.products"
                                 :key="product.id"
+                                :ref="el => { if (el) productCardRefs[product.id] = el; }"
                                 :product="product"
                             />
                         </div>
@@ -134,6 +177,13 @@ const tabs = computed(() => [
                 </div>
             </div>
         </main>
+
+        <!-- Newsletter Form -->
+        <div class="w-full bg-gray-50 dark:bg-gray-900 py-8">
+            <div class="mx-auto max-w-7xl px-4 md:px-6">
+                <NewsletterForm />
+            </div>
+        </div>
 
         <!-- Footer -->
         <AppFooter />

@@ -235,5 +235,76 @@ return [
     'product_removed_from_wishlist' => 'Product removed from wishlist successfully.',
     'error_adding_to_wishlist' => 'Error adding product to wishlist.',
     'error_removing_from_wishlist' => 'Error removing product from wishlist.',
+    
+    // Content Tabs
+    'promotions' => 'Promotions',
+    'news' => 'News',
+    'events' => 'Events',
+    'useful_tips' => 'Useful Tips',
+    'reviews' => 'Reviews',
+    
+    // Promotion Card
+    'days_remaining' => 'Days remaining',
+    'day' => 'day',
+    'days' => 'days',
+    'expired' => 'Expired',
+    'no_deadline' => 'No deadline',
+    'until' => 'Until',
+    'hours' => 'hours',
+    'minutes' => 'minutes',
+    'seconds' => 'seconds',
+    
+    // Login Success Modal
+    'welcome_back' => 'Welcome!',
+    'login_success_message' => 'You have successfully logged in! Here\'s what you can do now:',
+    'quick_shopping' => 'Quick Shopping',
+    'quick_shopping_description' => 'Add products to cart and complete orders easily',
+    'wishlist_feature' => 'Wishlist',
+    'wishlist_feature_description' => 'Save your favorite products for later',
+    'exclusive_offers' => 'Exclusive Offers',
+    'exclusive_offers_description' => 'Receive notifications about promotions and special discounts',
+    'personalized_profile' => 'Personalized Profile',
+    'personalized_profile_description' => 'Manage your addresses and orders in one place',
+    'understood_thanks' => 'Got it, thanks!',
+    
+    // Promotions Page
+    'promotions_title' => 'Promotions',
+    'discover_best_offers_and_promotions' => 'Discover the best offers and available promotions',
+    'no_promotions_available' => 'No promotions available at the moment.',
+    
+    // Pages
+    'pages_title' => 'Pages',
+    'explore_available_pages' => 'Explore available pages on the site',
+    'search_pages' => 'Search pages...',
+    'no_pages_found_for_search' => 'No pages found matching your search.',
+    'clear_search' => 'Clear search',
+    'read_more' => 'Read more →',
+    'page_content_not_available' => 'Page content is not available.',
+    'back_to_pages' => '← Back to pages',
+    'published_on' => 'Published on',
+    'created_on' => 'Created on',
+    
+    // Navigation
+    'about_us_nav' => 'About Us',
+    'categories_nav' => 'Categories',
+    'contact_nav' => 'Contact',
+    'careers' => 'Careers',
+    'blog' => 'Blog',
+    'help_center' => 'Help Center',
+    'shipping' => 'Shipping',
+    'returns' => 'Returns',
+    'faq' => 'FAQ',
+    'terms_and_conditions' => 'Terms and Conditions',
+    'privacy_policy' => 'Privacy Policy',
+    'cookies' => 'Cookies',
+    'gdpr' => 'GDPR',
+    
+    // Newsletter
+    'newsletter_title' => 'Be the first to know about our exclusive offers.',
+    'newsletter_name_placeholder' => 'Name/Surname',
+    'newsletter_phone_placeholder' => 'Phone ex: 079123456',
+    'newsletter_subscribe' => 'Subscribe',
+    'newsletter_privacy_text' => 'I agree with the',
+    'loading' => 'Processing...',
 ];
 

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
+import { useTranslations } from '@/composables/useTranslations';
 
 interface Tab {
     id: string;
@@ -9,22 +10,29 @@ interface Tab {
     route?: string;
 }
 
+const { t } = useTranslations();
+
 const props = withDefaults(
     defineProps<{
         tabs?: Tab[];
         defaultTab?: string;
     }>(),
     {
-        tabs: () => [
-            { id: 'promotions', label: 'Promoții', count: 24, route: '/promotions' },
-            { id: 'news', label: 'Noutăți', route: '/news' },
-            { id: 'events', label: 'Evenimente', route: '/events' },
-            { id: 'tips', label: 'Sfatuti utile', route: '/tips' },
-            { id: 'reviews', label: 'Review-uri', route: '/reviews' },
-        ],
+        tabs: undefined,
         defaultTab: 'promotions',
     },
 );
+
+// Default tabs with translations
+const defaultTabs = computed<Tab[]>(() => [
+    { id: 'promotions', label: t('promotions'), count: 24, route: '/promotions' },
+    { id: 'news', label: t('news'), route: '/news' },
+    { id: 'events', label: t('events'), route: '/events' },
+    { id: 'tips', label: t('useful_tips'), route: '/tips' },
+    { id: 'reviews', label: t('reviews'), route: '/reviews' },
+]);
+
+const tabs = computed(() => props.tabs || defaultTabs.value);
 
 const emit = defineEmits<{
     'update:activeTab': [value: string];
@@ -70,7 +78,7 @@ const setActiveTab = (tabId: string) => {
     emit('update:activeTab', tabId);
     
     // Navigate to route if provided
-    const tab = props.tabs.find(t => t.id === tabId);
+    const tab = tabs.value.find(t => t.id === tabId);
     if (tab?.route) {
         router.visit(tab.route);
     } else if (tabRoutes[tabId]) {
@@ -104,7 +112,7 @@ watch(activeTab, () => {
     <div class="w-full overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         <div
             ref="tabsContainer"
-            class="flex w-full rounded-lg bg-gray-100 p-1 dark:bg-gray-800"
+            class="flex w-full rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600"
         >
             <button
                 v-for="(tab, index) in tabs"
@@ -113,10 +121,12 @@ watch(activeTab, () => {
                 :data-active="isActive(tab.id)"
                 :class="[
                     'relative flex flex-1 items-center justify-center whitespace-nowrap px-3 py-2 text-xs font-medium transition-colors sm:px-4 sm:text-sm',
+                    index === 0 && 'rounded-l-md',
+                    index === tabs.length - 1 && 'rounded-r-md',
                     isActive(tab.id)
-                        ? 'rounded-md bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-white'
-                        : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200',
-                    index > 0 && 'border-l-0 sm:border-l sm:border-gray-300 sm:dark:border-gray-600',
+                        ? 'bg-gray-200 text-gray-900 dark:bg-gray-700 dark:text-white'
+                        : 'bg-white text-gray-900 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700',
+                    index > 0 && 'border-l border-gray-300 dark:border-gray-600',
                 ]"
             >
                 <span>{{ tab.label }}</span>

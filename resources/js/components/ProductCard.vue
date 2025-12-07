@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { ShoppingCart, Heart } from 'lucide-vue-next';
 import { Link } from '@inertiajs/vue3';
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useTranslations } from '@/composables/useTranslations';
 
 interface Product {
@@ -87,33 +87,11 @@ const addToCart = async () => {
     }
 };
 
+// Wishlist status will be set by parent component via provide/inject or props
+// This function is kept for backward compatibility but won't be called automatically
 const checkWishlistStatus = async () => {
-    if (!props.product.id) return;
-    
-    try {
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-        
-        if (!csrfToken) {
-            return;
-        }
-
-        const response = await fetch(`/wishlist/check/${props.product.id}`, {
-            method: 'GET',
-            headers: {
-                'Accept': 'application/json',
-                'X-CSRF-TOKEN': csrfToken,
-                'X-Requested-With': 'XMLHttpRequest',
-            },
-            credentials: 'same-origin',
-        });
-
-        if (response.ok) {
-            const data = await response.json();
-            isInWishlist.value = data.in_wishlist || false;
-        }
-    } catch (error) {
-        console.error('Error checking wishlist status:', error);
-    }
+    // This is now handled by batch checking in parent components
+    // Kept for manual refresh if needed
 };
 
 const toggleWishlist = async (event: Event) => {
@@ -147,6 +125,10 @@ const toggleWishlist = async (event: Event) => {
 
             if (response.ok) {
                 isInWishlist.value = false;
+                // Update cache in batch composable if available
+                if (window.wishlistBatchUpdate) {
+                    window.wishlistBatchUpdate(props.product.id, false);
+                }
             }
         } else {
             // Add to wishlist
@@ -166,6 +148,10 @@ const toggleWishlist = async (event: Event) => {
 
             if (response.ok) {
                 isInWishlist.value = true;
+                // Update cache in batch composable if available
+                if (window.wishlistBatchUpdate) {
+                    window.wishlistBatchUpdate(props.product.id, true);
+                }
             }
         }
     } catch (error) {
@@ -175,8 +161,12 @@ const toggleWishlist = async (event: Event) => {
     }
 };
 
-onMounted(() => {
-    checkWishlistStatus();
+// Expose method to set wishlist status from parent
+defineExpose({
+    setWishlistStatus: (status: boolean) => {
+        isInWishlist.value = status;
+    },
+    getWishlistStatus: () => isInWishlist.value,
 });
 </script>
 
@@ -186,13 +176,15 @@ onMounted(() => {
             <img
                 :src="product.image"
                 :alt="product.name"
+                loading="lazy"
+                decoding="async"
                 class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
             />
             <div
                 v-if="!isInStock"
                 class="absolute left-2 top-2 rounded bg-gray-600 px-2 py-1 text-xs font-bold text-white"
             >
-                Nu este în stoc
+                {{ t('not_in_stock') }}
             </div>
             <div
                 v-else-if="product.discount"
@@ -248,7 +240,7 @@ onMounted(() => {
                 @click="addToCart"
             >
                 <ShoppingCart class="mr-2 h-4 w-4" />
-                {{ !isInStock ? 'Nu este în stoc' : (loading ? t('adding_to_cart') : t('add_to_cart')) }}
+                {{ !isInStock ? t('not_in_stock') : (loading ? t('adding_to_cart') : t('add_to_cart')) }}
             </Button>
             <Button variant="outline" size="sm" as-child>
                 <Link :href="`/products/${product.slug || product.id}`">{{ t('details') }}</Link>

@@ -4,6 +4,7 @@ import PublicHeader from '@/components/PublicHeader.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
 import { Search } from 'lucide-vue-next';
+import { useTranslations } from '@/composables/useTranslations';
 
 interface Page {
     id: number;
@@ -20,6 +21,7 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+const { t } = useTranslations();
 const searchQuery = ref('');
 
 const filteredPages = computed(() => {
@@ -41,7 +43,7 @@ const handleSearch = () => {
 </script>
 
 <template>
-    <Head title="Pagini" />
+    <Head :title="t('pages_title')" />
     <div class="flex min-h-screen flex-col">
         <PublicHeader />
 
@@ -50,10 +52,10 @@ const handleSearch = () => {
                 <!-- Header -->
                 <div class="mb-8">
                     <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
-                        Pagini
+                        {{ t('pages_title') }}
                     </h1>
                     <p class="mt-2 text-gray-600 dark:text-gray-400">
-                        Explorează paginile disponibile pe site
+                        {{ t('explore_available_pages') }}
                     </p>
                 </div>
 
@@ -64,7 +66,7 @@ const handleSearch = () => {
                         <input
                             v-model="searchQuery"
                             type="text"
-                            placeholder="Caută pagini..."
+                            :placeholder="t('search_pages')"
                             class="w-full rounded-lg border border-gray-300 bg-white py-2 pl-10 pr-4 text-gray-900 placeholder-gray-500 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400"
                             @input="handleSearch"
                         />
@@ -96,10 +98,10 @@ const handleSearch = () => {
                             </p>
                             <div class="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
                                 <span v-if="page.published_at">
-                                    Publicat: {{ new Date(page.published_at).toLocaleDateString('ro-RO') }}
+                                    {{ t('published_on') }}: {{ new Date(page.published_at).toLocaleDateString('ro-RO') }}
                                 </span>
                                 <span class="text-primary-600 hover:text-primary-700 dark:text-primary-400">
-                                    Citește mai mult →
+                                    {{ t('read_more') }}
                                 </span>
                             </div>
                         </Link>
@@ -112,7 +114,7 @@ const handleSearch = () => {
                     class="flex flex-col items-center justify-center py-12"
                 >
                     <p class="text-lg text-gray-500 dark:text-gray-400">
-                        Nu există pagini disponibile momentan.
+                        {{ t('no_pages_available') }}
                     </p>
                 </div>
                 <div
@@ -120,13 +122,13 @@ const handleSearch = () => {
                     class="flex flex-col items-center justify-center py-12"
                 >
                     <p class="text-lg text-gray-500 dark:text-gray-400">
-                        Nu s-au găsit pagini care să corespundă căutării.
+                        {{ t('no_pages_found_for_search') }}
                     </p>
                     <button
                         @click="searchQuery = ''"
                         class="mt-4 text-primary-600 hover:text-primary-700 dark:text-primary-400"
                     >
-                        Șterge căutarea
+                        {{ t('clear_search') }}
                     </button>
                 </div>
             </div>
