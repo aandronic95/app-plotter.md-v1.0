@@ -105,6 +105,47 @@ class SiteSettingResource extends Resource
                             ->columnSpanFull(),
                     ])->columns(2),
 
+                Section::make('Contacte Header')
+                    ->description('Informațiile de contact afișate în header-ul site-ului')
+                    ->schema([
+                        Forms\Components\TextInput::make('header_contact_1_phone')
+                            ->label('Telefon Contact 1 (Sales)')
+                            ->tel()
+                            ->maxLength(50)
+                            ->placeholder('+373 68 582 157')
+                            ->helperText('Telefon pentru contactul de vânzări'),
+                        Forms\Components\TextInput::make('header_contact_1_email')
+                            ->label('Email Contact 1 (Sales)')
+                            ->email()
+                            ->maxLength(255)
+                            ->placeholder('sales@plotter.md')
+                            ->helperText('Email pentru contactul de vânzări'),
+                        Forms\Components\TextInput::make('header_contact_2_phone')
+                            ->label('Telefon Contact 2 (Info)')
+                            ->tel()
+                            ->maxLength(50)
+                            ->placeholder('+373 60 169 285')
+                            ->helperText('Telefon pentru informații'),
+                        Forms\Components\TextInput::make('header_contact_2_email')
+                            ->label('Email Contact 2 (Info)')
+                            ->email()
+                            ->maxLength(255)
+                            ->placeholder('info@plotter.md')
+                            ->helperText('Email pentru informații'),
+                        Forms\Components\TextInput::make('header_contact_3_phone')
+                            ->label('Telefon Contact 3 (Office)')
+                            ->tel()
+                            ->maxLength(50)
+                            ->placeholder('+373 60 169 285')
+                            ->helperText('Telefon pentru birou'),
+                        Forms\Components\TextInput::make('header_contact_3_email')
+                            ->label('Email Contact 3 (Office)')
+                            ->email()
+                            ->maxLength(255)
+                            ->placeholder('office@plotter.md')
+                            ->helperText('Email pentru birou'),
+                    ])->columns(2),
+
                 Section::make('Rețele sociale')
                     ->schema([
                         Forms\Components\TextInput::make('site_facebook')

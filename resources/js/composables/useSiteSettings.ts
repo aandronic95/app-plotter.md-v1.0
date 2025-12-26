@@ -23,6 +23,12 @@ interface SiteSettings {
     show_newsletter_form: boolean;
     loading_text_main: string | null;
     loading_text_sub: string | null;
+    header_contact_1_phone: string | null;
+    header_contact_1_email: string | null;
+    header_contact_2_phone: string | null;
+    header_contact_2_email: string | null;
+    header_contact_3_phone: string | null;
+    header_contact_3_email: string | null;
 }
 
 // Singleton pattern - shared state across all components
@@ -169,6 +175,12 @@ export const useSiteSettings = () => {
                     show_newsletter_form: true,
                     loading_text_main: 'tanavius',
                     loading_text_sub: 'www.plotter.md',
+                    header_contact_1_phone: null,
+                    header_contact_1_email: null,
+                    header_contact_2_phone: null,
+                    header_contact_2_email: null,
+                    header_contact_3_phone: null,
+                    header_contact_3_email: null,
                 };
                 return siteSettings.value;
             } finally {

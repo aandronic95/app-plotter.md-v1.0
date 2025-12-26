@@ -27,7 +27,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { home, register, dashboard, login, logout } from '@/routes';
 import { Link, router, usePage } from '@inertiajs/vue3';
-import { Menu, Search, ShoppingCart, User, Package, FileText, List, ChevronDown, ChevronRight, Sun, Moon } from 'lucide-vue-next';
+import { Menu, Phone, Search, ShoppingCart, User, Package, FileText, List, ChevronDown, ChevronRight, Sun, Moon, LogOut } from 'lucide-vue-next';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useSiteSettings } from '@/composables/useSiteSettings';
 import { useAppearance } from '@/composables/useAppearance';
@@ -79,6 +79,19 @@ const { siteSettings, fetchSiteSettings } = useSiteSettings();
 const { appearance, updateAppearance } = useAppearance();
 const { t } = useTranslations();
 const cacheManager = useCacheManager();
+
+// Check if there are any header contacts to display
+const hasHeaderContacts = computed(() => {
+    if (!siteSettings.value) return false;
+    return !!(
+        siteSettings.value.header_contact_1_phone ||
+        siteSettings.value.header_contact_1_email ||
+        siteSettings.value.header_contact_2_phone ||
+        siteSettings.value.header_contact_2_email ||
+        siteSettings.value.header_contact_3_phone ||
+        siteSettings.value.header_contact_3_email
+    );
+});
 
 // Dark mode toggle
 const isDark = computed(() => {
@@ -328,99 +341,146 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <header class="sticky top-0 z-50 border-b border-gray-200/80 bg-white/80 backdrop-blur-md shadow-sm transition-all duration-300 dark:border-gray-700/80 dark:bg-gray-900/80">
-        <div class="mx-auto max-w-7xl px-4 md:px-6">
-            <div class="flex h-16 items-center justify-between">
-                <!-- Logo -->
-                <Link :href="home()" class="group flex items-center gap-2 transition-transform duration-200 hover:scale-105">
-                    <div
-                        v-if="siteSettings?.site_logo && (siteSettings?.show_logo ?? true)"
-                        class="flex h-10 w-auto items-center transition-opacity duration-200 group-hover:opacity-90"
-                    >
-                        <img
-                            :src="siteSettings.site_logo"
-                            :alt="siteSettings.site_name || 'Logo'"
-                            class="h-full w-auto object-contain"
-                        />
-                    </div>
-                    <AppLogo v-else-if="siteSettings?.show_logo ?? true" />
-                    <span
-                        v-if="siteSettings?.site_name && (siteSettings?.show_site_name ?? true)"
-                        class="hidden bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-lg font-bold text-transparent transition-all duration-200 group-hover:from-primary group-hover:to-primary/80 dark:from-white dark:to-gray-300 sm:block"
-                    >
-                        {{ siteSettings.site_name }}
-                    </span>
-                </Link>
-
-                <!-- Categories Dropdown -->
-                <div class="hidden md:block">
-                    <DropdownMenu v-if="!isCategoriesLoading && categories.length > 0">
-                        <DropdownMenuTrigger as-child>
-                            <Button variant="ghost" size="sm" class="h-9 transition-all duration-200 hover:bg-primary/10 hover:text-primary">
-                                <List class="mr-2 h-4 w-4 transition-transform duration-200 group-hover:rotate-12" />
-                                {{ t('categories') }}
-                                <ChevronDown class="ml-2 h-4 w-4 transition-transform duration-200" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="start" class="w-56 max-h-[80vh] overflow-y-auto border-gray-200/50 bg-white/95 backdrop-blur-sm dark:border-gray-700/50 dark:bg-gray-900/95">
-                            <template v-for="category in categories" :key="category.name">
-                                <DropdownMenuSub v-if="category.items && category.items.length > 0">
-                                    <DropdownMenuSubTrigger class="transition-colors duration-150 hover:bg-primary/5">
-                                        {{ category.name }}
-                                    </DropdownMenuSubTrigger>
-                                    <DropdownMenuSubContent class="border-gray-200/50 bg-white/95 backdrop-blur-sm dark:border-gray-700/50 dark:bg-gray-900/95">
-                                        <DropdownMenuItem
-                                            v-for="item in category.items"
-                                            :key="item.id"
-                                            as-child
-                                            class="transition-colors duration-150"
-                                        >
-                                            <Link
-                                                :href="item.href"
-                                                :target="item.is_external ? (item.target || '_blank') : '_self'"
-                                                :rel="item.is_external ? 'noopener noreferrer' : undefined"
-                                                class="transition-colors duration-150 hover:bg-primary/5 hover:text-primary"
-                                            >
-                                                {{ item.title }}
-                                            </Link>
-                                        </DropdownMenuItem>
-                                    </DropdownMenuSubContent>
-                                </DropdownMenuSub>
-                                <template v-else>
-                                    <DropdownMenuItem disabled class="opacity-50">
-                                        {{ category.name }}
-                                    </DropdownMenuItem>
-                                </template>
-                            </template>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
-
-                <!-- Desktop Navigation -->
-                <nav v-if="!isLoading && menuItems.length > 0" class="hidden items-center gap-1 md:flex">
-                    <Link
-                        v-for="item in menuItems"
-                        :key="item.id"
-                        :href="item.href"
-                        :target="item.is_external ? (item.target || '_blank') : '_self'"
-                        :rel="item.is_external ? 'noopener noreferrer' : undefined"
-                        class="group relative rounded-md px-3 py-2 text-sm font-medium text-gray-700 transition-all duration-200 hover:bg-primary/5 hover:text-primary dark:text-gray-300 dark:hover:text-white"
-                    >
-                        <span class="relative z-10">{{ item.title }}</span>
-                        <span class="absolute inset-x-0 bottom-0 h-0.5 origin-left scale-x-0 bg-gradient-to-r from-primary to-primary/50 transition-transform duration-200 group-hover:scale-x-100"></span>
+    <header class="sticky top-0 z-50 shadow-sm transition-all duration-300">
+        <!-- Top bar with logo and contacts -->
+        <div class="bg-gray-900 dark:bg-gray-950 border-b border-gray-800/50">
+            <div class="mx-auto max-w-7xl px-4 md:px-6">
+                <div class="flex h-12 items-center justify-between">
+                    <!-- Logo -->
+                    <Link :href="home()" class="group flex items-center gap-2 transition-transform duration-200 hover:scale-105">
+                        <div
+                            v-if="siteSettings?.site_logo && (siteSettings?.show_logo ?? true)"
+                            class="flex h-10 w-auto items-center transition-opacity duration-200 group-hover:opacity-90"
+                        >
+                            <img
+                                :src="siteSettings.site_logo"
+                                :alt="siteSettings.site_name || 'Logo'"
+                                class="h-full w-auto object-contain"
+                            />
+                        </div>
+                        <AppLogo v-else-if="siteSettings?.show_logo ?? true" />
+                        <span
+                            v-if="siteSettings?.site_name && (siteSettings?.show_site_name ?? true)"
+                            class="hidden text-lg font-bold text-white transition-all duration-200 group-hover:text-primary/80 sm:block"
+                        >
+                            {{ siteSettings.site_name }}
+                        </span>
                     </Link>
-                </nav>
-                <div v-else-if="isLoading" class="hidden items-center gap-6 md:flex">
-                    <div class="h-4 w-20 animate-pulse rounded-md bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700"></div>
-                    <div class="h-4 w-20 animate-pulse rounded-md bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700"></div>
-                    <div class="h-4 w-20 animate-pulse rounded-md bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700"></div>
-                </div>
-                <div v-else-if="menuItems.length === 0" class="hidden items-center gap-6 md:flex">
-                    <span class="text-sm text-gray-500">{{ t('no_navigation_items') }}</span>
-                </div>
 
-                <!-- Right Side Actions -->
-                <div class="flex items-center gap-2">
+                    <!-- Contact Information Columns -->
+                    <div v-if="hasHeaderContacts" class="flex-1 items-center justify-center gap-6 hidden lg:flex">
+                        <div v-if="siteSettings?.header_contact_1_phone || siteSettings?.header_contact_1_email" class="flex items-center gap-2">
+                            <Phone class="h-5 w-5 text-white" />
+                            <div class="flex flex-col">
+                                <a
+                                    v-if="siteSettings?.header_contact_1_phone"
+                                    :href="`tel:${siteSettings.header_contact_1_phone.replace(/\s/g, '')}`"
+                                    class="text-sm font-bold text-white hover:text-primary/80 transition-colors duration-200"
+                                >
+                                    {{ siteSettings.header_contact_1_phone }}
+                                </a>
+                                <a
+                                    v-if="siteSettings?.header_contact_1_email"
+                                    :href="`mailto:${siteSettings.header_contact_1_email}`"
+                                    class="text-xs text-gray-300 hover:text-primary/80 transition-colors duration-200"
+                                >
+                                    {{ siteSettings.header_contact_1_email }}
+                                </a>
+                            </div>
+                        </div>
+                        <div v-if="siteSettings?.header_contact_2_phone || siteSettings?.header_contact_2_email" class="flex items-center gap-2">
+                            <Phone class="h-5 w-5 text-white" />
+                            <div class="flex flex-col">
+                                <a
+                                    v-if="siteSettings?.header_contact_2_phone"
+                                    :href="`tel:${siteSettings.header_contact_2_phone.replace(/\s/g, '')}`"
+                                    class="text-sm font-bold text-white hover:text-primary/80 transition-colors duration-200"
+                                >
+                                    {{ siteSettings.header_contact_2_phone }}
+                                </a>
+                                <a
+                                    v-if="siteSettings?.header_contact_2_email"
+                                    :href="`mailto:${siteSettings.header_contact_2_email}`"
+                                    class="text-xs text-gray-300 hover:text-primary/80 transition-colors duration-200"
+                                >
+                                    {{ siteSettings.header_contact_2_email }}
+                                </a>
+                            </div>
+                        </div>
+                        <div v-if="siteSettings?.header_contact_3_phone || siteSettings?.header_contact_3_email" class="flex items-center gap-2">
+                            <Phone class="h-5 w-5 text-white" />
+                            <div class="flex flex-col">
+                                <a
+                                    v-if="siteSettings?.header_contact_3_phone"
+                                    :href="`tel:${siteSettings.header_contact_3_phone.replace(/\s/g, '')}`"
+                                    class="text-sm font-bold text-white hover:text-primary/80 transition-colors duration-200"
+                                >
+                                    {{ siteSettings.header_contact_3_phone }}
+                                </a>
+                                <a
+                                    v-if="siteSettings?.header_contact_3_email"
+                                    :href="`mailto:${siteSettings.header_contact_3_email}`"
+                                    class="text-xs text-gray-300 hover:text-primary/80 transition-colors duration-200"
+                                >
+                                    {{ siteSettings.header_contact_3_email }}
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main header bar with actions -->
+        <div class="border-b border-gray-200/80 bg-white/80 backdrop-blur-md dark:border-gray-700/80 dark:bg-gray-900/80">
+            <div class="mx-auto max-w-7xl px-4 md:px-6">
+                <div class="flex h-16 items-center justify-between">
+                    <!-- Categories Dropdown -->
+                    <div class="hidden md:block">
+                        <DropdownMenu v-if="!isCategoriesLoading && categories.length > 0">
+                            <DropdownMenuTrigger as-child>
+                                <Button variant="ghost" size="sm" class="h-9 transition-all duration-200 hover:bg-primary/10 hover:text-primary">
+                                    <List class="mr-2 h-4 w-4 transition-transform duration-200 group-hover:rotate-12" />
+                                    {{ t('categories') }}
+                                    <ChevronDown class="ml-2 h-4 w-4 transition-transform duration-200" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="start" class="w-56 max-h-[80vh] overflow-y-auto border-gray-200/50 bg-white/95 backdrop-blur-sm dark:border-gray-700/50 dark:bg-gray-900/95">
+                                <template v-for="category in categories" :key="category.name">
+                                    <DropdownMenuSub v-if="category.items && category.items.length > 0">
+                                        <DropdownMenuSubTrigger class="transition-colors duration-150 hover:bg-primary/5">
+                                            {{ category.name }}
+                                        </DropdownMenuSubTrigger>
+                                        <DropdownMenuSubContent class="border-gray-200/50 bg-white/95 backdrop-blur-sm dark:border-gray-700/50 dark:bg-gray-900/95">
+                                            <DropdownMenuItem
+                                                v-for="item in category.items"
+                                                :key="item.id"
+                                                as-child
+                                                class="transition-colors duration-150"
+                                            >
+                                                <Link
+                                                    :href="item.href"
+                                                    :target="item.is_external ? (item.target || '_blank') : '_self'"
+                                                    :rel="item.is_external ? 'noopener noreferrer' : undefined"
+                                                    class="transition-colors duration-150 hover:bg-primary/5 hover:text-primary"
+                                                >
+                                                    {{ item.title }}
+                                                </Link>
+                                            </DropdownMenuItem>
+                                        </DropdownMenuSubContent>
+                                    </DropdownMenuSub>
+                                    <template v-else>
+                                        <DropdownMenuItem disabled class="opacity-50">
+                                            {{ category.name }}
+                                        </DropdownMenuItem>
+                                    </template>
+                                </template>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+
+                    <!-- Right Side Actions -->
+                    <div class="flex items-center gap-2">
                     <!-- Search Dialog -->
                     <Dialog :open="isSearchOpen" @update:open="isSearchOpen = $event">
                         <DialogTrigger :as-child="true">
@@ -710,17 +770,18 @@ onUnmounted(() => {
                                 
                                 <div class="mt-6 space-y-2 border-t border-gray-200 pt-4 dark:border-gray-700">
                                     <template v-if="auth.user">
-                                        <Link href="/profile">
-                                            <Button class="w-full transition-all duration-200 hover:scale-[1.02]" variant="outline">
-                                                <User class="mr-2 h-4 w-4" />
-                                                {{ t('my_profile') }}
-                                            </Button>
-                                        </Link>
-                                        <form @submit.prevent="() => { cacheManager.invalidateOnAuthChange(); router.post(logout().url); }">
-                                            <Button type="submit" class="w-full transition-all duration-200 hover:scale-[1.02]" variant="ghost">
-                                                {{ t('logout') }}
-                                            </Button>
-                                        </form>
+                                        <div class="flex gap-2">
+                                            <Link href="/profile">
+                                                <Button size="icon" class="transition-all duration-200 hover:scale-105 hover:border-primary hover:text-primary" :title="t('my_profile')" variant="outline">
+                                                    <User class="h-4 w-4" />
+                                                </Button>
+                                            </Link>
+                                            <form @submit.prevent="() => { cacheManager.invalidateOnAuthChange(); router.post(logout().url); }" class="inline">
+                                                <Button type="submit" size="icon" class="transition-all duration-200 hover:scale-105 hover:bg-primary/10 hover:text-primary" :title="t('logout')" variant="ghost">
+                                                    <LogOut class="h-4 w-4" />
+                                                </Button>
+                                            </form>
+                                        </div>
                                     </template>
                                     <template v-else>
                                         <Link :href="login().url">
@@ -741,14 +802,13 @@ onUnmounted(() => {
                     <div class="hidden items-center gap-2 md:flex">
                         <template v-if="auth.user">
                             <Link href="/profile">
-                                <Button variant="outline" size="sm" class="transition-all duration-200 hover:scale-105 hover:border-primary hover:text-primary">
-                                    <User class="mr-2 h-4 w-4" />
-                                    {{ t('my_profile') }}
+                                <Button variant="outline" size="icon" class="transition-all duration-200 hover:scale-105 hover:border-primary hover:text-primary" :title="t('my_profile')">
+                                    <User class="h-5 w-5" />
                                 </Button>
                             </Link>
                             <form @submit.prevent="() => { cacheManager.invalidateOnAuthChange(); router.post(logout().url); }" class="inline">
-                                <Button type="submit" variant="ghost" size="sm" class="transition-all duration-200 hover:bg-primary/10 hover:text-primary">
-                                    {{ t('logout') }}
+                                <Button type="submit" variant="ghost" size="icon" class="transition-all duration-200 hover:bg-primary/10 hover:text-primary" :title="t('logout')">
+                                    <LogOut class="h-5 w-5" />
                                 </Button>
                             </form>
                         </template>
@@ -768,6 +828,35 @@ onUnmounted(() => {
                 </div>
             </div>
         </div>
+
+        <!-- Desktop Navigation Bar -->
+        <div class="hidden border-b border-gray-200/80 bg-[#6B7A47] md:block">
+            <div class="mx-auto max-w-7xl px-4 md:px-6">
+                <nav v-if="!isLoading && menuItems.length > 0" class="flex h-12 items-center justify-center gap-1">
+                    <Link
+                        v-for="item in menuItems"
+                        :key="item.id"
+                        :href="item.href"
+                        :target="item.is_external ? (item.target || '_blank') : '_self'"
+                        :rel="item.is_external ? 'noopener noreferrer' : undefined"
+                        class="group relative flex items-center gap-1.5 rounded-md px-4 py-2 text-sm font-semibold uppercase tracking-wide text-white transition-all duration-200 hover:bg-white/10"
+                    >
+                        <span>{{ item.title }}</span>
+                        <ChevronDown class="h-4 w-4 transition-transform duration-200 group-hover:rotate-180" />
+                    </Link>
+                </nav>
+                <div v-else-if="isLoading" class="flex h-12 items-center gap-6">
+                    <div class="h-4 w-20 animate-pulse rounded-md bg-white/20"></div>
+                    <div class="h-4 w-20 animate-pulse rounded-md bg-white/20"></div>
+                    <div class="h-4 w-20 animate-pulse rounded-md bg-white/20"></div>
+                </div>
+                <div v-else-if="menuItems.length === 0" class="flex h-12 items-center">
+                    <span class="text-sm text-white/70">{{ t('no_navigation_items') }}</span>
+                </div>
+            </div>
+        </div>
+
+        
     </header>
 </template>
 

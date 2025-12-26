@@ -27,7 +27,6 @@ class UserFactory extends Factory
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => static::$password ??= 'password',
-            'role' => 'user',
             'remember_token' => Str::random(10),
             'two_factor_secret' => Str::random(10),
             'two_factor_recovery_codes' => Str::random(10),
@@ -59,11 +58,12 @@ class UserFactory extends Factory
 
     /**
      * Indicate that the user should be an admin.
+     * Note: The role is assigned using Spatie Permissions, not a column.
      */
     public function admin(): static
     {
         return $this->state(fn (array $attributes) => [
-            'role' => 'admin',
+            // Role is assigned via assignRole() method, not stored in a column
         ]);
     }
 }

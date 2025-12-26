@@ -36,6 +36,7 @@ class DatabaseSeeder extends Seeder
             CategorySeeder::class,
             ProductSeeder::class,
             NavigationSeeder::class,
+            HeroBannerSeeder::class,
         ]);
     }
 }

@@ -16,6 +16,7 @@ import { computed, onMounted, ref } from 'vue';
 import { ChevronDown, ChevronRight, List } from 'lucide-vue-next';
 import * as lucideIcons from 'lucide-vue-next';
 import { useTranslations } from '@/composables/useTranslations';
+import { useApiCache } from '@/composables/useApiCache';
 
 interface NavigationItem {
     id: number;
@@ -38,6 +39,7 @@ const props = defineProps<{
 
 const page = usePage();
 const { t } = useTranslations();
+const apiCache = useApiCache();
 const navigationItems = ref<NavigationItem[]>([]);
 const isLoading = ref(true);
 const categories = ref<CategoryGroup[]>([]);
@@ -61,58 +63,93 @@ const getIconComponent = (iconName?: string) => {
     return IconComponent || null;
 };
 
-// Fetch navigation items from API
+// Fetch navigation items from API with cache
 const fetchNavigationItems = async () => {
     try {
         const group = props.group || 'main';
-        const response = await fetch(`/api/navigations?group=${group}`);
-        const data = await response.json();
-        navigationItems.value = data.data || [];
+        const data = await apiCache.fetchWithCache<{ data: NavigationItem[] }>(
+            `/api/navigations?group=${group}`,
+            {
+                key: `nav_${group}_api_cache`,
+                ttl: 2 * 60 * 60 * 1000, // 2 hours
+                version: '1.0',
+            }
+        );
+        
+        if (data.data && Array.isArray(data.data) && data.data.length > 0) {
+            navigationItems.value = data.data;
+        } else {
+            // Fallback to props.items if API returns empty
+            if (props.items) {
+                navigationItems.value = props.items.map(item => ({
+                    id: Math.random(),
+                    title: item.title,
+                    href: item.href as string,
+                    icon: item.icon?.name,
+                }));
+            } else {
+                navigationItems.value = [];
+            }
+        }
     } catch (error) {
         console.error('Error fetching navigation items:', error);
-        // Fallback to props.items if API fails
-        if (props.items) {
+        // Try to load from cache as fallback
+        const cached = apiCache.loadFromCache<{ data: NavigationItem[] }>({
+            key: `nav_${props.group || 'main'}_api_cache`,
+            ttl: 2 * 60 * 60 * 1000,
+        });
+        
+        if (cached?.data && Array.isArray(cached.data) && cached.data.length > 0) {
+            navigationItems.value = cached.data;
+        } else if (props.items) {
+            // Fallback to props.items if API fails
             navigationItems.value = props.items.map(item => ({
                 id: Math.random(),
                 title: item.title,
                 href: item.href as string,
                 icon: item.icon?.name,
             }));
+        } else {
+            navigationItems.value = [];
         }
     } finally {
         isLoading.value = false;
     }
 };
 
-// Fetch categories from API
+// Fetch categories from API with cache
 const fetchCategories = async () => {
     try {
         isCategoriesLoading.value = true;
         const group = props.group || 'main';
-        const url = `/api/navigations/categories?group=${group}`;
-        console.log('Fetching categories from:', url);
         
-        const response = await fetch(url);
-        
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('HTTP error:', response.status, errorText);
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        console.log('Categories API response:', data);
+        const data = await apiCache.fetchWithCache<{ data: CategoryGroup[] }>(
+            `/api/navigations/categories?group=${group}`,
+            {
+                key: `nav_categories_${group}_api_cache`,
+                ttl: 2 * 60 * 60 * 1000, // 2 hours
+                version: '1.0',
+            }
+        );
         
         if (data.data && Array.isArray(data.data) && data.data.length > 0) {
             categories.value = data.data;
-            console.log('Categories loaded successfully:', categories.value.length, 'categories');
         } else {
-            console.warn('No categories found in response:', data);
             categories.value = [];
         }
     } catch (error) {
         console.error('Error fetching categories:', error);
-        categories.value = [];
+        // Try to load from cache as fallback
+        const cached = apiCache.loadFromCache<{ data: CategoryGroup[] }>({
+            key: `nav_categories_${props.group || 'main'}_api_cache`,
+            ttl: 2 * 60 * 60 * 1000,
+        });
+        
+        if (cached?.data && Array.isArray(cached.data) && cached.data.length > 0) {
+            categories.value = cached.data;
+        } else {
+            categories.value = [];
+        }
     } finally {
         isCategoriesLoading.value = false;
     }

@@ -13,6 +13,7 @@ import { useSEO } from '@/composables/useSEO';
 import { useWishlistBatch } from '@/composables/useWishlistBatch';
 import { ref, computed, onMounted, nextTick } from 'vue';
 import StructuredData from '@/components/StructuredData.vue';
+import HeroBanner from '@/components/HeroBanner.vue';
 
 interface Product {
     id: number;
@@ -129,7 +130,10 @@ const tabs = computed(() => [
             <div class="mx-auto max-w-7xl px-4 py-6 md:px-6">
                 <!-- Carousel cu Promoții -->
                 <div class="mb-8">
+                    
                     <PromotionCarousel />
+                    <!-- Hero Banner Section -->
+                    <HeroBanner />  
                 </div>
 
                 <!-- Content Grid: Categories (stânga) + Products (dreapta) -->

@@ -37,6 +37,12 @@ class SiteSetting extends Model
         'show_newsletter_form',
         'loading_text_main',
         'loading_text_sub',
+        'header_contact_1_phone',
+        'header_contact_1_email',
+        'header_contact_2_phone',
+        'header_contact_2_email',
+        'header_contact_3_phone',
+        'header_contact_3_email',
     ];
 
     /**

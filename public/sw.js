@@ -3,7 +3,7 @@
  * This enables offline functionality and faster subsequent loads
  */
 
-const CACHE_VERSION = 'v1.0.2';
+const CACHE_VERSION = 'v1.0.4';
 const CACHE_NAME = `app-plotter-${CACHE_VERSION}`;
 
 // API endpoints to cache

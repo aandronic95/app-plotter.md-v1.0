@@ -41,6 +41,12 @@ class SiteSettingController extends Controller
                 'show_newsletter_form' => $settings->show_newsletter_form ?? true,
                 'loading_text_main' => $settings->loading_text_main ?? 'tanavius',
                 'loading_text_sub' => $settings->loading_text_sub ?? 'www.plotter.md',
+                'header_contact_1_phone' => $settings->header_contact_1_phone,
+                'header_contact_1_email' => $settings->header_contact_1_email,
+                'header_contact_2_phone' => $settings->header_contact_2_phone,
+                'header_contact_2_email' => $settings->header_contact_2_email,
+                'header_contact_3_phone' => $settings->header_contact_3_phone,
+                'header_contact_3_email' => $settings->header_contact_3_email,
             ],
         ]);
     }

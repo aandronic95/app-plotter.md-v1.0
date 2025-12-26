@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\HeroBannerController;
 use App\Http\Controllers\Api\NavigationController;
 use App\Http\Controllers\Api\PageController;
 use App\Http\Controllers\Api\ProductController as ApiProductController;
@@ -116,6 +117,13 @@ Route::post('api/promotions', [PromotionController::class, 'store'])->name('api.
 Route::get('api/promotions/{promotion}', [PromotionController::class, 'show'])->name('api.promotions.show');
 Route::put('api/promotions/{promotion}', [PromotionController::class, 'update'])->name('api.promotions.update');
 Route::delete('api/promotions/{promotion}', [PromotionController::class, 'destroy'])->name('api.promotions.destroy');
+
+// Hero Banners API routes
+Route::get('api/hero-banners', [HeroBannerController::class, 'index'])->name('api.hero-banners.index');
+Route::post('api/hero-banners', [HeroBannerController::class, 'store'])->name('api.hero-banners.store');
+Route::get('api/hero-banners/{heroBanner}', [HeroBannerController::class, 'show'])->name('api.hero-banners.show');
+Route::put('api/hero-banners/{heroBanner}', [HeroBannerController::class, 'update'])->name('api.hero-banners.update');
+Route::delete('api/hero-banners/{heroBanner}', [HeroBannerController::class, 'destroy'])->name('api.hero-banners.destroy');
 
 // Newsletter API routes
 Route::post('api/newsletter', [\App\Http\Controllers\Api\NewsletterController::class, 'store'])->name('api.newsletter.store');
