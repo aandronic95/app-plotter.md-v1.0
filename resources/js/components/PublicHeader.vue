@@ -830,7 +830,7 @@ onUnmounted(() => {
         </div>
 
         <!-- Desktop Navigation Bar -->
-        <div class="hidden border-b border-gray-200/80 bg-[#6B7A47] md:block">
+        <div class="hidden border-b border-gray-200/80 bg-primary md:block">
             <div class="mx-auto max-w-7xl px-4 md:px-6">
                 <nav v-if="!isLoading && menuItems.length > 0" class="flex h-12 items-center justify-center gap-1">
                     <Link
