@@ -27,14 +27,16 @@ class ContentSecurityPolicy
         }
         
         $connectSrc = ["'self'", "ws:", "wss:"];
-        $viteHost = $this->getViteHost();
-        if ($viteHost) {
-            $connectSrc[] = $viteHost;
+        $viteHosts = $this->getViteHosts();
+        if (!empty($viteHosts)) {
+            $scriptSrc = array_merge($scriptSrc, $viteHosts);
+            $connectSrc = array_merge($connectSrc, $viteHosts);
         }
         
         $directives = [
             "default-src 'self'",
             "script-src " . implode(' ', $scriptSrc),
+            "script-src-elem " . implode(' ', $scriptSrc),
             "style-src 'self' 'unsafe-inline' https://fonts.bunny.net",
             "font-src 'self' https://fonts.bunny.net data:",
             "img-src 'self' data: blob: https:",
@@ -49,6 +51,13 @@ class ContentSecurityPolicy
         $csp = implode('; ', $directives);
 
         $response->headers->set('Content-Security-Policy', $csp);
+        
+        // Prevent caching of CSP headers in development to avoid stale policies
+        if ($this->isDevelopment()) {
+            $response->headers->set('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0');
+            $response->headers->set('Pragma', 'no-cache');
+            $response->headers->set('Expires', '0');
+        }
 
         return $response;
     }
@@ -58,23 +67,47 @@ class ContentSecurityPolicy
      */
     private function allowUnsafeEval(): bool
     {
-        return app()->environment('local', 'development');
+        return $this->isDevelopment();
     }
 
     /**
-     * Get Vite dev server host for CSP
+     * Check if we're in a development environment
      */
-    private function getViteHost(): string
+    private function isDevelopment(): bool
     {
-        if (app()->environment('local', 'development')) {
+        $env = app()->environment();
+        $isLocalEnv = in_array($env, ['local', 'development', 'dev'], true);
+        $isDebugMode = config('app.debug', false);
+        
+        // Allow in local/development environments OR when debug mode is enabled
+        return $isLocalEnv || $isDebugMode;
+    }
+
+    /**
+     * Get Vite dev server hosts for CSP (supports both IPv4 and IPv6)
+     */
+    private function getViteHosts(): array
+    {
+        if ($this->isDevelopment()) {
             // Vite default dev server runs on localhost:5173
             // You can override this via .env if needed
             $viteHost = env('VITE_HOST', 'localhost');
             $vitePort = env('VITE_PORT', '5173');
-            return "http://{$viteHost}:{$vitePort}";
+            
+            $hosts = [
+                "http://{$viteHost}:{$vitePort}",
+                "http://127.0.0.1:{$vitePort}",
+                "http://[::1]:{$vitePort}",
+                // Support for different localhost variations
+                "http://localhost:{$vitePort}",
+                "http://0.0.0.0:{$vitePort}",
+            ];
+            
+            // Remove duplicates and filter out empty values
+            return array_values(array_unique(array_filter($hosts)));
         }
 
-        return '';
+        return [];
     }
 }
 

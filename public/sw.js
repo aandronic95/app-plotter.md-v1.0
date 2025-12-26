@@ -13,9 +13,8 @@ const API_CACHE_PATTERNS = [
     /^\/api\/navigations\/categories/,
 ];
 
-// Static assets to cache
+// Static assets to cache (excluding HTML pages to avoid stale CSP headers)
 const STATIC_ASSETS = [
-    '/',
     '/favicon.ico',
     '/favicon.svg',
     '/logo.jpg',
@@ -75,10 +74,18 @@ self.addEventListener('fetch', (event) => {
         return; // Let the browser handle this request normally
     }
 
+    // Don't cache HTML pages (they contain CSP headers that should always be fresh)
+    // This prevents stale CSP policies from being served
+    if (request.headers.get('accept')?.includes('text/html') || 
+        url.pathname === '/' || 
+        url.pathname.endsWith('.html')) {
+        return; // Let the browser handle HTML requests normally (no caching)
+    }
+
     // Check if it's an API request we want to cache
     const isApiRequest = API_CACHE_PATTERNS.some((pattern) => pattern.test(url.pathname));
 
-    // Check if it's a static asset
+    // Check if it's a static asset (but not HTML)
     const isStaticAsset = STATIC_ASSETS.some((asset) => url.pathname === asset);
 
     if (isApiRequest || isStaticAsset) {
