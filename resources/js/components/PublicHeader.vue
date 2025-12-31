@@ -27,14 +27,15 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { home, register, dashboard, login, logout } from '@/routes';
 import { Link, router, usePage } from '@inertiajs/vue3';
-import { Menu, Phone, Search, ShoppingCart, User, Package, FileText, List, ChevronDown, ChevronRight, Sun, Moon, LogOut } from 'lucide-vue-next';
+import { Menu, Search, ShoppingCart, User, Package, FileText, List, ChevronDown, ChevronRight, Sun, Moon, LogOut } from 'lucide-vue-next';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useSiteSettings } from '@/composables/useSiteSettings';
-import { useAppearance } from '@/composables/useAppearance';
 import { useTranslations } from '@/composables/useTranslations';
 import { useApiCache } from '@/composables/useApiCache';
 import { useCacheManager } from '@/composables/useCacheManager';
 import LanguageSwitcher from '@/components/LanguageSwitcher.vue';
+import HeaderContacts from '@/components/HeaderContacts.vue';
+import DesktopNavigation from '@/components/DesktopNavigation.vue';
 
 interface NavigationItem {
     id: number;
@@ -76,37 +77,39 @@ const categories = ref<CategoryGroup[]>([]);
 const isCategoriesLoading = ref(false);
 const expandedCategories = ref<Set<string>>(new Set());
 const { siteSettings, fetchSiteSettings } = useSiteSettings();
-const { appearance, updateAppearance } = useAppearance();
 const { t } = useTranslations();
 const cacheManager = useCacheManager();
 
-// Check if there are any header contacts to display
-const hasHeaderContacts = computed(() => {
-    if (!siteSettings.value) return false;
-    return !!(
-        siteSettings.value.header_contact_1_phone ||
-        siteSettings.value.header_contact_1_email ||
-        siteSettings.value.header_contact_2_phone ||
-        siteSettings.value.header_contact_2_email ||
-        siteSettings.value.header_contact_3_phone ||
-        siteSettings.value.header_contact_3_email
-    );
-});
+// Dark mode toggle using only Tailwind
+const darkModeRef = ref(false);
 
-// Dark mode toggle
-const isDark = computed(() => {
-    if (typeof window === 'undefined') {
-        return false;
+const isDark = computed(() => darkModeRef.value);
+
+const updateDarkModeState = () => {
+    if (typeof window !== 'undefined') {
+        darkModeRef.value = document.documentElement.classList.contains('dark');
     }
-    if (appearance.value === 'system') {
-        return window.matchMedia('(prefers-color-scheme: dark)').matches;
-    }
-    return appearance.value === 'dark';
-});
+};
 
 const toggleDarkMode = () => {
-    const newMode = isDark.value ? 'light' : 'dark';
-    updateAppearance(newMode);
+    if (typeof window === 'undefined') {
+        return;
+    }
+    
+    // Toggle dark class on document element (Tailwind way)
+    const htmlElement = document.documentElement;
+    const isCurrentlyDark = htmlElement.classList.contains('dark');
+    
+    if (isCurrentlyDark) {
+        htmlElement.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+    } else {
+        htmlElement.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+    }
+    
+    // Update reactive state
+    darkModeRef.value = !isCurrentlyDark;
 };
 
 // Search functionality
@@ -122,6 +125,11 @@ const searchResults = ref<{
 });
 const isSearching = ref(false);
 let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+
+// Scroll detection for hiding top header
+const isScrolled = ref(false);
+const lastScrollY = ref(0);
+const scrollThreshold = 100; // Pixels to scroll before hiding
 
 // Fallback menu items dacă API-ul eșuează
 const fallbackMenuItems = computed<NavigationItem[]>(() => [
@@ -240,6 +248,28 @@ const handleCartUpdate = () => {
     fetchCartCount();
 };
 
+// Handle scroll to hide/show top header
+const handleScroll = () => {
+    if (typeof window === 'undefined') {
+        return;
+    }
+    
+    const currentScrollY = window.scrollY;
+    
+    // Show header when scrolling up or at top
+    if (currentScrollY < scrollThreshold) {
+        isScrolled.value = false;
+    } else if (currentScrollY > lastScrollY.value && currentScrollY > scrollThreshold) {
+        // Hide header when scrolling down
+        isScrolled.value = true;
+    } else if (currentScrollY < lastScrollY.value) {
+        // Show header when scrolling up
+        isScrolled.value = false;
+    }
+    
+    lastScrollY.value = currentScrollY;
+};
+
 const performSearch = async (query: string) => {
     if (!query.trim() || query.length < 2) {
         searchResults.value = { products: [], pages: [] };
@@ -322,6 +352,27 @@ watch(isSearchOpen, (open) => {
 });
 
 onMounted(async () => {
+    // Initialize theme from localStorage (Tailwind way)
+    if (typeof window !== 'undefined') {
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.documentElement.classList.add('dark');
+        } else if (savedTheme === 'light') {
+            document.documentElement.classList.remove('dark');
+        } else {
+            // Default to system preference
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (prefersDark) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        }
+        
+        // Update reactive state
+        updateDarkModeState();
+    }
+    
     // Batch all initial requests in parallel
     await Promise.all([
         fetchCartCount(),
@@ -330,10 +381,12 @@ onMounted(async () => {
         fetchSiteSettings(),
     ]);
     window.addEventListener('cart-updated', handleCartUpdate);
+    window.addEventListener('scroll', handleScroll, { passive: true });
 });
 
 onUnmounted(() => {
     window.removeEventListener('cart-updated', handleCartUpdate);
+    window.removeEventListener('scroll', handleScroll);
     if (searchTimeout) {
         clearTimeout(searchTimeout);
     }
@@ -341,16 +394,19 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <header class="sticky top-0 z-50 shadow-sm transition-all duration-300">
-        <!-- Top bar with logo and contacts -->
-        <div class="bg-gray-900 dark:bg-gray-950 border-b border-gray-800/50">
-            <div class="mx-auto max-w-7xl px-4 md:px-6">
-                <div class="flex h-12 items-center justify-between">
+    <header class="sticky top-0 z-50 shadow-sm transition-all duration-300 mb-10" :class="isScrolled ? 'h-auto' : 'h-[100px]'">
+        <!-- Main header bar - all elements in one row -->
+        <div 
+            class="bg-gray-950 dark:bg-gray-950 border-b border-gray-800/50 transition-all duration-300 overflow-hidden"
+            :class="isScrolled ? 'h-0 opacity-0 -translate-y-full' : 'h-full opacity-100 translate-y-0'"
+        >
+            <div class="mx-auto max-w-7xl px-4 md:px-6 h-full">
+                <div class="flex h-full items-center justify-between gap-4">
                     <!-- Logo -->
-                    <Link :href="home()" class="group flex items-center gap-2 transition-transform duration-200 hover:scale-105">
+                    <Link :href="home()" class="group flex items-center gap-2 transition-transform duration-200 hover:scale-105 flex-shrink-0">
                         <div
                             v-if="siteSettings?.site_logo && (siteSettings?.show_logo ?? true)"
-                            class="flex h-10 w-auto items-center transition-opacity duration-200 group-hover:opacity-90"
+                            class="flex h-16 w-auto items-center transition-opacity duration-200 group-hover:opacity-90"
                         >
                             <img
                                 :src="siteSettings.site_logo"
@@ -361,130 +417,23 @@ onUnmounted(() => {
                         <AppLogo v-else-if="siteSettings?.show_logo ?? true" />
                         <span
                             v-if="siteSettings?.site_name && (siteSettings?.show_site_name ?? true)"
-                            class="hidden text-lg font-bold text-white transition-all duration-200 group-hover:text-primary/80 sm:block"
+                            class="hidden text-xl font-bold text-white transition-all duration-200 group-hover:text-white sm:block whitespace-nowrap"
                         >
                             {{ siteSettings.site_name }}
                         </span>
                     </Link>
 
-                    <!-- Contact Information Columns -->
-                    <div v-if="hasHeaderContacts" class="flex-1 items-center justify-center gap-6 hidden lg:flex">
-                        <div v-if="siteSettings?.header_contact_1_phone || siteSettings?.header_contact_1_email" class="flex items-center gap-2">
-                            <Phone class="h-5 w-5 text-white" />
-                            <div class="flex flex-col">
-                                <a
-                                    v-if="siteSettings?.header_contact_1_phone"
-                                    :href="`tel:${siteSettings.header_contact_1_phone.replace(/\s/g, '')}`"
-                                    class="text-sm font-bold text-white hover:text-primary/80 transition-colors duration-200"
-                                >
-                                    {{ siteSettings.header_contact_1_phone }}
-                                </a>
-                                <a
-                                    v-if="siteSettings?.header_contact_1_email"
-                                    :href="`mailto:${siteSettings.header_contact_1_email}`"
-                                    class="text-xs text-gray-300 hover:text-primary/80 transition-colors duration-200"
-                                >
-                                    {{ siteSettings.header_contact_1_email }}
-                                </a>
-                            </div>
-                        </div>
-                        <div v-if="siteSettings?.header_contact_2_phone || siteSettings?.header_contact_2_email" class="flex items-center gap-2">
-                            <Phone class="h-5 w-5 text-white" />
-                            <div class="flex flex-col">
-                                <a
-                                    v-if="siteSettings?.header_contact_2_phone"
-                                    :href="`tel:${siteSettings.header_contact_2_phone.replace(/\s/g, '')}`"
-                                    class="text-sm font-bold text-white hover:text-primary/80 transition-colors duration-200"
-                                >
-                                    {{ siteSettings.header_contact_2_phone }}
-                                </a>
-                                <a
-                                    v-if="siteSettings?.header_contact_2_email"
-                                    :href="`mailto:${siteSettings.header_contact_2_email}`"
-                                    class="text-xs text-gray-300 hover:text-primary/80 transition-colors duration-200"
-                                >
-                                    {{ siteSettings.header_contact_2_email }}
-                                </a>
-                            </div>
-                        </div>
-                        <div v-if="siteSettings?.header_contact_3_phone || siteSettings?.header_contact_3_email" class="flex items-center gap-2">
-                            <Phone class="h-5 w-5 text-white" />
-                            <div class="flex flex-col">
-                                <a
-                                    v-if="siteSettings?.header_contact_3_phone"
-                                    :href="`tel:${siteSettings.header_contact_3_phone.replace(/\s/g, '')}`"
-                                    class="text-sm font-bold text-white hover:text-primary/80 transition-colors duration-200"
-                                >
-                                    {{ siteSettings.header_contact_3_phone }}
-                                </a>
-                                <a
-                                    v-if="siteSettings?.header_contact_3_email"
-                                    :href="`mailto:${siteSettings.header_contact_3_email}`"
-                                    class="text-xs text-gray-300 hover:text-primary/80 transition-colors duration-200"
-                                >
-                                    {{ siteSettings.header_contact_3_email }}
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Main header bar with actions -->
-        <div class="border-b border-gray-200/80 bg-white/80 backdrop-blur-md dark:border-gray-700/80 dark:bg-gray-900/80">
-            <div class="mx-auto max-w-7xl px-4 md:px-6">
-                <div class="flex h-16 items-center justify-between">
-                    <!-- Categories Dropdown -->
-                    <div class="hidden md:block">
-                        <DropdownMenu v-if="!isCategoriesLoading && categories.length > 0">
-                            <DropdownMenuTrigger as-child>
-                                <Button variant="ghost" size="sm" class="h-9 transition-all duration-200 hover:bg-primary/10 hover:text-primary">
-                                    <List class="mr-2 h-4 w-4 transition-transform duration-200 group-hover:rotate-12" />
-                                    {{ t('categories') }}
-                                    <ChevronDown class="ml-2 h-4 w-4 transition-transform duration-200" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="start" class="w-56 max-h-[80vh] overflow-y-auto border-gray-200/50 bg-white/95 backdrop-blur-sm dark:border-gray-700/50 dark:bg-gray-900/95">
-                                <template v-for="category in categories" :key="category.name">
-                                    <DropdownMenuSub v-if="category.items && category.items.length > 0">
-                                        <DropdownMenuSubTrigger class="transition-colors duration-150 hover:bg-primary/5">
-                                            {{ category.name }}
-                                        </DropdownMenuSubTrigger>
-                                        <DropdownMenuSubContent class="border-gray-200/50 bg-white/95 backdrop-blur-sm dark:border-gray-700/50 dark:bg-gray-900/95">
-                                            <DropdownMenuItem
-                                                v-for="item in category.items"
-                                                :key="item.id"
-                                                as-child
-                                                class="transition-colors duration-150"
-                                            >
-                                                <Link
-                                                    :href="item.href"
-                                                    :target="item.is_external ? (item.target || '_blank') : '_self'"
-                                                    :rel="item.is_external ? 'noopener noreferrer' : undefined"
-                                                    class="transition-colors duration-150 hover:bg-primary/5 hover:text-primary"
-                                                >
-                                                    {{ item.title }}
-                                                </Link>
-                                            </DropdownMenuItem>
-                                        </DropdownMenuSubContent>
-                                    </DropdownMenuSub>
-                                    <template v-else>
-                                        <DropdownMenuItem disabled class="opacity-50">
-                                            {{ category.name }}
-                                        </DropdownMenuItem>
-                                    </template>
-                                </template>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                    <!-- Contact Information -->
+                    <div class="hidden lg:flex flex-1 justify-center">
+                        <HeaderContacts />
                     </div>
 
                     <!-- Right Side Actions -->
                     <div class="flex items-center gap-2">
-                    <!-- Search Dialog -->
+                        <!-- Search Dialog -->
                     <Dialog :open="isSearchOpen" @update:open="isSearchOpen = $event">
                         <DialogTrigger :as-child="true">
-                            <Button variant="ghost" size="icon" class="group relative h-9 w-9 transition-all duration-200 hover:bg-primary/10 hover:text-primary">
+                            <Button variant="ghost" size="icon" class="group relative h-9 w-9 text-white transition-all duration-200 hover:bg-white/10 hover:text-white dark:text-white">
                                 <Search class="h-5 w-5 transition-transform duration-200 group-hover:scale-110" />
                             </Button>
                         </DialogTrigger>
@@ -516,7 +465,7 @@ onUnmounted(() => {
                                 <div v-else-if="searchQuery.length >= 2 && (searchResults.products.length > 0 || searchResults.pages.length > 0)" class="max-h-96 space-y-4 overflow-y-auto">
                                     <!-- Products Results -->
                                     <div v-if="searchResults.products.length > 0">
-                                        <h3 class="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                        <h3 class="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-300 dark:text-gray-300">
                                             <Package class="h-4 w-4 text-primary" />
                                             {{ t('products_count') }} ({{ searchResults.products.length }})
                                         </h3>
@@ -642,7 +591,7 @@ onUnmounted(() => {
                         variant="ghost"
                         size="icon"
                         @click="toggleDarkMode"
-                        class="group relative h-9 w-9 transition-all duration-200 hover:bg-primary/10 hover:text-primary"
+                        class="group relative h-10 w-10 text-white transition-all duration-200 hover:bg-white/10 hover:text-white dark:text-white"
                         :title="isDark ? t('toggle_light_mode') : t('toggle_dark_mode')"
                     >
                         <Sun
@@ -658,11 +607,48 @@ onUnmounted(() => {
                     <!-- Language Switcher -->
                     <LanguageSwitcher />
                     
+                    <!-- Desktop Auth Buttons -->
+                    <template v-if="auth.user">
+                        <Link href="/profile">
+                            <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                class="group relative h-10 w-10 text-white transition-all duration-200 hover:bg-white/10 hover:text-white dark:text-white" 
+                                :title="t('my_profile')"
+                            >
+                                <User class="h-5 w-5 transition-transform duration-200 group-hover:scale-110" />
+                            </Button>
+                        </Link>
+                        <form @submit.prevent="() => { cacheManager.invalidateOnAuthChange(); router.post(logout().url); }" class="inline">
+                            <Button 
+                                type="submit" 
+                                variant="ghost" 
+                                size="icon" 
+                                class="group relative h-10 w-10 text-white transition-all duration-200 hover:bg-white/10 hover:text-white dark:text-white" 
+                                :title="t('logout')"
+                            >
+                                <LogOut class="h-5 w-5 transition-transform duration-200 group-hover:scale-110" />
+                            </Button>
+                        </form>
+                    </template>
+                    <template v-else>
+                        <Link :href="login().url">
+                            <Button variant="ghost" size="sm" class="text-white transition-all duration-200 hover:bg-white/10 hover:text-white dark:text-white">
+                                {{ t('login') }}
+                            </Button>
+                        </Link>
+                        <Link :href="register()">
+                            <Button size="sm" class="bg-gradient-to-r from-primary to-primary/80 text-white transition-all duration-200 hover:scale-105 hover:from-primary/90 hover:to-primary/70 hover:shadow-lg">
+                                {{ t('register') }}
+                            </Button>
+                        </Link>
+                    </template>
+                    
                     <Link href="/cart">
                         <Button
                             variant="ghost"
                             size="icon"
-                            class="group relative h-9 w-9 transition-all duration-200 hover:bg-primary/10 hover:text-primary"
+                            class="group relative h-10 w-10 text-white transition-all duration-200 hover:bg-white/10 hover:text-white dark:text-white"
                         >
                             <ShoppingCart class="h-5 w-5 transition-transform duration-200 group-hover:scale-110" />
                             <span
@@ -678,7 +664,7 @@ onUnmounted(() => {
                     <div class="md:hidden">
                         <Sheet>
                             <SheetTrigger :as-child="true">
-                                <Button variant="ghost" size="icon" class="group h-9 w-9 transition-all duration-200 hover:bg-primary/10 hover:text-primary">
+                                <Button variant="ghost" size="icon" class="group h-10 w-10 text-white transition-all duration-200 hover:bg-white/10 hover:text-white dark:text-white">
                                     <Menu class="h-5 w-5 transition-transform duration-200 group-hover:rotate-90" />
                                 </Button>
                             </SheetTrigger>
@@ -772,13 +758,24 @@ onUnmounted(() => {
                                     <template v-if="auth.user">
                                         <div class="flex gap-2">
                                             <Link href="/profile">
-                                                <Button size="icon" class="transition-all duration-200 hover:scale-105 hover:border-primary hover:text-primary" :title="t('my_profile')" variant="outline">
-                                                    <User class="h-4 w-4" />
+                                                <Button 
+                                                    size="icon" 
+                                                    variant="ghost"
+                                                    class="group transition-all duration-200 hover:bg-primary/10 hover:text-primary" 
+                                                    :title="t('my_profile')"
+                                                >
+                                                    <User class="h-4 w-4 transition-transform duration-200 group-hover:scale-110" />
                                                 </Button>
                                             </Link>
                                             <form @submit.prevent="() => { cacheManager.invalidateOnAuthChange(); router.post(logout().url); }" class="inline">
-                                                <Button type="submit" size="icon" class="transition-all duration-200 hover:scale-105 hover:bg-primary/10 hover:text-primary" :title="t('logout')" variant="ghost">
-                                                    <LogOut class="h-4 w-4" />
+                                                <Button 
+                                                    type="submit" 
+                                                    size="icon" 
+                                                    variant="ghost"
+                                                    class="group transition-all duration-200 hover:bg-primary/10 hover:text-primary" 
+                                                    :title="t('logout')"
+                                                >
+                                                    <LogOut class="h-4 w-4 transition-transform duration-200 group-hover:scale-110" />
                                                 </Button>
                                             </form>
                                         </div>
@@ -797,66 +794,17 @@ onUnmounted(() => {
                             </SheetContent>
                         </Sheet>
                     </div>
-
-                    <!-- Desktop Auth Buttons -->
-                    <div class="hidden items-center gap-2 md:flex">
-                        <template v-if="auth.user">
-                            <Link href="/profile">
-                                <Button variant="outline" size="icon" class="transition-all duration-200 hover:scale-105 hover:border-primary hover:text-primary" :title="t('my_profile')">
-                                    <User class="h-5 w-5" />
-                                </Button>
-                            </Link>
-                            <form @submit.prevent="() => { cacheManager.invalidateOnAuthChange(); router.post(logout().url); }" class="inline">
-                                <Button type="submit" variant="ghost" size="icon" class="transition-all duration-200 hover:bg-primary/10 hover:text-primary" :title="t('logout')">
-                                    <LogOut class="h-5 w-5" />
-                                </Button>
-                            </form>
-                        </template>
-                        <template v-else>
-                            <Link :href="login().url">
-                                <Button variant="ghost" size="sm" class="transition-all duration-200 hover:bg-primary/10 hover:text-primary">
-                                    {{ t('login') }}
-                                </Button>
-                            </Link>
-                            <Link :href="register()">
-                                <Button size="sm" class="bg-gradient-to-r from-primary to-primary/80 transition-all duration-200 hover:scale-105 hover:from-primary/90 hover:to-primary/70 hover:shadow-lg">
-                                    {{ t('register') }}
-                                </Button>
-                            </Link>
-                        </template>
+                    
                     </div>
-                </div>
-            </div>
-        </div>
 
-        <!-- Desktop Navigation Bar -->
-        <div class="hidden border-b border-gray-200/80 bg-primary md:block">
-            <div class="mx-auto max-w-7xl px-4 md:px-6">
-                <nav v-if="!isLoading && menuItems.length > 0" class="flex h-12 items-center justify-center gap-1">
-                    <Link
-                        v-for="item in menuItems"
-                        :key="item.id"
-                        :href="item.href"
-                        :target="item.is_external ? (item.target || '_blank') : '_self'"
-                        :rel="item.is_external ? 'noopener noreferrer' : undefined"
-                        class="group relative flex items-center gap-1.5 rounded-md px-4 py-2 text-sm font-semibold uppercase tracking-wide text-white transition-all duration-200 hover:bg-white/10"
-                    >
-                        <span>{{ item.title }}</span>
-                        <ChevronDown class="h-4 w-4 transition-transform duration-200 group-hover:rotate-180" />
-                    </Link>
-                </nav>
-                <div v-else-if="isLoading" class="flex h-12 items-center gap-6">
-                    <div class="h-4 w-20 animate-pulse rounded-md bg-white/20"></div>
-                    <div class="h-4 w-20 animate-pulse rounded-md bg-white/20"></div>
-                    <div class="h-4 w-20 animate-pulse rounded-md bg-white/20"></div>
                 </div>
-                <div v-else-if="menuItems.length === 0" class="flex h-12 items-center">
-                    <span class="text-sm text-white/70">{{ t('no_navigation_items') }}</span>
-                </div>
-            </div>
-        </div>
 
+            </div>
+
+        </div>
         
+        <!-- Desktop Navigation Bar - always visible -->
+        <DesktopNavigation :menu-items="menuItems" :is-loading="isLoading" />
     </header>
 </template>
 

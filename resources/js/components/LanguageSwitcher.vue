@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { Globe } from 'lucide-vue-next';
 import {
     DropdownMenu,
@@ -11,31 +12,39 @@ import { useTranslations } from '@/composables/useTranslations';
 
 const { locale, switchLocale, availableLocales, t } = useTranslations();
 
-const currentLocale = availableLocales.find((l) => l.code === locale.value) || availableLocales[0];
+// Get current locale value for comparison
+const currentLocaleCode = computed(() => locale.value);
 </script>
 
 <template>
     <DropdownMenu>
         <DropdownMenuTrigger as-child>
-            <Button variant="ghost" size="icon" class="h-9 w-9">
-                <Globe class="h-4 w-4" />
+            <Button 
+                variant="ghost" 
+                size="icon" 
+                class="group relative h-10 w-10 text-white transition-all duration-200 hover:bg-white/10 hover:text-white dark:text-white"
+                :title="t('select_language')"
+            >
+                <Globe class="h-5 w-5 transition-transform duration-200 group-hover:rotate-12" />
                 <span class="sr-only">{{ t('select_language') }}</span>
             </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" class="w-36">
+        <DropdownMenuContent align="end" class="w-40 border-gray-200/50 bg-white/95 backdrop-blur-md dark:border-gray-700/50 dark:bg-gray-900/95">
             <DropdownMenuItem
                 v-for="loc in availableLocales"
                 :key="loc.code"
                 @click="switchLocale(loc.code)"
                 :class="[
-                    'cursor-pointer text-sm',
-                    locale.value === loc.code && 'bg-primary/10 font-medium',
+                    'cursor-pointer text-sm transition-all duration-200',
+                    currentLocaleCode === loc.code 
+                        ? 'bg-primary/10 font-medium text-primary dark:bg-primary/20 dark:text-primary' 
+                        : 'hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50',
                 ]"
             >
                 <span class="flex-1">{{ loc.native }}</span>
                 <span
-                    v-if="locale.value === loc.code"
-                    class="ml-2 text-primary text-xs"
+                    v-if="currentLocaleCode === loc.code"
+                    class="ml-2 text-primary text-xs font-bold dark:text-primary"
                 >
                     ✓
                 </span>
