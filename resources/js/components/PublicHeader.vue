@@ -797,6 +797,7 @@ onUnmounted(() => {
                             </SheetContent>
                         </Sheet>
                     </div>
+                    </div>
 
                     <!-- Desktop Auth Buttons -->
                     <div class="hidden items-center gap-2 md:flex">
