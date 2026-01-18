@@ -421,7 +421,7 @@ const addToCart = async () => {
     
     <StructuredData type="Product" :data="productStructuredData" />
     <StructuredData type="BreadcrumbList" :data="breadcrumbStructuredData" />
-    <div class="flex min-h-screen flex-col">
+    <div class="flex min-h-screen flex-col dark:bg-gray-900">
         <PublicHeader />
 
         <main class="flex-1" :class="{ 'opacity-60': isOutOfStock, 'blur-sm': isModalOpen }">
@@ -439,7 +439,7 @@ const addToCart = async () => {
                     <!-- Product Images -->
                     <div class="space-y-4">
                         <div 
-                            class="aspect-square overflow-hidden rounded-lg border bg-gray-100 cursor-pointer transition-transform hover:scale-105"
+                            class="aspect-square overflow-hidden rounded-lg bg-gray-100 cursor-pointer transition-transform hover:scale-105"
                             @click="openImageModal(0)"
                         >
                             <img
@@ -456,7 +456,7 @@ const addToCart = async () => {
                             <div
                                 v-for="(image, index) in props.product.images"
                                 :key="index"
-                                class="aspect-square overflow-hidden rounded-lg border bg-gray-100 cursor-pointer transition-transform hover:scale-105"
+                                class="aspect-square overflow-hidden rounded-lg bg-gray-100 cursor-pointer transition-transform hover:scale-105"
                                 @click="openImageModal(index + 1)"
                             >
                                 <img
@@ -514,7 +514,7 @@ const addToCart = async () => {
                             </p>
                         </div>
 
-                        <div class="space-y-4 border-t pt-6">
+                        <div class="space-y-4 pt-6">
                             <div class="flex items-center gap-4">
                                 <span class="font-medium text-gray-900 dark:text-white">
                                     SKU:

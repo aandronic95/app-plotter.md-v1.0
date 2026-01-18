@@ -29,6 +29,18 @@ interface SiteSettings {
     header_contact_2_email: string | null;
     header_contact_3_phone: string | null;
     header_contact_3_email: string | null;
+    service_feature_1_icon: string;
+    service_feature_1_title: string;
+    service_feature_1_description: string;
+    service_feature_2_icon: string;
+    service_feature_2_title: string;
+    service_feature_2_description: string;
+    service_feature_3_icon: string;
+    service_feature_3_title: string;
+    service_feature_3_description: string;
+    service_feature_4_icon: string;
+    service_feature_4_title: string;
+    service_feature_4_description: string;
 }
 
 // Singleton pattern - shared state across all components
@@ -181,6 +193,18 @@ export const useSiteSettings = () => {
                     header_contact_2_email: null,
                     header_contact_3_phone: null,
                     header_contact_3_email: null,
+                    service_feature_1_icon: 'Zap',
+                    service_feature_1_title: 'RAPIDITATE',
+                    service_feature_1_description: 'Efectuăm rapid comenzile dvs., asigurându-ne că fiecare detaliu este gestionat cu precizie și promptitudine.',
+                    service_feature_2_icon: 'Settings',
+                    service_feature_2_title: 'SUPORT ÎN ALEGERE',
+                    service_feature_2_description: 'Echipa noastră dedicată vă garantează că veți fi ajutați să faceți o alegere corectă pentru rezultatul dorit.',
+                    service_feature_3_icon: 'Truck',
+                    service_feature_3_title: 'TRANSPORT',
+                    service_feature_3_description: 'Cu mândrie vă asigurăm că fiecare comandă beneficiază de un angajament ferm: garantăm livrare fără deteriorare',
+                    service_feature_4_icon: 'Smile',
+                    service_feature_4_title: 'CALITATE GARANTATĂ',
+                    service_feature_4_description: 'Suntem mândri să vă asigurăm că fiecare produs sau serviciu pe care îl oferim vine însoţit de o promisiune fermă: calitate garantată.',
                 };
                 return siteSettings.value;
             } finally {

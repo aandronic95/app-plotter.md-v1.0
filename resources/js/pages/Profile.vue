@@ -236,7 +236,7 @@ const removeFromWishlist = async (productId: number) => {
 
 <template>
     <Head :title="t('common.my_profile')" />
-    <div class="flex min-h-screen flex-col">
+    <div class="flex min-h-screen flex-col dark:bg-gray-900">
         <PublicHeader />
 
         <main class="flex-1">
@@ -428,8 +428,8 @@ const removeFromWishlist = async (productId: number) => {
                                     <div
                                         v-for="address in props.deliveryAddresses"
                                         :key="address.id"
-                                        class="rounded-lg border p-3 transition-all"
-                                        :class="address.is_default ? 'border-primary bg-primary/5' : 'border-gray-200 dark:border-gray-700'"
+                                        class="rounded-lg p-3 transition-all"
+                                        :class="address.is_default ? 'bg-primary/5' : ''"
                                     >
                                         <div class="flex items-start justify-between">
                                             <div class="flex-1">
@@ -520,7 +520,7 @@ const removeFromWishlist = async (productId: number) => {
                                     <div
                                         v-for="item in props.wishlist"
                                         :key="item.id"
-                                        class="group relative rounded-lg border border-gray-200 p-4 transition-all hover:border-primary hover:shadow-md dark:border-gray-700"
+                                        class="group relative rounded-lg p-4 transition-all"
                                     >
                                         <button
                                             @click="removeFromWishlist(item.product_id)"
@@ -604,7 +604,7 @@ const removeFromWishlist = async (productId: number) => {
                                     <div
                                         v-for="order in props.orders.data"
                                         :key="order.id"
-                                        class="rounded-lg border border-gray-200 p-4 transition-all hover:border-primary hover:shadow-md dark:border-gray-700"
+                                        class="rounded-lg p-4 transition-all"
                                     >
                                         <div class="flex items-start justify-between">
                                             <div class="flex-1">

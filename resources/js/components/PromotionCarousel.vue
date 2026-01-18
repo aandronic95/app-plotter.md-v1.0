@@ -1,134 +1,127 @@
 <script setup lang="ts">
-import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Clock } from 'lucide-vue-next';
+import { ChevronLeft, ChevronRight } from 'lucide-vue-next';
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { useTranslations } from '@/composables/useTranslations';
 import { router } from '@inertiajs/vue3';
 
-interface Promotion {
+interface Category {
     id: number;
-    title: string;
-    description: string | null;
+    name: string;
+    slug: string;
+}
+
+interface Showcase {
+    id: number;
+    name: string;
+    subtitle?: string;
     image: string;
-    banner: string;
-    external_link: string | null;
-    page_id: number | null;
-    product_id: number | null;
-    page?: {
-        id: number;
-        title: string;
-        slug: string;
-    } | null;
-    product?: {
-        id: number;
-        name: string;
-        slug: string;
-    } | null;
-    link: string | null;
-    end_date: string | null;
-    created_at: string;
-    updated_at: string;
+    category: Category | null;
+    button_text?: string;
+    button_link?: string;
+}
+
+interface SectionData {
+    title: string;
+    description?: string;
+    button_text?: string;
+    button_link?: string;
+    carousel_banner_image?: string | null;
 }
 
 const { t } = useTranslations();
-const promotions = ref<Promotion[]>([]);
+const showcases = ref<Showcase[]>([]);
+const section = ref<SectionData | null>(null);
 const isLoading = ref(true);
-const currentIndex = ref(0);
+const currentIndex = ref(0); // Index pentru cardurile de categorii (nu include banner-ul)
 const intervalRef = ref<number | null>(null);
-const timerIntervalRef = ref<number | null>(null);
-const currentTime = ref(new Date());
 
-// Fetch promotions from API
-const fetchPromotions = async () => {
+const CARDS_TO_SHOW = 4; // Numărul de carduri de categorii de afișat (fără banner)
+
+// Get visible showcases based on current index
+const visibleShowcases = computed(() => {
+    if (showcases.value.length === 0) return [];
+    
+    const result: Showcase[] = [];
+    for (let i = 0; i < CARDS_TO_SHOW; i++) {
+        const index = (currentIndex.value + i) % showcases.value.length;
+        result.push(showcases.value[index]);
+    }
+    return result;
+});
+
+// Check if we can navigate (need more than 4 showcases)
+const canNavigate = computed(() => {
+    return showcases.value.length > CARDS_TO_SHOW;
+});
+
+// Fetch showcases and section data
+const fetchShowcases = async () => {
     try {
         isLoading.value = true;
-        const response = await fetch('/api/promotions?active_only=true&order_by=sort_order&order_dir=asc');
+        const response = await fetch('/api/product-category-showcases?active_only=true&order_by=sort_order&order_dir=asc');
         const data = await response.json();
         
         if (data.data && Array.isArray(data.data)) {
-            promotions.value = data.data;
+            showcases.value = data.data;
+        }
+        
+        if (data.section) {
+            section.value = data.section;
         }
     } catch (error) {
-        console.error('Error fetching promotions:', error);
-        promotions.value = [];
+        console.error('Error fetching product category showcases:', error);
+        showcases.value = [];
     } finally {
         isLoading.value = false;
     }
 };
 
-// Computed property to get current promotions or empty array
-const activePromotions = computed(() => promotions.value);
-
-// Get current promotion
-const currentPromotion = computed(() => {
-    if (activePromotions.value.length === 0) return null;
-    return activePromotions.value[currentIndex.value];
-});
-
-// Calculate time remaining for current promotion
-const timeRemaining = computed(() => {
-    if (!currentPromotion.value?.end_date) {
-        return null;
-    }
-
-    const endDate = new Date(currentPromotion.value.end_date);
-    const now = currentTime.value;
-    const diff = endDate.getTime() - now.getTime();
-
-    if (diff <= 0) {
-        return { days: 0, hours: 0, minutes: 0, seconds: 0, expired: true };
-    }
-
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-    return { days, hours, minutes, seconds, expired: false };
-});
-
-// Handle promotion click
-const handlePromotionClick = (promotion: Promotion) => {
-    // Check if it's an external link
-    if (promotion.external_link) {
-        window.open(promotion.external_link, '_blank');
-        return;
-    }
-
-    // Check if it's a page link
-    if (promotion.page_id && promotion.page?.slug) {
-        router.visit(`/${promotion.page.slug}`);
-        return;
-    }
-
-    // Check if it's a product link
-    if (promotion.product_id && promotion.product?.slug) {
-        router.visit(`/products/${promotion.product.slug}`);
-        return;
+const handleCardClick = (showcase: Showcase) => {
+    if (showcase.button_link) {
+        if (showcase.button_link.startsWith('http')) {
+            window.open(showcase.button_link, '_blank');
+        } else {
+            router.visit(showcase.button_link);
+        }
+    } else if (showcase.category?.slug) {
+        router.visit(`/categories/${showcase.category.slug}`);
     }
 };
 
-const goToSlide = (index: number) => {
-    if (activePromotions.value.length === 0) return;
-    currentIndex.value = index;
-    resetInterval();
+const handleBannerClick = () => {
+    if (section.value?.button_link) {
+        if (section.value.button_link.startsWith('http')) {
+            window.open(section.value.button_link, '_blank');
+        } else {
+            router.visit(section.value.button_link);
+        }
+    }
+};
+
+const handleSectionButtonClick = () => {
+    if (section.value?.button_link) {
+        if (section.value.button_link.startsWith('http')) {
+            window.open(section.value.button_link, '_blank');
+        } else {
+            router.visit(section.value.button_link);
+        }
+    }
 };
 
 const nextSlide = () => {
-    if (activePromotions.value.length === 0) return;
-    currentIndex.value = (currentIndex.value + 1) % activePromotions.value.length;
+    if (!canNavigate.value) return;
+    currentIndex.value = (currentIndex.value + 1) % showcases.value.length;
     resetInterval();
 };
 
 const prevSlide = () => {
-    if (activePromotions.value.length === 0) return;
-    currentIndex.value =
-        (currentIndex.value - 1 + activePromotions.value.length) %
-        activePromotions.value.length;
+    if (!canNavigate.value) return;
+    currentIndex.value = (currentIndex.value - 1 + showcases.value.length) % showcases.value.length;
     resetInterval();
 };
 
 const startInterval = () => {
+    if (!canNavigate.value) return;
     intervalRef.value = window.setInterval(() => {
         nextSlide();
     }, 5000);
@@ -141,162 +134,141 @@ const resetInterval = () => {
     startInterval();
 };
 
-// Start timer update interval
-const startTimer = () => {
-    timerIntervalRef.value = window.setInterval(() => {
-        currentTime.value = new Date();
-    }, 1000);
-};
-
-// Stop timer
-const stopTimer = () => {
-    if (timerIntervalRef.value) {
-        clearInterval(timerIntervalRef.value);
-        timerIntervalRef.value = null;
-    }
-};
-
 onMounted(() => {
-    fetchPromotions().then(() => {
-        if (activePromotions.value.length > 0) {
+    fetchShowcases().then(() => {
+        if (canNavigate.value) {
             startInterval();
         }
     });
-    startTimer();
 });
 
 onUnmounted(() => {
     if (intervalRef.value) {
         clearInterval(intervalRef.value);
     }
-    stopTimer();
 });
 </script>
 
 <template>
-    <div v-if="isLoading" class="relative w-full overflow-hidden rounded-lg">
-        <div class="flex h-64 items-center justify-center bg-gray-200 md:h-96">
-            <p class="text-gray-500">{{ t('loading') }}...</p>
+    <div v-if="isLoading" class="w-full py-12">
+        <div class="mx-auto max-w-7xl px-4 md:px-6">
+            <div class="flex items-center justify-center">
+                <p class="text-gray-500">{{ t('loading') }}...</p>
+            </div>
         </div>
     </div>
-    <div
-        v-else-if="activePromotions.length > 0"
-        class="relative w-full overflow-hidden rounded-lg"
-    >
-        <div
-            class="relative flex transition-transform duration-500 ease-in-out"
-            :style="{
-                transform: `translateX(-${(currentIndex * 100) / activePromotions.length}%)`,
-                width: `${activePromotions.length * 100}%`,
-            }"
-        >
-            <div
-                v-for="(promotion, index) in activePromotions"
-                :key="promotion.id"
-                class="flex-shrink-0"
-                :style="{ width: `${100 / activePromotions.length}%` }"
-            >
-                <div
-                    class="relative h-64 w-full bg-gradient-to-r from-blue-600 to-purple-600 md:h-96 cursor-pointer"
-                    @click="handlePromotionClick(promotion)"
+    
+    <div v-else-if="section?.carousel_banner_image || showcases.length > 0" class="w-full bg-gray-800 py-12 dark:bg-gray-900">
+        <div class="mx-auto max-w-7xl px-4 md:px-6">
+            <!-- Section Header -->
+            <div class="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div class="flex-1">
+                    <h2 class="mb-2 text-3xl font-bold uppercase text-white">
+                        {{ section?.title || 'TIPURI DE PRODUSE' }}
+                    </h2>
+                    <p v-if="section?.description" class="text-gray-300">
+                        {{ section.description }}
+                    </p>
+                </div>
+                <button
+                    v-if="section?.button_text"
+                    @click="handleSectionButtonClick"
+                    class="mt-4 rounded border border-gray-600 bg-transparent px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700 md:mt-0"
                 >
-                    <img
-                        v-if="promotion.banner || promotion.image"
-                        :src="promotion.banner || promotion.image"
-                        :alt="promotion.title"
-                        class="h-full w-full object-cover"
-                    />
-                    
-                    <!-- Countdown Timer - Top Right -->
+                    {{ section.button_text }}
+                </button>
+            </div>
+
+            <!-- Carousel Container - 5 Cards: 1 Banner + 4 Category Cards -->
+            <div class="relative">
+                <!-- Navigation Arrows -->
+                <button
+                    v-if="canNavigate"
+                    @click="prevSlide"
+                    class="absolute left-0 top-1/2 z-10 -translate-y-1/2 -translate-x-4 rounded-full bg-white p-2 shadow-lg transition-all hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700"
+                >
+                    <ChevronLeft class="h-6 w-6 text-gray-900 dark:text-white" />
+                </button>
+                <button
+                    v-if="canNavigate"
+                    @click="nextSlide"
+                    class="absolute right-0 top-1/2 z-10 -translate-y-1/2 translate-x-4 rounded-full bg-white p-2 shadow-lg transition-all hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700"
+                >
+                    <ChevronRight class="h-6 w-6 text-gray-900 dark:text-white" />
+                </button>
+
+                <!-- 5 Cards Grid: Banner (fixed) + 4 Category Cards (moving) -->
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-5">
+                    <!-- Banner Image (First Card - Fixed) -->
                     <div
-                        v-if="index === currentIndex && timeRemaining && !timeRemaining.expired"
-                        class="absolute right-4 top-4 z-10 rounded-xl bg-gradient-to-r from-red-600 to-red-500 px-5 py-3 shadow-2xl ring-2 ring-white/30 backdrop-blur-sm"
-                        :class="{ 'animate-pulse': timeRemaining.hours < 24 }"
+                        v-if="section?.carousel_banner_image"
+                        class="cursor-pointer"
+                        @click="handleBannerClick"
                     >
-                        <div class="flex items-center gap-3 text-white">
-                            <Clock class="h-6 w-6 animate-pulse" />
-                            <div class="flex items-center gap-2 text-base font-extrabold">
-                                <span v-if="timeRemaining.days > 0" class="flex flex-col items-center">
-                                    <span class="rounded-lg bg-white/25 px-2.5 py-1 text-lg font-black shadow-inner">{{ String(timeRemaining.days).padStart(2, '0') }}</span>
-                                    <span class="text-[10px] uppercase leading-tight">{{ t('days') }}</span>
-                                </span>
-                                <span class="flex flex-col items-center">
-                                    <span class="rounded-lg bg-white/25 px-2.5 py-1 text-lg font-black shadow-inner">{{ String(timeRemaining.hours).padStart(2, '0') }}</span>
-                                    <span class="text-[10px] uppercase leading-tight">{{ t('hours') }}</span>
-                                </span>
-                                <span class="text-2xl font-bold">:</span>
-                                <span class="flex flex-col items-center">
-                                    <span class="rounded-lg bg-white/25 px-2.5 py-1 text-lg font-black shadow-inner">{{ String(timeRemaining.minutes).padStart(2, '0') }}</span>
-                                    <span class="text-[10px] uppercase leading-tight">{{ t('minutes') }}</span>
-                                </span>
-                                <span class="text-2xl font-bold">:</span>
-                                <span class="flex flex-col items-center">
-                                    <span class="rounded-lg bg-white/25 px-2.5 py-1 text-lg font-black shadow-inner animate-pulse">{{ String(timeRemaining.seconds).padStart(2, '0') }}</span>
-                                    <span class="text-[10px] uppercase leading-tight">{{ t('seconds') }}</span>
-                                </span>
-                            </div>
+                        <div class="h-64 w-full rounded-lg overflow-hidden bg-gray-700 transition-shadow hover:shadow-xl">
+                            <img
+                                :src="section.carousel_banner_image"
+                                :alt="section.title || 'Banner'"
+                                class="h-full w-full object-cover"
+                            />
                         </div>
                     </div>
 
+                    <!-- Category Cards (4 Cards - Moving) -->
                     <div
-                        class="absolute inset-0 flex flex-col items-center justify-center bg-black/30 p-8 text-center text-white"
+                        v-for="(showcase, index) in visibleShowcases"
+                        :key="`${showcase.id}-${currentIndex}-${index}`"
+                        class="group relative h-64 cursor-pointer overflow-hidden rounded-lg bg-white shadow-md transition-shadow hover:shadow-xl dark:bg-gray-800"
+                        @click="handleCardClick(showcase)"
                     >
-                        <h2 class="mb-4 text-3xl font-bold md:text-5xl">
-                            {{ promotion.title }}
-                        </h2>
-                        <p v-if="promotion.description" class="mb-6 text-lg md:text-xl">
-                            {{ promotion.description }}
-                        </p>
-                        <Button
-                            v-if="promotion.external_link || promotion.page_id || promotion.product_id"
-                            size="lg"
-                            class="bg-white text-gray-900 hover:bg-gray-100"
-                            @click.stop="handlePromotionClick(promotion)"
-                        >
-                            {{ t('view_offer') }}
-                        </Button>
+                        <!-- Image -->
+                        <div class="relative h-48 w-full overflow-hidden bg-gray-200">
+                            <img
+                                :src="showcase.image"
+                                :alt="showcase.name"
+                                class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                            />
+                        </div>
+
+                        <!-- Card Footer -->
+                        <div class="absolute bottom-0 left-0 right-0 bg-white/95 p-4 backdrop-blur-sm dark:bg-gray-800/95">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h3 class="font-semibold text-gray-900 dark:text-white">
+                                        {{ showcase.name }}
+                                    </h3>
+                                    <p v-if="showcase.subtitle" class="text-sm text-gray-600 dark:text-gray-400">
+                                        {{ showcase.subtitle }}
+                                    </p>
+                                </div>
+                                <svg
+                                    class="h-5 w-5 text-gray-600 transition-transform group-hover:translate-x-1 dark:text-gray-400"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M9 5l7 7-7 7"
+                                    />
+                                </svg>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Navigation Buttons -->
-        <Button
-            v-if="activePromotions.length > 1"
-            variant="outline"
-            size="icon"
-            class="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white"
-            @click="prevSlide"
-        >
-            <ChevronLeft class="h-6 w-6" />
-        </Button>
-        <Button
-            v-if="activePromotions.length > 1"
-            variant="outline"
-            size="icon"
-            class="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white"
-            @click="nextSlide"
-        >
-            <ChevronRight class="h-6 w-6" />
-        </Button>
-
-        <!-- Dots Indicator -->
-        <div
-            v-if="activePromotions.length > 1"
-            class="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-2"
-        >
-            <button
-                v-for="(promotion, index) in activePromotions"
-                :key="promotion.id"
-                :class="[
-                    'h-2 w-2 rounded-full transition-all',
-                    index === currentIndex
-                        ? 'w-8 bg-white'
-                        : 'bg-white/50 hover:bg-white/75',
-                ]"
-                @click="goToSlide(index)"
-            />
+            <!-- Bottom Button (if exists) -->
+            <div v-if="section?.button_text" class="mt-8 flex justify-center">
+                <button
+                    @click="handleSectionButtonClick"
+                    class="rounded border border-gray-600 bg-transparent px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700"
+                >
+                    {{ section.button_text }}
+                </button>
+            </div>
         </div>
     </div>
 </template>
-

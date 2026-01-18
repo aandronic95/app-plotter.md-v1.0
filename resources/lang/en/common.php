@@ -94,6 +94,7 @@ return [
     
     // Header & Navigation
     'menu' => 'Menu',
+    'my_account' => 'My Account',
     'dark_mode' => 'Dark Mode',
     'light_mode' => 'Light Mode',
     'toggle_dark_mode' => 'Switch to dark mode',

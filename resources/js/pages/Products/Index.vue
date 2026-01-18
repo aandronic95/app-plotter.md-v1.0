@@ -262,7 +262,7 @@ const handlePagination = async (url: string | null) => {
 
 <template>
     <Head :title="t('products')" />
-    <div class="flex min-h-screen flex-col">
+    <div class="flex min-h-screen flex-col dark:bg-gray-900">
         <PublicHeader />
 
         <main class="flex-1">
@@ -281,7 +281,7 @@ const handlePagination = async (url: string | null) => {
                 <div class="mb-4 flex items-center justify-between lg:hidden">
                     <button
                         @click="showMobileFilters = !showMobileFilters"
-                        class="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                        class="flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
                     >
                         <Filter class="h-4 w-4" />
                         {{ t('filters') }}
@@ -296,7 +296,7 @@ const handlePagination = async (url: string | null) => {
                 >
                     <div class="absolute inset-0 bg-black/50" />
                     <div
-                        class="absolute right-0 top-0 h-full w-80 overflow-y-auto bg-white p-6 shadow-xl dark:bg-gray-800"
+                        class="absolute right-0 top-0 h-full w-80 overflow-y-auto bg-white p-6 dark:bg-gray-800"
                         @click.stop
                     >
                         <div class="mb-4 flex items-center justify-between">
@@ -322,7 +322,7 @@ const handlePagination = async (url: string | null) => {
                 <div class="grid grid-cols-1 gap-6 lg:grid-cols-4">
                     <!-- Filters Sidebar - Desktop -->
                     <aside class="hidden lg:block lg:col-span-1">
-                        <div class="sticky top-20 rounded-lg border bg-white p-4 shadow-sm dark:bg-gray-800">
+                        <div class="sticky top-20 rounded-lg bg-white p-4 dark:bg-gray-800">
                             <ProductFiltersSidebar
                                 :categories="categories"
                                 :filters="currentFilters"
@@ -341,7 +341,7 @@ const handlePagination = async (url: string | null) => {
                                     v-model="search"
                                     type="text"
                                     :placeholder="t('search_products')"
-                                    class="flex-1 rounded-lg border border-gray-300 px-4 py-2 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                                    class="flex-1 rounded-lg px-4 py-2 dark:bg-gray-800 dark:text-white"
                                     @keyup.enter="handleSearch"
                                 />
                                 <button
@@ -354,7 +354,7 @@ const handlePagination = async (url: string | null) => {
                             <div class="flex items-center gap-2">
                                 <select
                                     v-model="sortBy"
-                                    class="rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                                    class="rounded-lg px-3 py-2 dark:bg-gray-800 dark:text-white"
                                     @change="handleSort"
                                 >
                                     <option value="created_at">{{ t('date_added') }}</option>
@@ -363,7 +363,7 @@ const handlePagination = async (url: string | null) => {
                                 </select>
                                 <select
                                     v-model="sortOrder"
-                                    class="rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                                    class="rounded-lg px-3 py-2 dark:bg-gray-800 dark:text-white"
                                     @change="handleSort"
                                 >
                                     <option value="desc">{{ t('sort_desc') }}</option>

@@ -94,6 +94,7 @@ return [
     
     // Header & Navigation
     'menu' => 'Meniu',
+    'my_account' => 'Contul Meu',
     'dark_mode' => 'Modul Dark',
     'light_mode' => 'Modul Light',
     'toggle_dark_mode' => 'Comută la modul dark',

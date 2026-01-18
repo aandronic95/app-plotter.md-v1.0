@@ -94,6 +94,7 @@ return [
     
     // Header & Navigation
     'menu' => 'Меню',
+    'my_account' => 'Мой Аккаунт',
     'dark_mode' => 'Тёмный режим',
     'light_mode' => 'Светлый режим',
     'toggle_dark_mode' => 'Переключить на тёмный режим',

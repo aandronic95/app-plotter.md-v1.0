@@ -115,7 +115,7 @@ onMounted(() => {
 
 <template>
     <Head :title="t('cart_title')" />
-    <div class="flex min-h-screen flex-col">
+    <div class="flex min-h-screen flex-col dark:bg-gray-900">
         <PublicHeader />
 
         <main class="flex-1">
@@ -246,7 +246,7 @@ onMounted(() => {
                                         {{ cart.total > 500 ? t('free') : formatPrice(50) }}
                                     </span>
                                 </div>
-                                <div class="border-t pt-4">
+                                <div class="pt-4">
                                     <div class="flex justify-between text-lg font-bold">
                                         <span>{{ t('total') }}</span>
                                         <span>

@@ -9,13 +9,36 @@ const wishlistStatuses = ref<WishlistStatus>({});
 const isLoading = ref(false);
 let fetchPromise: Promise<WishlistStatus> | null = null;
 
+// Helper function to check authentication from multiple sources
+const checkAuthentication = (): boolean => {
+    try {
+        // Check from Inertia page props
+        const page = usePage();
+        if (page?.props?.auth?.user) {
+            return true;
+        }
+        return false;
+    } catch {
+        return false;
+    }
+};
+
 export const useWishlistBatch = () => {
     const page = usePage();
-    const isAuthenticated = computed(() => !!page.props.auth?.user);
+    const isAuthenticated = computed(() => {
+        try {
+            return !!page?.props?.auth?.user;
+        } catch {
+            return false;
+        }
+    });
 
     const checkBatch = async (productIds: number[]): Promise<WishlistStatus> => {
-        // If not authenticated, return all false
-        if (!isAuthenticated.value) {
+        // Double-check authentication using both computed and direct check
+        const isUserAuthenticated = isAuthenticated.value || checkAuthentication();
+        
+        // If not authenticated, return all false immediately without making a request
+        if (!isUserAuthenticated) {
             const result: WishlistStatus = {};
             productIds.forEach(id => {
                 result[id] = false;
@@ -69,6 +92,17 @@ export const useWishlistBatch = () => {
                     }),
                 });
 
+                // Handle auth errors silently (user not logged in or session expired)
+                if (response.status === 401 || response.status === 419) {
+                    // User is not authenticated, cache all as false
+                    const result: WishlistStatus = {};
+                    uncachedIds.forEach(id => {
+                        result[id] = false;
+                        wishlistStatuses.value[id] = false;
+                    });
+                    return result;
+                }
+
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
@@ -82,7 +116,7 @@ export const useWishlistBatch = () => {
 
                 return wishlistStatuses.value;
             } catch (error) {
-                console.error('Error fetching wishlist batch:', error);
+                // Silently handle errors for wishlist - it's not critical
                 // Return false for all uncached IDs on error
                 const result: WishlistStatus = {};
                 uncachedIds.forEach(id => {

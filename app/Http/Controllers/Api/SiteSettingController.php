@@ -47,6 +47,18 @@ class SiteSettingController extends Controller
                 'header_contact_2_email' => $settings->header_contact_2_email,
                 'header_contact_3_phone' => $settings->header_contact_3_phone,
                 'header_contact_3_email' => $settings->header_contact_3_email,
+                'service_feature_1_icon' => $settings->service_feature_1_icon ?? 'Zap',
+                'service_feature_1_title' => $settings->service_feature_1_title ?? 'RAPIDITATE',
+                'service_feature_1_description' => $settings->service_feature_1_description ?? 'Efectuăm rapid comenzile dvs., asigurându-ne că fiecare detaliu este gestionat cu precizie și promptitudine.',
+                'service_feature_2_icon' => $settings->service_feature_2_icon ?? 'Settings',
+                'service_feature_2_title' => $settings->service_feature_2_title ?? 'SUPORT ÎN ALEGERE',
+                'service_feature_2_description' => $settings->service_feature_2_description ?? 'Echipa noastră dedicată vă garantează că veți fi ajutați să faceți o alegere corectă pentru rezultatul dorit.',
+                'service_feature_3_icon' => $settings->service_feature_3_icon ?? 'Truck',
+                'service_feature_3_title' => $settings->service_feature_3_title ?? 'TRANSPORT',
+                'service_feature_3_description' => $settings->service_feature_3_description ?? 'Cu mândrie vă asigurăm că fiecare comandă beneficiază de un angajament ferm: garantăm livrare fără deteriorare',
+                'service_feature_4_icon' => $settings->service_feature_4_icon ?? 'Smile',
+                'service_feature_4_title' => $settings->service_feature_4_title ?? 'CALITATE GARANTATĂ',
+                'service_feature_4_description' => $settings->service_feature_4_description ?? 'Suntem mândri să vă asigurăm că fiecare produs sau serviciu pe care îl oferim vine însoţit de o promisiune fermă: calitate garantată.',
             ],
         ]);
     }

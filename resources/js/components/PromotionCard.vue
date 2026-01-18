@@ -93,11 +93,11 @@ const handleClick = () => {
 
 <template>
     <div
-        class="group flex cursor-pointer flex-col overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition-all hover:shadow-lg dark:border-gray-700 dark:bg-gray-800"
+        class="group flex cursor-pointer flex-col overflow-hidden rounded-lg bg-white transition-all dark:bg-gray-800"
         @click="handleClick"
     >
         <!-- Banner Image -->
-        <div class="relative aspect-[4/3] w-full overflow-hidden bg-gray-100">
+        <div class="relative aspect-[4/3] w-full overflow-hidden bg-gray-100 dark:bg-gray-800">
             <img
                 :src="promotion.banner"
                 :alt="promotion.title"

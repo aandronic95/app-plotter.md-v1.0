@@ -14,6 +14,9 @@ import { useWishlistBatch } from '@/composables/useWishlistBatch';
 import { ref, computed, onMounted, nextTick } from 'vue';
 import StructuredData from '@/components/StructuredData.vue';
 import HeroBanner from '@/components/HeroBanner.vue';
+import ServiceFeatures from '@/components/ServiceFeatures.vue';
+import ProductCategoryShowcase from '@/components/ProductCategoryShowcase.vue';
+import CustomPrintBanner from '@/components/CustomPrintBanner.vue';
 
 interface Product {
     id: number;
@@ -121,7 +124,7 @@ const tabs = computed(() => [
     </Head>
     
     <StructuredData type="Organization" :data="organizationStructuredData.value" />
-    <div class="flex min-h-screen flex-col">
+    <div class="flex min-h-screen flex-col dark:bg-gray-900">
         <!-- Header with Main Menu -->
         <PublicHeader />
 
@@ -134,6 +137,16 @@ const tabs = computed(() => [
                     <PromotionCarousel />
                     <!-- Hero Banner Section -->
                     <HeroBanner />  
+                </div>
+
+                <!-- Product Category Showcase Section -->
+                <div class="mb-12">
+                    <ProductCategoryShowcase />
+                </div>
+
+                <!-- Custom Print Banner Section -->
+                <div class="mb-12">
+                    <CustomPrintBanner />
                 </div>
 
                 <!-- Content Grid: Categories (stânga) + Products (dreapta) -->
@@ -188,7 +201,8 @@ const tabs = computed(() => [
                 <NewsletterForm />
             </div>
         </div>
-
+        <!-- Service Features Section -->
+        <ServiceFeatures />
         <!-- Footer -->
         <AppFooter />
     </div>

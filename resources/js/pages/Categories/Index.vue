@@ -46,7 +46,7 @@ const isExpanded = (categoryId: number) => {
 
 <template>
     <Head title="Categorii" />
-    <div class="flex min-h-screen flex-col">
+    <div class="flex min-h-screen flex-col dark:bg-gray-900">
         <PublicHeader />
 
         <main class="flex-1">
@@ -69,7 +69,7 @@ const isExpanded = (categoryId: number) => {
                     <div
                         v-for="category in categories"
                         :key="category.id"
-                        class="flex flex-col overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-800"
+                        class="flex flex-col overflow-hidden rounded-lg bg-white transition-shadow dark:bg-gray-800"
                     >
                         <!-- Category Header -->
                         <div class="flex-1 p-6">
@@ -121,7 +121,7 @@ const isExpanded = (categoryId: number) => {
                                 isExpanded(category.id) ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0',
                             ]"
                         >
-                            <div class="border-t border-gray-200 bg-gray-50 px-6 py-4 dark:border-gray-700 dark:bg-gray-900">
+                            <div class="bg-gray-50 px-6 py-4 dark:bg-gray-900">
                                 <h3 class="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
                                     Subcategorii ({{ category.children.length }})
                                 </h3>
@@ -130,7 +130,7 @@ const isExpanded = (categoryId: number) => {
                                         v-for="subcategory in category.children"
                                         :key="subcategory.id"
                                         :href="`/categories/${subcategory.slug}`"
-                                        class="group flex items-center justify-between rounded-lg border border-gray-200 bg-white p-3 transition-all hover:border-primary-300 hover:bg-primary-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:border-primary-600 dark:hover:bg-primary-900/20"
+                                        class="group flex items-center justify-between rounded-lg bg-white p-3 transition-all hover:bg-primary-50 dark:bg-gray-800 dark:hover:bg-primary-900/20"
                                     >
                                         <div class="flex-1">
                                             <h4 class="text-sm font-semibold text-gray-900 group-hover:text-primary-600 dark:text-white dark:group-hover:text-primary-400">
@@ -150,7 +150,7 @@ const isExpanded = (categoryId: number) => {
                         </div>
 
                         <!-- View Category Link -->
-                        <div class="border-t border-gray-200 px-6 py-4 dark:border-gray-700">
+                        <div class="px-6 py-4">
                             <Link
                                 :href="`/categories/${category.slug}`"
                                 class="inline-flex items-center text-sm font-medium text-primary-600 transition-colors hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"

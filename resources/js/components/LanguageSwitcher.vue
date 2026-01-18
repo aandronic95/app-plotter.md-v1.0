@@ -17,8 +17,8 @@ const currentLocale = availableLocales.find((l) => l.code === locale.value) || a
 <template>
     <DropdownMenu>
         <DropdownMenuTrigger as-child>
-            <Button variant="ghost" size="icon" class="h-9 w-9">
-                <Globe class="h-4 w-4" />
+            <Button variant="ghost" size="icon" class="h-9 w-9 text-gray-600 transition-colors duration-200 hover:text-primary dark:text-gray-300">
+                <Globe class="h-4 w-4 text-current" />
                 <span class="sr-only">{{ t('select_language') }}</span>
             </Button>
         </DropdownMenuTrigger>
@@ -29,13 +29,13 @@ const currentLocale = availableLocales.find((l) => l.code === locale.value) || a
                 @click="switchLocale(loc.code)"
                 :class="[
                     'cursor-pointer text-sm',
-                    locale.value === loc.code && 'bg-primary/10 font-medium',
+                    locale.value === loc.code && 'bg-primary/10 dark:bg-primary/20 font-medium text-primary dark:text-primary',
                 ]"
             >
                 <span class="flex-1">{{ loc.native }}</span>
                 <span
                     v-if="locale.value === loc.code"
-                    class="ml-2 text-primary text-xs"
+                    class="ml-2 text-primary dark:text-primary text-xs font-bold"
                 >
                     ✓
                 </span>
