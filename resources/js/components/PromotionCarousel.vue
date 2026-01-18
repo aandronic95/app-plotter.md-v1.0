@@ -41,9 +41,12 @@ const CARDS_TO_SHOW = 4; // Numărul de carduri de categorii de afișat (fără 
 const visibleShowcases = computed(() => {
     if (showcases.value.length === 0) return [];
     
+    const totalShowcases = showcases.value.length;
+    const cardsToShow = Math.min(CARDS_TO_SHOW, totalShowcases);
     const result: Showcase[] = [];
-    for (let i = 0; i < CARDS_TO_SHOW; i++) {
-        const index = (currentIndex.value + i) % showcases.value.length;
+    
+    for (let i = 0; i < cardsToShow; i++) {
+        const index = (currentIndex.value + i) % totalShowcases;
         result.push(showcases.value[index]);
     }
     return result;
@@ -136,6 +139,11 @@ const resetInterval = () => {
 
 onMounted(() => {
     fetchShowcases().then(() => {
+        // Reset index if it's out of bounds
+        if (currentIndex.value >= showcases.value.length) {
+            currentIndex.value = 0;
+        }
+        // Start auto-play if we can navigate
         if (canNavigate.value) {
             startInterval();
         }
@@ -198,7 +206,10 @@ onUnmounted(() => {
                 </button>
 
                 <!-- 5 Cards Grid: Banner (fixed) + 4 Category Cards (moving) -->
-                <div class="grid grid-cols-1 gap-4 md:grid-cols-5">
+                <div :class="[
+                    'grid grid-cols-1 gap-4',
+                    section?.carousel_banner_image ? 'md:grid-cols-5' : 'md:grid-cols-4'
+                ]">
                     <!-- Banner Image (First Card - Fixed) -->
                     <div
                         v-if="section?.carousel_banner_image"
@@ -217,7 +228,7 @@ onUnmounted(() => {
                     <!-- Category Cards (4 Cards - Moving) -->
                     <div
                         v-for="(showcase, index) in visibleShowcases"
-                        :key="`${showcase.id}-${currentIndex}-${index}`"
+                        :key="`showcase-${showcase.id}-${index}`"
                         class="group relative h-64 cursor-pointer overflow-hidden rounded-lg bg-white shadow-md transition-shadow hover:shadow-xl dark:bg-gray-800"
                         @click="handleCardClick(showcase)"
                     >
