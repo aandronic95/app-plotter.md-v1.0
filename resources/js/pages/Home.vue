@@ -15,7 +15,6 @@ import { ref, computed, onMounted, nextTick } from 'vue';
 import StructuredData from '@/components/StructuredData.vue';
 import HeroBanner from '@/components/HeroBanner.vue';
 import ServiceFeatures from '@/components/ServiceFeatures.vue';
-import ProductCategoryShowcase from '@/components/ProductCategoryShowcase.vue';
 import CustomPrintBanner from '@/components/CustomPrintBanner.vue';
 
 interface Product {
@@ -139,10 +138,6 @@ const tabs = computed(() => [
                     <HeroBanner />  
                 </div>
 
-                <!-- Product Category Showcase Section -->
-                <div class="mb-12">
-                    <ProductCategoryShowcase />
-                </div>
 
                 <!-- Custom Print Banner Section -->
                 <div class="mb-12">

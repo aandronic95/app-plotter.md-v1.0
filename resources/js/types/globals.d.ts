@@ -24,3 +24,10 @@ declare module 'vue' {
         $headManager: ReturnType<typeof createHeadManager>;
     }
 }
+
+// Extend Window interface for custom global properties
+declare global {
+    interface Window {
+        wishlistBatchUpdate?: (productId: number, inWishlist: boolean) => void;
+    }
+}
