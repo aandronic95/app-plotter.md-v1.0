@@ -649,10 +649,11 @@ const removeFromWishlist = async (productId: number) => {
                                     <!-- Pagination -->
                                     <div v-if="props.orders.links.length > 3" class="mt-6 flex justify-center">
                                         <div class="flex gap-2">
-                                            <Link
+                                            <component
+                                                :is="link.url ? Link : 'span'"
                                                 v-for="link in props.orders.links"
                                                 :key="link.label"
-                                                :href="link.url || '#'"
+                                                :href="link.url || undefined"
                                                 :class="[
                                                     'px-3 py-2 rounded-md text-sm font-medium transition-colors',
                                                     link.active

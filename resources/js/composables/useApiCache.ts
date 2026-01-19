@@ -16,7 +16,7 @@ interface CacheOptions {
 
 const DEFAULT_TTL = 60 * 60 * 1000; // 1 hour
 
-export const useApiCache = <T>() => {
+export const useApiCache = () => {
     /**
      * Load data from cache
      */
@@ -80,7 +80,7 @@ export const useApiCache = <T>() => {
                 if (options.version) {
                     localStorage.removeItem(`${options.key}_version`);
                 }
-            } catch (e) {
+            } catch {
                 // Ignore
             }
         }

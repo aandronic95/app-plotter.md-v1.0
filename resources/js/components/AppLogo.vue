@@ -5,7 +5,7 @@ import { useSiteSettings } from '@/composables/useSiteSettings';
 import { computed, onMounted } from 'vue';
 
 const page = usePage();
-const { siteSettings, fetchSiteSettings, isLoading } = useSiteSettings();
+const { siteSettings, fetchSiteSettings } = useSiteSettings();
 
 const appName = computed(() => {
     if (siteSettings.value?.site_name) {

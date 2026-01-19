@@ -12,7 +12,6 @@ interface SEOData {
 }
 
 export const useSEO = (seoData?: SEOData) => {
-    const page = usePage();
     const { siteSettings } = useSiteSettings();
 
     const siteName = computed(() => {

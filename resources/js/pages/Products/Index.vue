@@ -217,7 +217,7 @@ const handlePagination = async (url: string | null) => {
             try {
                 const urlObj = new URL(apiUrl);
                 apiUrl = urlObj.pathname + urlObj.search;
-            } catch (e) {
+            } catch {
                 console.error('Invalid URL format:', apiUrl);
                 return;
             }

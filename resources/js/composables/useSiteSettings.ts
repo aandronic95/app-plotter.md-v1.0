@@ -113,7 +113,7 @@ const saveToCache = (data: SiteSettings, version: string = '1.0') => {
         try {
             localStorage.removeItem(CACHE_KEY);
             localStorage.removeItem(CACHE_VERSION_KEY);
-        } catch (e) {
+        } catch {
             // Ignore
         }
     }

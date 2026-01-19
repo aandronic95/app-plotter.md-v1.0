@@ -89,6 +89,7 @@ const addToCart = async () => {
 
 // Wishlist status will be set by parent component via provide/inject or props
 // This function is kept for backward compatibility but won't be called automatically
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const checkWishlistStatus = async () => {
     // This is now handled by batch checking in parent components
     // Kept for manual refresh if needed

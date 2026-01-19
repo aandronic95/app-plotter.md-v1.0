@@ -115,7 +115,7 @@ export const useWishlistBatch = () => {
                 }
 
                 return wishlistStatuses.value;
-            } catch (error) {
+            } catch {
                 // Silently handle errors for wishlist - it's not critical
                 // Return false for all uncached IDs on error
                 const result: WishlistStatus = {};

@@ -28,7 +28,7 @@ interface Props {
     categories: Category[];
 }
 
-const props = defineProps<Props>();
+defineProps<Props>();
 const expandedCategories = ref<Set<number>>(new Set());
 
 const toggleCategory = (categoryId: number) => {

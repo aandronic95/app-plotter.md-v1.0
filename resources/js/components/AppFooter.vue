@@ -23,7 +23,6 @@ interface NavigationItem {
     target?: string;
 }
 
-const currentYear = new Date().getFullYear();
 const { siteSettings, fetchSiteSettings } = useSiteSettings();
 const { t } = useTranslations();
 const apiCache = useApiCache();
