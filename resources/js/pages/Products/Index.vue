@@ -322,7 +322,7 @@ const handlePagination = async (url: string | null) => {
                 <div class="grid grid-cols-1 gap-6 lg:grid-cols-4">
                     <!-- Filters Sidebar - Desktop -->
                     <aside class="hidden lg:block lg:col-span-1">
-                        <div class="sticky top-20 rounded-lg bg-white p-4 dark:bg-gray-800">
+                        <div class="rounded-lg bg-white p-4 dark:bg-gray-800">
                             <ProductFiltersSidebar
                                 :categories="categories"
                                 :filters="currentFilters"

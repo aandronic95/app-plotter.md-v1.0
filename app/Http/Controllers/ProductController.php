@@ -30,6 +30,36 @@ class ProductController extends Controller
     }
 
     /**
+     * Map category with nested children recursively.
+     */
+    private function mapCategoryWithNestedChildren(Category $category): array
+    {
+        $result = [
+            'id' => $category->id,
+            'name' => $category->name,
+            'slug' => $category->slug,
+            'count' => $category->products_count ?? 0,
+        ];
+
+        if ($category->relationLoaded('children') && $category->children->isNotEmpty()) {
+            // Load nested children if not already loaded
+            if (!$category->children->first()->relationLoaded('children')) {
+                $category->load(['children.children' => function ($query) {
+                    $query->where('is_active', true)->orderBy('sort_order');
+                }]);
+            }
+
+            $result['children'] = $category->children->map(function (Category $child) {
+                return $this->mapCategoryWithNestedChildren($child);
+            })->toArray();
+        } else {
+            $result['children'] = [];
+        }
+
+        return $result;
+    }
+
+    /**
      * Display a listing of products.
      */
     public function index(Request $request): Response
@@ -191,29 +221,23 @@ class ProductController extends Controller
             ];
         });
 
-        // Fetch categories for sidebar
+        // Fetch categories for sidebar with nested children
         $categories = Category::where('is_active', true)
             ->whereNull('parent_id')
             ->with(['children' => function ($query) {
+                $query->where('is_active', true)->orderBy('sort_order');
+            }])
+            ->with(['children.children' => function ($query) {
+                $query->where('is_active', true)->orderBy('sort_order');
+            }])
+            ->with(['children.children.children' => function ($query) {
                 $query->where('is_active', true)->orderBy('sort_order');
             }])
             ->withCount('products')
             ->orderBy('sort_order')
             ->get()
             ->map(function (Category $cat) {
-                return [
-                    'id' => $cat->id,
-                    'name' => $cat->name,
-                    'slug' => $cat->slug,
-                    'count' => $cat->products_count ?? 0,
-                    'children' => $cat->children ? $cat->children->map(function (Category $child) {
-                        return [
-                            'id' => $child->id,
-                            'name' => $child->name,
-                            'slug' => $child->slug,
-                        ];
-                    })->toArray() : [],
-                ];
+                return $this->mapCategoryWithNestedChildren($cat);
             });
 
         // Calculate price range for all active products (respecting current filters except price)
