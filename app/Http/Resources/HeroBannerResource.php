@@ -22,7 +22,13 @@ class HeroBannerResource extends JsonResource
             if (str_starts_with($this->image, 'http://') || str_starts_with($this->image, 'https://')) {
                 $imageUrl = $this->image;
             } else {
-                $imageUrl = Storage::disk('public')->url($this->image);
+                // Use asset() for consistency with SiteSetting model
+                // Remove 'storage/' prefix if already present to avoid duplication
+                $imagePath = $this->image;
+                if (str_starts_with($imagePath, 'storage/')) {
+                    $imagePath = substr($imagePath, 8); // Remove 'storage/' prefix
+                }
+                $imageUrl = asset('storage/' . $imagePath);
             }
         }
 
