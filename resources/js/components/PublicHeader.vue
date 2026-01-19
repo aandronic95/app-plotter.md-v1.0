@@ -381,10 +381,10 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <header class="sticky top-0 z-50 shadow-sm transition-all duration-300 mb-10" :class="isScrolled ? 'h-auto' : 'h-[100px]'">
+    <header class="shadow-sm transition-all duration-300 mb-10" :class="isScrolled ? 'h-auto' : 'h-[100px]'">
         <!-- Main header bar - all elements in one row -->
         <div 
-            class="bg-gray-950 dark:bg-gray-950 border-b border-gray-800/50 transition-all duration-300 overflow-hidden"
+            class=" dark:bg-gray-900 transition-all duration-300 overflow-hidden"
             :class="isScrolled ? 'h-0 opacity-0 -translate-y-full' : 'h-full opacity-100 translate-y-0'"
         >
             <div class="mx-auto max-w-7xl px-4 md:px-6 h-full">
@@ -404,7 +404,7 @@ onUnmounted(() => {
                         <AppLogo v-else-if="siteSettings?.show_logo ?? true" />
                         <span
                             v-if="siteSettings?.site_name && (siteSettings?.show_site_name ?? true)"
-                            class="hidden text-xl font-bold text-white transition-all duration-200 group-hover:text-white sm:block whitespace-nowrap"
+                            class="hidden text-xl font-bold text-gray-900 dark:text-white transition-all duration-200 group-hover:text-gray-900/90 dark:group-hover:text-white sm:block whitespace-nowrap"
                         >
                             {{ siteSettings.site_name }}
                         </span>
@@ -420,40 +420,40 @@ onUnmounted(() => {
                         <!-- Search Dialog -->
                     <Dialog :open="isSearchOpen" @update:open="isSearchOpen = $event">
                         <DialogTrigger :as-child="true">
-                            <Button variant="ghost" size="icon" class="group relative h-9 w-9 text-white transition-all duration-200 hover:bg-white/10 hover:text-white dark:text-white">
-                                <Search class="h-5 w-5 transition-transform duration-200 group-hover:scale-110" />
+                            <Button variant="ghost" size="icon" class="group relative h-9 w-9 text-white dark:text-white transition-all duration-200 hover:bg-white/10 dark:hover:bg-white/10 hover:text-white dark:hover:text-white">
+                                <Search class="text-gray-900 dark:text-white h-5 w-5 transition-transform duration-200 group-hover:scale-110" />
                             </Button>
                         </DialogTrigger>
-                        <DialogContent class="max-w-2xl border-gray-200/50 bg-white/95 backdrop-blur-md dark:border-gray-700/50 dark:bg-gray-900/95">
+                        <DialogContent class="max-w-2xl border-gray-200/50 bg-gray-50/95 backdrop-blur-md dark:border-gray-700/50 dark:bg-gray-900/95">
                             <DialogHeader>
-                                <DialogTitle class="text-xl font-semibold">{{ t('search_title') }}</DialogTitle>
+                                <DialogTitle class="text-xl font-semibold text-gray-900 dark:text-white">{{ t('search_title') }}</DialogTitle>
                             </DialogHeader>
                             <div class="space-y-4">
                                 <!-- Search Input -->
                                 <div class="relative">
-                                    <Search class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 transition-colors duration-200 group-focus-within:text-primary" />
+                                    <Search class="text-gray-900 dark:text-white h-5 w-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 transition-colors duration-200 group-focus-within:text-primary" />
                                     <Input
                                         ref="searchInputRef"
                                         :model-value="searchQuery"
                                         @update:model-value="handleSearchInput"
                                         :placeholder="t('search_placeholder')"
-                                        class="group h-12 border-2 border-gray-200 pl-10 transition-all duration-200 focus:border-primary focus:ring-2 focus:ring-primary/20 dark:border-gray-700"
+                                        class="group h-12 border-2 border-gray-200 dark:border-gray-700 pl-10 transition-all duration-200 focus:border-primary dark:focus:border-primary focus:ring-2 focus:ring-primary/20 dark:focus:ring-primary/20 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500"
                                     />
                                 </div>
 
                                 <!-- Search Results -->
                                 <div v-if="isSearching" class="flex items-center justify-center py-12">
                                     <div class="relative">
-                                        <div class="h-8 w-8 animate-spin rounded-full border-[3px] border-gray-200 border-t-primary"></div>
-                                        <div class="absolute inset-0 h-8 w-8 animate-ping rounded-full border-2 border-primary opacity-20"></div>
+                                        <div class="h-8 w-8 animate-spin rounded-full border-[3px] border-gray-200 dark:border-gray-700 border-t-primary dark:border-t-primary"></div>
+                                        <div class="absolute inset-0 h-8 w-8 animate-ping rounded-full border-2 border-primary dark:border-primary opacity-20"></div>
                                     </div>
                                 </div>
 
                                 <div v-else-if="searchQuery.length >= 2 && (searchResults.products.length > 0 || searchResults.pages.length > 0)" class="max-h-96 space-y-4 overflow-y-auto">
                                     <!-- Products Results -->
                                     <div v-if="searchResults.products.length > 0">
-                                        <h3 class="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-300 dark:text-gray-300">
-                                            <Package class="h-4 w-4 text-primary" />
+                                        <h3 class="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                            <Package class="text-gray-900 dark:text-white h-4 w-4 text-primary dark:text-primary" />
                                             {{ t('products_count') }} ({{ searchResults.products.length }})
                                         </h3>
                                         <div class="space-y-2">
@@ -461,7 +461,7 @@ onUnmounted(() => {
                                                 v-for="product in searchResults.products"
                                                 :key="product.id"
                                                 @click="handleSearchResultClick('product', product.slug)"
-                                                class="group flex w-full items-center gap-3 rounded-lg border border-gray-200 bg-white p-3 text-left transition-all duration-200 hover:border-primary/50 hover:bg-primary/5 hover:shadow-md dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700"
+                                                class="group flex w-full items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3 text-left transition-all duration-200 hover:border-primary/50 hover:bg-primary/5 hover:shadow-md dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700"
                                             >
                                                 <div class="relative overflow-hidden rounded-md">
                                                     <img
@@ -474,25 +474,25 @@ onUnmounted(() => {
                                                     </div>
                                                 </div>
                                                 <div class="flex-1 min-w-0">
-                                                    <p class="truncate font-medium text-gray-900 transition-colors duration-200 group-hover:text-primary dark:text-white">
+                                                    <p class="truncate font-medium text-gray-900 dark:text-white transition-colors duration-200 group-hover:text-primary dark:group-hover:text-primary">
                                                         {{ product.name }}
                                                     </p>
                                                     <p v-if="product.description" class="mt-0.5 line-clamp-1 text-xs text-gray-500 dark:text-gray-400">
                                                         {{ product.description }}
                                                     </p>
                                                     <div class="mt-1.5 flex items-center gap-2">
-                                                        <p class="text-sm font-bold text-primary">
+                                                        <p class="text-sm font-bold text-primary dark:text-primary">
                                                             {{ product.price.toFixed(2) }} RON
                                                         </p>
                                                         <span
                                                             v-if="product.original_price"
-                                                            class="text-xs text-gray-400 line-through"
+                                                            class="text-xs text-gray-400 dark:text-gray-500 line-through"
                                                         >
                                                             {{ product.original_price.toFixed(2) }} RON
                                                         </span>
                                                     </div>
                                                 </div>
-                                                <Package class="h-5 w-5 flex-shrink-0 text-gray-400 transition-colors duration-200 group-hover:text-primary" />
+                                                <Package class="h-5 w-5 flex-shrink-0 text-gray-400 dark:text-gray-500 transition-colors duration-200 group-hover:text-primary dark:group-hover:text-primary" />
                                             </button>
                                         </div>
                                     </div>
@@ -500,7 +500,7 @@ onUnmounted(() => {
                                     <!-- Pages Results -->
                                     <div v-if="searchResults.pages.length > 0">
                                         <h3 class="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
-                                            <FileText class="h-4 w-4 text-primary" />
+                                            <FileText class="h-4 w-4 text-primary dark:text-primary" />
                                             {{ t('pages_count') }} ({{ searchResults.pages.length }})
                                         </h3>
                                         <div class="space-y-2">
@@ -508,13 +508,13 @@ onUnmounted(() => {
                                                 v-for="page in searchResults.pages"
                                                 :key="page.id"
                                                 @click="handleSearchResultClick('page', page.slug)"
-                                                class="group flex w-full items-center gap-3 rounded-lg border border-gray-200 bg-white p-3 text-left transition-all duration-200 hover:border-primary/50 hover:bg-primary/5 hover:shadow-md dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700"
+                                                class="group flex w-full items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3 text-left transition-all duration-200 hover:border-primary/50 hover:bg-primary/5 hover:shadow-md dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700"
                                             >
                                                 <div class="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-md bg-gradient-to-br from-primary/10 to-primary/5 transition-all duration-200 group-hover:from-primary/20 group-hover:to-primary/10 dark:from-primary/20 dark:to-primary/10">
                                                     <FileText class="h-6 w-6 text-primary transition-transform duration-200 group-hover:scale-110" />
                                                 </div>
                                                 <div class="flex-1 min-w-0">
-                                                    <p class="font-medium text-gray-900 transition-colors duration-200 group-hover:text-primary dark:text-white">
+                                                    <p class="font-medium text-gray-900 dark:text-white transition-colors duration-200 group-hover:text-primary dark:group-hover:text-primary">
                                                         {{ page.title }}
                                                     </p>
                                                     <p
@@ -530,13 +530,13 @@ onUnmounted(() => {
 
                                     <!-- View All Results -->
                                     <div class="border-t border-gray-200 pt-4 dark:border-gray-700">
-                                        <Button
-                                            @click="handleViewAllResults"
-                                            variant="outline"
-                                            class="w-full border-2 transition-all duration-200 hover:border-primary hover:bg-primary hover:text-white"
-                                        >
-                                            {{ t('view_all_results') }} "{{ searchQuery }}"
-                                        </Button>
+                                    <Button
+                                        @click="handleViewAllResults"
+                                        variant="outline"
+                                        class="w-full border-2 border-gray-200 dark:border-gray-700 transition-all duration-200 hover:border-primary dark:hover:border-primary hover:bg-primary dark:hover:bg-primary hover:text-white dark:hover:text-white"
+                                    >
+                                        {{ t('view_all_results') }} "{{ searchQuery }}"
+                                    </Button>
                                     </div>
                                 </div>
 
@@ -545,7 +545,7 @@ onUnmounted(() => {
                                     class="flex flex-col items-center justify-center py-12 text-center"
                                 >
                                     <div class="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
-                                        <Search class="h-8 w-8 text-gray-400" />
+                                        <Search class="text-gray-900 dark:text-gray-500 h-8 w-8" />
                                     </div>
                                     <p class="text-sm font-medium text-gray-700 dark:text-gray-300">
                                         {{ t('no_search_results') }}
@@ -559,8 +559,8 @@ onUnmounted(() => {
                                     v-else-if="searchQuery.length < 2"
                                     class="flex flex-col items-center justify-center py-12 text-center"
                                 >
-                                    <div class="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-                                        <Search class="h-8 w-8 text-primary" />
+                                    <div class="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 dark:bg-primary/20">
+                                        <Search class="h-8 w-8 text-primary dark:text-primary" />
                                     </div>
                                     <p class="text-sm font-medium text-gray-700 dark:text-gray-300">
                                         {{ t('search_min_chars') }}
@@ -578,21 +578,21 @@ onUnmounted(() => {
                         variant="ghost"
                         size="icon"
                         @click="toggleDarkMode"
-                        class="group relative h-10 w-10 text-white transition-all duration-200 hover:bg-white/10 hover:text-white dark:text-white"
+                        class="group relative h-10 w-10 text-white dark:text-white transition-all duration-200 hover:bg-white/10 dark:hover:bg-white/10 hover:text-white dark:hover:text-white"
                         :title="isDark ? t('toggle_light_mode') : t('toggle_dark_mode')"
                     >
                         <Sun
                             v-if="isDark"
-                            class="h-5 w-5 transition-all duration-300 group-hover:rotate-180"
+                            class="text-gray-900 dark:text-white h-5 w-5 transition-all duration-300 group-hover:rotate-180"
                         />
                         <Moon
                             v-else
-                            class="h-5 w-5 transition-all duration-300 group-hover:-rotate-12"
+                            class="text-gray-900 dark:text-white h-5 w-5 transition-all duration-300 group-hover:-rotate-12"
                         />
                     </Button>
                     
                     <!-- Language Switcher -->
-                    <LanguageSwitcher />
+                    <LanguageSwitcher  class="text-gray-900 dark:text-white"/>
                     
                     <!-- Desktop Auth Buttons -->
                     <template v-if="auth.user">
@@ -600,10 +600,10 @@ onUnmounted(() => {
                             <Button 
                                 variant="ghost" 
                                 size="icon" 
-                                class="group relative h-10 w-10 text-white transition-all duration-200 hover:bg-white/10 hover:text-white dark:text-white" 
+                                class="text-gray-900 dark:text-white group relative h-10 w-10 text-white dark:text-white transition-all duration-200 hover:bg-white/10 dark:hover:bg-white/10 hover:text-white dark:hover:text-white" 
                                 :title="t('my_profile')"
                             >
-                                <User class="h-5 w-5 transition-transform duration-200 group-hover:scale-110" />
+                                <User class="text-gray-900 dark:text-white h-5 w-5 transition-transform duration-200 group-hover:scale-110" />
                             </Button>
                         </Link>
                         <form @submit.prevent="() => { cacheManager.invalidateOnAuthChange(); router.post(logout().url); }" class="inline">
@@ -611,21 +611,21 @@ onUnmounted(() => {
                                 type="submit" 
                                 variant="ghost" 
                                 size="icon" 
-                                class="group relative h-10 w-10 text-white transition-all duration-200 hover:bg-white/10 hover:text-white dark:text-white" 
+                                class="group relative h-10 w-10 text-white dark:text-white transition-all duration-200 hover:bg-white/10 dark:hover:bg-white/10 hover:text-white dark:hover:text-white" 
                                 :title="t('logout')"
                             >
-                                <LogOut class="h-5 w-5 transition-transform duration-200 group-hover:scale-110" />
+                                <LogOut class="text-gray-900 dark:text-white h-5 w-5 transition-transform duration-200 group-hover:scale-110" />
                             </Button>
                         </form>
                     </template>
                     <template v-else>
                         <Link :href="login().url">
-                            <Button variant="ghost" size="sm" class="text-white transition-all duration-200 hover:bg-white/10 hover:text-white dark:text-white">
+                            <Button variant="ghost" size="sm" class="text-gray-900 dark:text-white transition-all duration-200 hover:bg-white/10 dark:hover:bg-white/10 hover:text-white dark:hover:text-white">
                                 {{ t('login') }}
                             </Button>
                         </Link>
                         <Link :href="register()">
-                            <Button size="sm" class="bg-gradient-to-r from-primary to-primary/80 text-white transition-all duration-200 hover:scale-105 hover:from-primary/90 hover:to-primary/70 hover:shadow-lg">
+                            <Button size="sm" class="bg-gradient-to-r from-primary to-primary/80 dark:from-primary dark:to-primary/80 text-gray-900 dark:text-white transition-all duration-200 hover:scale-105 hover:from-primary/90 hover:to-primary/70 dark:hover:from-primary/90 dark:hover:to-primary/70 hover:shadow-lg">
                                 {{ t('register') }}
                             </Button>
                         </Link>
@@ -635,12 +635,12 @@ onUnmounted(() => {
                         <Button
                             variant="ghost"
                             size="icon"
-                            class="group relative h-10 w-10 text-white transition-all duration-200 hover:bg-white/10 hover:text-white dark:text-white"
+                            class="group relative h-10 w-10 text-white dark:text-white transition-all duration-200 hover:bg-white/10 dark:hover:bg-white/10 hover:text-white dark:hover:text-white"
                         >
-                            <ShoppingCart class="h-5 w-5 transition-transform duration-200 group-hover:scale-110" />
+                            <ShoppingCart class="text-gray-900 dark:text-white h-5 w-5 transition-transform duration-200 group-hover:scale-110" />
                             <span
                                 v-if="cartCount > 0"
-                                class="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br from-red-500 to-red-600 text-xs font-bold text-white shadow-lg ring-2 ring-white transition-all duration-300 dark:ring-gray-900"
+                                class="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br from-red-500 to-red-600 dark:from-red-500 dark:to-red-600 text-xs font-bold text-white dark:text-white shadow-lg ring-2 ring-white dark:ring-gray-900 transition-all duration-300"
                             >
                                 {{ cartCount > 99 ? '99+' : cartCount }}
                             </span>
@@ -651,13 +651,13 @@ onUnmounted(() => {
                     <div class="md:hidden">
                         <Sheet>
                             <SheetTrigger :as-child="true">
-                                <Button variant="ghost" size="icon" class="group h-10 w-10 text-white transition-all duration-200 hover:bg-white/10 hover:text-white dark:text-white">
+                                <Button variant="ghost" size="icon" class="group h-10 w-10 text-white dark:text-white transition-all duration-200 hover:bg-white/10 dark:hover:bg-white/10 hover:text-white dark:hover:text-white">
                                     <Menu class="h-5 w-5 transition-transform duration-200 group-hover:rotate-90" />
                                 </Button>
                             </SheetTrigger>
-                            <SheetContent side="right" class="w-[300px] border-gray-200/50 bg-white/95 backdrop-blur-md dark:border-gray-700/50 dark:bg-gray-900/95">
+                            <SheetContent side="right" class="w-[300px] border-gray-200/50 bg-gray-50/95 backdrop-blur-md dark:border-gray-700/50 dark:bg-gray-900/95">
                                 <SheetHeader>
-                                    <SheetTitle class="text-xl font-semibold">{{ t('menu') }}</SheetTitle>
+                                    <SheetTitle class="text-xl font-semibold text-gray-900 dark:text-white">{{ t('menu') }}</SheetTitle>
                                 </SheetHeader>
                                 <!-- Categories Section -->
                                 <div v-if="!isCategoriesLoading && categories.length > 0" class="mt-6 space-y-1 border-b border-gray-200 pb-4 dark:border-gray-700">
@@ -677,7 +677,7 @@ onUnmounted(() => {
                                             <div class="flex items-center gap-2">
                                                 <component
                                                     :is="isCategoryExpanded(category.name) ? ChevronDown : ChevronRight"
-                                                    class="h-4 w-4 text-gray-500 transition-transform duration-200"
+                                                    class="h-4 w-4 text-gray-500 dark:text-gray-400 transition-transform duration-200"
                                                     :class="{ 'rotate-90': isCategoryExpanded(category.name) }"
                                                 />
                                                 <span>{{ category.name }}</span>
@@ -719,7 +719,7 @@ onUnmounted(() => {
                                     <div class="h-4 w-full animate-pulse rounded-md bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700"></div>
                                 </div>
                                 <div v-else-if="menuItems.length === 0" class="mt-6">
-                                    <p class="text-sm text-gray-500">Nu există elemente de navigare</p>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">Nu există elemente de navigare</p>
                                 </div>
                                 
                                 <!-- Dark Mode Toggle Mobile -->

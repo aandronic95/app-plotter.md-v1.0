@@ -48,8 +48,8 @@ class ProductCategoryShowcaseController extends Controller
         $sectionRecord = $sectionQuery->whereNotNull('section_title')->first();
         $sectionTitle = $sectionRecord?->section_title ?? 'TIPURI DE PRODUSE';
         $sectionDescription = $sectionRecord?->section_description ?? null;
-        $buttonText = $sectionRecord?->button_text ?? 'VEZI TOT CATALOGUL >';
-        $buttonLink = $sectionRecord?->button_link ?? null;
+        $buttonText = $sectionRecord?->section_button_text ?? $sectionRecord?->button_text ?? 'VEZI TOT CATALOGUL >';
+        $buttonLink = $sectionRecord?->section_button_link ?? $sectionRecord?->button_link ?? null;
         $carouselBannerImage = $sectionRecord?->carousel_banner_image ? $this->getImageUrl($sectionRecord->carousel_banner_image) : null;
 
         // Order by

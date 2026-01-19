@@ -3,7 +3,6 @@ import AppFooter from '@/components/AppFooter.vue';
 import PublicHeader from '@/components/PublicHeader.vue';
 import CategoriesSidebar from '@/components/CategoriesSidebar.vue';
 import ProductCard from '@/components/ProductCard.vue';
-import PromotionCarousel from '@/components/PromotionCarousel.vue';
 import ContentTabs from '@/components/ContentTabs.vue';
 import LoginSuccessModal from '@/components/LoginSuccessModal.vue';
 import NewsletterForm from '@/components/NewsletterForm.vue';
@@ -15,8 +14,6 @@ import { ref, computed, onMounted, nextTick } from 'vue';
 import StructuredData from '@/components/StructuredData.vue';
 import HeroBanner from '@/components/HeroBanner.vue';
 import ServiceFeatures from '@/components/ServiceFeatures.vue';
-import ProductCategoryShowcase from '@/components/ProductCategoryShowcase.vue';
-import CustomPrintBanner from '@/components/CustomPrintBanner.vue';
 
 interface Product {
     id: number;
@@ -124,30 +121,19 @@ const tabs = computed(() => [
     </Head>
     
     <StructuredData type="Organization" :data="organizationStructuredData.value" />
-    <div class="flex min-h-screen flex-col dark:bg-gray-900">
+    <div class="flex min-h-screen flex-col bg-gray-50 dark:bg-gray-900">
         <!-- Header with Main Menu -->
         <PublicHeader />
 
         <!-- Main Content -->
         <main class="flex-1">
             <div class="mx-auto max-w-7xl px-4 py-6 md:px-6">
-                <!-- Carousel cu Promoții -->
                 <div class="mb-8">
-                    
-                    <PromotionCarousel />
                     <!-- Hero Banner Section -->
                     <HeroBanner />  
                 </div>
 
-                <!-- Product Category Showcase Section -->
-                <div class="mb-12">
-                    <ProductCategoryShowcase />
-                </div>
-
-                <!-- Custom Print Banner Section -->
-                <div class="mb-12">
-                    <CustomPrintBanner />
-                </div>
+            
 
                 <!-- Content Grid: Categories (stânga) + Products (dreapta) -->
                 <div class="grid grid-cols-1 gap-6 lg:grid-cols-4">
@@ -195,14 +181,16 @@ const tabs = computed(() => [
             </div>
         </main>
 
+        <!-- Service Features Section -->
+        <ServiceFeatures />
         <!-- Newsletter Form -->
         <div class="w-full bg-gray-50 dark:bg-gray-900 py-8">
             <div class="mx-auto max-w-7xl px-4 md:px-6">
+
                 <NewsletterForm />
             </div>
         </div>
         <!-- Service Features Section -->
-        <ServiceFeatures />
         <!-- Footer -->
         <AppFooter />
     </div>

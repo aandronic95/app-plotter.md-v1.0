@@ -23,7 +23,7 @@ const goBack = () => {
 
 <template>
     <Head :title="t('page_not_found')" />
-    <div class="flex min-h-screen flex-col dark:bg-gray-900">
+    <div class="flex min-h-screen flex-col bg-gray-50 dark:bg-gray-900">
         <PublicHeader />
 
         <main class="flex-1">
@@ -45,21 +45,21 @@ const goBack = () => {
                 <div class="flex flex-col gap-4 sm:flex-row">
                     <Link
                         href="/"
-                        class="inline-flex items-center justify-center gap-2 rounded-lg bg-primary-600 px-6 py-3 font-semibold text-white transition-colors hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+                        class="text-gray-900 dark:text-white inline-flex items-center justify-center gap-2 rounded-lg bg-primary-600 px-6 py-3 font-semibold text-white transition-colors hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
                     >
                         <Home class="h-5 w-5" />
                         {{ t('main_page') }}
                     </Link>
                     <Link
                         href="/products"
-                        class="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-6 py-3 font-semibold text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:focus:ring-offset-gray-800"
+                        class="text-gray-900 dark:text-white inline-flex items-center justify-center gap-2 rounded-lg bg-white px-6 py-3 font-semibold text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:focus:ring-offset-gray-800"
                     >
                         <Search class="h-5 w-5" />
                         {{ t('search_products_button') }}
                     </Link>
                     <button
                         @click="goBack"
-                        class="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-6 py-3 font-semibold text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:focus:ring-offset-gray-800"
+                        class="text-gray-900 dark:text-white inline-flex items-center justify-center gap-2 rounded-lg bg-white px-6 py-3 font-semibold text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:focus:ring-offset-gray-800"
                     >
                         <ArrowLeft class="h-5 w-5" />
                         {{ t('back') }}

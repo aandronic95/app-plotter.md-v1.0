@@ -3,7 +3,9 @@ import AppFooter from '@/components/AppFooter.vue';
 import PublicHeader from '@/components/PublicHeader.vue';
 import ProductCard from '@/components/ProductCard.vue';
 import { Button } from '@/components/ui/button';
-import { ShoppingCart, Heart, ArrowLeft, X, ChevronLeft, ChevronRight } from 'lucide-vue-next';
+import Dialog from '@/components/ui/dialog/Dialog.vue';
+import DialogContent from '@/components/ui/dialog/DialogContent.vue';
+import { ShoppingCart, Heart, ArrowLeft, X, ChevronLeft, ChevronRight, CheckCircle, AlertCircle } from 'lucide-vue-next';
 import { Head, Link } from '@inertiajs/vue3';
 import { computed, ref, onMounted, onUnmounted } from 'vue';
 import { useTranslations } from '@/composables/useTranslations';
@@ -139,6 +141,10 @@ const currentImageIndex = ref(0);
 const recentlyViewedProducts = ref<RelatedProduct[]>([]);
 const isInWishlist = ref(false);
 const wishlistLoading = ref(false);
+const showSuccessDialog = ref(false);
+const showErrorDialog = ref(false);
+const dialogMessage = ref('');
+const dialogTitle = ref('');
 
 // Calculează toate imaginile disponibile (imaginea principală + imagini suplimentare)
 const allImages = computed(() => {
@@ -282,7 +288,7 @@ const toggleWishlist = async () => {
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
         
         if (!csrfToken) {
-            alert(t('error_csrf_missing'));
+            showErrorMessage(t('error_csrf_missing'));
             wishlistLoading.value = false;
             return;
         }
@@ -302,10 +308,10 @@ const toggleWishlist = async () => {
 
             if (response.ok) {
                 isInWishlist.value = false;
-                alert(t('common.product_removed_from_wishlist'));
+                showSuccessMessage(t('common.product_removed_from_wishlist'));
             } else {
                 const errorData = await response.json().catch(() => ({ message: t('error_unknown') }));
-                alert(errorData.message || t('common.error_removing_from_wishlist'));
+                showErrorMessage(errorData.message || t('common.error_removing_from_wishlist'));
             }
         } else {
             // Add to wishlist
@@ -325,15 +331,15 @@ const toggleWishlist = async () => {
 
             if (response.ok) {
                 isInWishlist.value = true;
-                alert(t('common.product_added_to_wishlist'));
+                showSuccessMessage(t('common.product_added_to_wishlist'));
             } else {
                 const errorData = await response.json().catch(() => ({ message: t('error_unknown') }));
-                alert(errorData.message || t('common.error_adding_to_wishlist'));
+                showErrorMessage(errorData.message || t('common.error_adding_to_wishlist'));
             }
         }
     } catch (error) {
         console.error('Error toggling wishlist:', error);
-        alert(t('common.error_unknown'));
+        showErrorMessage(t('common.error_unknown'));
     } finally {
         wishlistLoading.value = false;
     }
@@ -351,6 +357,18 @@ onUnmounted(() => {
     document.body.style.overflow = '';
 });
 
+const showSuccessMessage = (message: string, title?: string) => {
+    dialogTitle.value = title || t('success') || 'Succes';
+    dialogMessage.value = message;
+    showSuccessDialog.value = true;
+};
+
+const showErrorMessage = (message: string, title?: string) => {
+    dialogTitle.value = title || t('error') || 'Eroare';
+    dialogMessage.value = message;
+    showErrorDialog.value = true;
+};
+
 const addToCart = async () => {
     if (isOutOfStock.value) {
         return;
@@ -361,7 +379,7 @@ const addToCart = async () => {
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
         
         if (!csrfToken) {
-            alert(t('error_csrf_missing'));
+            showErrorMessage(t('error_csrf_missing'));
             loading.value = false;
             return;
         }
@@ -383,7 +401,7 @@ const addToCart = async () => {
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({ message: t('error_unknown') }));
-            alert(errorData.message || t('error_adding_to_cart'));
+            showErrorMessage(errorData.message || t('error_adding_to_cart'));
             return;
         }
 
@@ -392,11 +410,11 @@ const addToCart = async () => {
         // Emit event pentru a actualiza header-ul
         window.dispatchEvent(new CustomEvent('cart-updated'));
         
-        // Mesaj de succes
-        alert(t('product_added_to_cart_success'));
+        // Mesaj de succes cu dialog
+        showSuccessMessage(t('product_added_to_cart_success'));
     } catch (error) {
         console.error('Error adding to cart:', error);
-        alert(t('error_adding_to_cart_retry'));
+        showErrorMessage(t('error_adding_to_cart_retry'));
     } finally {
         loading.value = false;
     }
@@ -405,23 +423,23 @@ const addToCart = async () => {
 
 <template>
     <Head>
-        <title>{{ seo.title }}</title>
-        <meta name="description" :content="seo.description" />
-        <meta property="og:title" :content="seo.title" />
-        <meta property="og:description" :content="seo.description" />
-        <meta property="og:image" :content="seo.image" />
-        <meta property="og:url" :content="seo.url" />
+        <title>{{ seo.title.value }}</title>
+        <meta name="description" :content="seo.description.value" />
+        <meta property="og:title" :content="seo.title.value" />
+        <meta property="og:description" :content="seo.description.value" />
+        <meta property="og:image" :content="seo.image.value" />
+        <meta property="og:url" :content="seo.url.value" />
         <meta property="og:type" content="product" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" :content="seo.title" />
-        <meta name="twitter:description" :content="seo.description" />
-        <meta name="twitter:image" :content="seo.image" />
-        <link rel="canonical" :href="seo.url" />
+        <meta name="twitter:title" :content="seo.title.value" />
+        <meta name="twitter:description" :content="seo.description.value" />
+        <meta name="twitter:image" :content="seo.image.value" />
+        <link rel="canonical" :href="seo.url.value" />
     </Head>
     
     <StructuredData type="Product" :data="productStructuredData" />
     <StructuredData type="BreadcrumbList" :data="breadcrumbStructuredData" />
-    <div class="flex min-h-screen flex-col dark:bg-gray-900">
+    <div class="flex min-h-screen flex-col bg-gray-50 dark:bg-gray-900">
         <PublicHeader />
 
         <main class="flex-1" :class="{ 'opacity-60': isOutOfStock, 'blur-sm': isModalOpen }">
@@ -553,7 +571,7 @@ const addToCart = async () => {
                         <div class="flex gap-4">
                             <Button
                                 :disabled="isOutOfStock || loading"
-                                class="flex-1"
+                                class="flex-1 cursor-pointer bg-gray-200 border border-gray-300 text-gray-900 hover:bg-gray-300 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:hover:bg-gray-700"
                                 size="lg"
                                 :class="{ 'opacity-50 cursor-not-allowed': isOutOfStock || loading }"
                                 @click="addToCart"
@@ -565,9 +583,10 @@ const addToCart = async () => {
                                 variant="outline"
                                 size="lg"
                                 :disabled="isOutOfStock || wishlistLoading"
+                                class="bg-gray-200 border border-gray-300 text-gray-900 hover:bg-gray-300 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:hover:bg-gray-700"
                                 :class="{ 
                                     'opacity-50 cursor-not-allowed': isOutOfStock || wishlistLoading,
-                                    'bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400': isInWishlist && !isOutOfStock && !wishlistLoading
+                                    'bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800': isInWishlist && !isOutOfStock && !wishlistLoading
                                 }"
                                 @click="toggleWishlist"
                             >
@@ -693,5 +712,68 @@ const addToCart = async () => {
             </div>
         </Transition>
     </Teleport>
+
+    <!-- Success Dialog -->
+    <Dialog v-model:open="showSuccessDialog">
+        <DialogContent class="max-w-md">
+            <div class="flex flex-col items-center text-center space-y-4">
+                <!-- Success Icon -->
+                <div class="flex items-center justify-center w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/20">
+                    <CheckCircle class="w-10 h-10 text-green-600 dark:text-green-400" />
+                </div>
+
+                <!-- Title -->
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
+                    {{ dialogTitle }}
+                </h2>
+
+                <!-- Message -->
+                <p class="text-gray-600 dark:text-gray-400">
+                    {{ dialogMessage }}
+                </p>
+
+                <!-- Close Button -->
+                <Button
+                    @click="showSuccessDialog = false"
+                    class="mt-4 w-full"
+                    size="lg"
+                >
+                    {{ t('ok') || 'OK' }}
+                </Button>
+            </div>
+        </DialogContent>
+    </Dialog>
+
+    <!-- Error Dialog -->
+    <Dialog v-model:open="showErrorDialog">
+        <DialogContent class="max-w-md">
+            <div class="flex flex-col items-center text-center space-y-4">
+                <!-- Error Icon -->
+                <div class="flex items-center justify-center w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/20">
+                    <AlertCircle class="w-10 h-10 text-red-600 dark:text-red-400" />
+                </div>
+
+                <!-- Title -->
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
+                    {{ dialogTitle }}
+                </h2>
+
+                <!-- Message -->
+                <p class="text-gray-600 dark:text-gray-400">
+                    {{ dialogMessage }}
+                </p>
+
+                <!-- Close Button -->
+                <Button
+                    @click="showErrorDialog = false"
+                    variant="destructive"
+                    class="mt-4 w-full"
+                    size="lg"
+                >
+                    {{ t('ok') || 'OK' }}
+                </Button>
+            </div>
+        </DialogContent>
+    </Dialog>
 </template>
 

@@ -44,7 +44,7 @@ const handleSearch = () => {
 
 <template>
     <Head :title="t('pages_title')" />
-    <div class="flex min-h-screen flex-col dark:bg-gray-900">
+    <div class="flex min-h-screen flex-col bg-gray-50 dark:bg-gray-900">
         <PublicHeader />
 
         <main class="flex-1">
@@ -67,7 +67,7 @@ const handleSearch = () => {
                             v-model="searchQuery"
                             type="text"
                             :placeholder="t('search_pages')"
-                            class="w-full rounded-lg bg-white py-2 pl-10 pr-4 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400"
+                            class="w-full rounded-lg border border-gray-200 bg-white py-2 pl-10 pr-4 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400"
                             @input="handleSearch"
                         />
                     </div>

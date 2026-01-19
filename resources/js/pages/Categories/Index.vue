@@ -46,7 +46,7 @@ const isExpanded = (categoryId: number) => {
 
 <template>
     <Head title="Categorii" />
-    <div class="flex min-h-screen flex-col dark:bg-gray-900">
+    <div class="flex min-h-screen flex-col bg-gray-50 dark:bg-gray-900">
         <PublicHeader />
 
         <main class="flex-1">
@@ -69,7 +69,7 @@ const isExpanded = (categoryId: number) => {
                     <div
                         v-for="category in categories"
                         :key="category.id"
-                        class="flex flex-col overflow-hidden rounded-lg bg-white transition-shadow dark:bg-gray-800"
+                        class="flex flex-col overflow-hidden rounded-lg border border-gray-200 bg-white transition-shadow dark:bg-gray-800"
                     >
                         <!-- Category Header -->
                         <div class="flex-1 p-6">

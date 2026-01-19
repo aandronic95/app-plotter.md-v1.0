@@ -24,7 +24,7 @@ const showPasswordConfirmation = ref(false);
     >
         <Head title="Înregistrare" />
 
-        <Card class="border-0 shadow-lg">
+        <Card class="shadow-lg">
             <CardHeader class="space-y-1 pb-4">
                 <CardTitle class="text-2xl font-bold text-center">
                     Creează cont nou

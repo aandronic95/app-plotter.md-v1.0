@@ -235,7 +235,7 @@ const removeFromWishlist = async (productId: number) => {
 
 <template>
     <Head :title="t('common.my_profile')" />
-    <div class="flex min-h-screen flex-col dark:bg-gray-900">
+    <div class="flex min-h-screen flex-col bg-gray-50 dark:bg-gray-900">
         <PublicHeader />
 
         <main class="flex-1">

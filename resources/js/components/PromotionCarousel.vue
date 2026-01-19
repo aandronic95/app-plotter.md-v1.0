@@ -218,7 +218,7 @@ onUnmounted(() => {
                     <div
                         v-for="(showcase, index) in visibleShowcases"
                         :key="`${showcase.id}-${currentIndex}-${index}`"
-                        class="group relative h-64 cursor-pointer overflow-hidden rounded-lg bg-white shadow-md transition-shadow hover:shadow-xl dark:bg-gray-800"
+                        class="group relative h-64 cursor-pointer overflow-hidden rounded-lg border border-gray-200 bg-white shadow-md transition-shadow hover:shadow-xl dark:bg-gray-800"
                         @click="handleCardClick(showcase)"
                     >
                         <!-- Image -->

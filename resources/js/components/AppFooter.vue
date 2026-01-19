@@ -8,6 +8,8 @@ import {
     Mail,
     Phone,
     MapPin,
+    Heart,
+    Copyright,
 } from 'lucide-vue-next';
 import { ref, onMounted, computed } from 'vue';
 import { useSiteSettings } from '@/composables/useSiteSettings';
@@ -373,9 +375,32 @@ onMounted(async () => {
                 <div
                     class="flex flex-col items-center justify-between gap-4 md:flex-row"
                 >
-                    <p class="text-xs text-gray-500 dark:text-gray-500">
-                        Copyright 2025 devhb.md (<a href="http://devhub.md" target="_blank" rel="noopener noreferrer" class="underline hover:text-gray-700 dark:hover:text-gray-300">http://devhub.md</a>)
-                    </p>
+                    <!-- Copyright Card -->
+                    <div class="group relative w-full overflow-hidden rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 p-6 shadow-sm transition-all duration-300 hover:shadow-md dark:from-gray-800 dark:to-gray-900 md:w-auto">
+                        <div class="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-purple-50/50 opacity-0 transition-opacity duration-300 group-hover:opacity-100 dark:from-blue-900/20 dark:to-purple-900/20"></div>
+                        <div class="relative flex items-center gap-3">
+                            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-white/80 shadow-sm backdrop-blur-sm dark:bg-gray-700/80">
+                                <Copyright class="h-5 w-5 text-gray-700 dark:text-gray-300" />
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-xs font-medium text-gray-700 dark:text-gray-300">
+                                    Copyright {{ new Date().getFullYear() }} devhub.md
+                                </p>
+                                <a 
+                                    href="http://devhub.md" 
+                                    target="_blank" 
+                                    rel="noopener noreferrer" 
+                                    class="mt-1 inline-flex items-center gap-1 text-xs text-blue-600 transition-colors hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                                >
+                                    <span>http://devhub.md</span>
+                                    <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
+                    </div>
                     <div v-if="!isLoading" class="flex flex-wrap gap-4">
                         <Link
                             href="/pages"

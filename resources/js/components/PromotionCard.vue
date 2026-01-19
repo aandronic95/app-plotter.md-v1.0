@@ -93,7 +93,7 @@ const handleClick = () => {
 
 <template>
     <div
-        class="group flex cursor-pointer flex-col overflow-hidden rounded-lg bg-white transition-all dark:bg-gray-800"
+        class="group flex cursor-pointer flex-col overflow-hidden rounded-lg border border-gray-200 bg-white transition-all dark:bg-gray-800"
         @click="handleClick"
     >
         <!-- Banner Image -->

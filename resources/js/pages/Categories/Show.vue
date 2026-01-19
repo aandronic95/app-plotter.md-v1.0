@@ -147,7 +147,7 @@ const handleSort = () => {
     </Head>
     
     <StructuredData type="BreadcrumbList" :data="breadcrumbStructuredData" />
-    <div class="flex min-h-screen flex-col dark:bg-gray-900">
+    <div class="flex min-h-screen flex-col bg-gray-50 dark:bg-gray-900">
         <PublicHeader />
 
         <main class="flex-1">
@@ -205,7 +205,7 @@ const handleSort = () => {
                                     v-model="search"
                                     type="text"
                                     placeholder="Caută produse..."
-                                    class="flex-1 rounded-lg px-4 py-2 dark:bg-gray-800 dark:text-white"
+                                    class="flex-1 rounded-lg border border-gray-200 px-4 py-2 dark:bg-gray-800 dark:text-white"
                                     @keyup.enter="handleSearch"
                                 />
                                 <button
@@ -218,7 +218,7 @@ const handleSort = () => {
                             <div class="flex items-center gap-2">
                                 <select
                                     v-model="sortBy"
-                                    class="rounded-lg px-3 py-2 dark:bg-gray-800 dark:text-white"
+                                    class="rounded-lg border border-gray-200 px-3 py-2 dark:bg-gray-800 dark:text-white"
                                     @change="handleSort"
                                 >
                                     <option value="created_at">Data adăugării</option>
@@ -227,7 +227,7 @@ const handleSort = () => {
                                 </select>
                                 <select
                                     v-model="sortOrder"
-                                    class="rounded-lg px-3 py-2 dark:bg-gray-800 dark:text-white"
+                                    class="rounded-lg border border-gray-200 px-3 py-2 dark:bg-gray-800 dark:text-white"
                                     @change="handleSort"
                                 >
                                     <option value="desc">Descrescător</option>

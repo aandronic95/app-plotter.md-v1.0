@@ -30,7 +30,7 @@ const { t } = useTranslations();
         :title="page.meta_title || page.title"
         :description="page.meta_description || page.excerpt"
     />
-    <div class="flex min-h-screen flex-col dark:bg-gray-900">
+    <div class="flex min-h-screen flex-col bg-gray-50 dark:bg-gray-900">
         <PublicHeader />
 
         <main class="flex-1">

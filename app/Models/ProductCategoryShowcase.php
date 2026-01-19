@@ -18,10 +18,10 @@ class ProductCategoryShowcase extends Model
      * @var list<string>
      */
     protected $fillable = [
-        'title',
-        'description',
         'section_title',
         'section_description',
+        'section_button_text',
+        'section_button_link',
         'carousel_banner_image',
         'button_text',
         'button_link',

@@ -22,14 +22,14 @@ const currentLocaleCode = computed(() => locale.value);
             <Button 
                 variant="ghost" 
                 size="icon" 
-                class="group relative h-10 w-10 text-white transition-all duration-200 hover:bg-white/10 hover:text-white dark:text-white"
+                class="text-gray-900 dark:text-white group relative h-10 w-10 transition-all duration-200 hover:bg-white/10 hover:text-gray-900 dark:hover:text-white"
                 :title="t('select_language')"
             >
-                <Globe class="h-5 w-5 transition-transform duration-200 group-hover:rotate-12" />
+                <Globe class="text-gray-900 dark:text-white h-5 w-5 transition-transform duration-200 group-hover:rotate-12" />
                 <span class="sr-only">{{ t('select_language') }}</span>
             </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" class="w-40 border-gray-200/50 bg-white/95 backdrop-blur-md dark:border-gray-700/50 dark:bg-gray-900/95">
+        <DropdownMenuContent align="end" class="text-gray-900 dark:text-white w-40 border-gray-200/50 bg-gray-50/95 backdrop-blur-md dark:border-gray-700/50 dark:bg-gray-900/95">
             <DropdownMenuItem
                 v-for="loc in availableLocales"
                 :key="loc.code"

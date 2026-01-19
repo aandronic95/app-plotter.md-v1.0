@@ -59,7 +59,7 @@ onMounted(() => {
 
 <template>
     <Head :title="t('promotions_title')" />
-    <div class="flex min-h-screen flex-col dark:bg-gray-900">
+    <div class="flex min-h-screen flex-col bg-gray-50 dark:bg-gray-900">
         <PublicHeader />
 
         <main class="flex-1">

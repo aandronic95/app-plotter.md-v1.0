@@ -91,9 +91,6 @@ Route::get('dashboard', function () {
 Route::get('api/navigations', [NavigationController::class, 'index'])->name('api.navigations.index');
 Route::get('api/navigations/categories', [NavigationController::class, 'categories'])->name('api.navigations.categories');
 
-// Header Contacts API routes
-Route::get('api/header-contacts', [\App\Http\Controllers\Api\HeaderContactController::class, 'index'])->name('api.header-contacts.index');
-
 // Site Settings API routes
 Route::get('api/site-settings', [SiteSettingController::class, 'index'])->name('api.site-settings.index');
 
@@ -130,9 +127,6 @@ Route::delete('api/hero-banners/{heroBanner}', [HeroBannerController::class, 'de
 
 // Product Category Showcases API routes
 Route::get('api/product-category-showcases', [\App\Http\Controllers\Api\ProductCategoryShowcaseController::class, 'index'])->name('api.product-category-showcases.index');
-
-// Custom Print Banners API routes
-Route::get('api/custom-print-banners', [\App\Http\Controllers\Api\CustomPrintBannerController::class, 'index'])->name('api.custom-print-banners.index');
 
 // Newsletter API routes
 Route::post('api/newsletter', [\App\Http\Controllers\Api\NewsletterController::class, 'store'])->name('api.newsletter.store');

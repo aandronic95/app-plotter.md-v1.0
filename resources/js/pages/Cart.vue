@@ -115,7 +115,7 @@ onMounted(() => {
 
 <template>
     <Head :title="t('cart_title')" />
-    <div class="flex min-h-screen flex-col dark:bg-gray-900">
+    <div class="flex min-h-screen flex-col bg-gray-50 dark:bg-gray-900">
         <PublicHeader />
 
         <main class="flex-1">
@@ -143,7 +143,9 @@ onMounted(() => {
                         {{ t('cart_empty') }}
                     </p>
                     <Link href="/">
-                        <Button>{{ t('continue_shopping') }}</Button>
+                        <Button class="bg-gray-200 border border-gray-300 text-gray-900 hover:bg-gray-300 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:hover:bg-gray-700">
+                            {{ t('continue_shopping') }}
+                        </Button>
                     </Link>
                 </div>
 
@@ -187,6 +189,7 @@ onMounted(() => {
                                                     variant="outline"
                                                     size="icon"
                                                     :disabled="item.quantity <= 1 || loading"
+                                                    class="bg-gray-200 border border-gray-300 text-gray-900 hover:bg-gray-300 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:hover:bg-gray-700"
                                                     @click="updateQuantity(item.id, item.quantity - 1)"
                                                 >
                                                     <Minus class="h-4 w-4" />
@@ -198,6 +201,7 @@ onMounted(() => {
                                                     variant="outline"
                                                     size="icon"
                                                     :disabled="item.quantity >= item.stock_quantity || loading"
+                                                    class="bg-gray-200 border border-gray-300 text-gray-900 hover:bg-gray-300 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:hover:bg-gray-700"
                                                     @click="updateQuantity(item.id, item.quantity + 1)"
                                                 >
                                                     <Plus class="h-4 w-4" />
@@ -211,6 +215,7 @@ onMounted(() => {
                                                     variant="ghost"
                                                     size="icon"
                                                     :disabled="loading"
+                                                    class="bg-gray-200 border border-gray-300 text-gray-900 hover:bg-gray-300 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:hover:bg-gray-700"
                                                     @click="removeItem(item.id)"
                                                 >
                                                     <Trash2 class="h-4 w-4 text-red-500" />
@@ -262,7 +267,7 @@ onMounted(() => {
                                     class="block"
                                 >
                                     <Button
-                                        class="w-full"
+                                        class="w-full bg-gray-200 border border-gray-300 text-gray-900 hover:bg-gray-300 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:hover:bg-gray-700"
                                         size="lg"
                                     >
                                         {{ t('complete_order') }}
@@ -274,7 +279,7 @@ onMounted(() => {
                                 >
                                     <Button
                                         variant="outline"
-                                        class="w-full"
+                                        class="w-full bg-gray-200 border border-gray-300 text-gray-900 hover:bg-gray-300 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:hover:bg-gray-700"
                                     >
                                         {{ t('continue_shopping') }}
                                     </Button>

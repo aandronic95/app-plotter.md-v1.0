@@ -149,7 +149,7 @@ const submit = () => {
 
 <template>
     <Head title="Finalizare comandă" />
-    <div class="flex min-h-screen flex-col dark:bg-gray-900">
+    <div class="flex min-h-screen flex-col bg-gray-50 dark:bg-gray-900">
         <PublicHeader />
 
         <main class="flex-1">
@@ -297,7 +297,7 @@ const submit = () => {
                                                 v-model="form.shipping_name"
                                                 type="text"
                                                 required
-                                                class="w-full rounded-lg px-4 py-2 dark:bg-gray-800 dark:text-white"
+                                                class="w-full rounded-lg border border-gray-200 px-4 py-2 dark:bg-gray-800 dark:text-white"
                                                 :class="{ 'border-red-500': form.errors.shipping_name }"
                                             />
                                             <p
@@ -319,7 +319,7 @@ const submit = () => {
                                                 v-model="form.shipping_email"
                                                 type="email"
                                                 required
-                                                class="w-full rounded-lg px-4 py-2 dark:bg-gray-800 dark:text-white"
+                                                class="w-full rounded-lg border border-gray-200 px-4 py-2 dark:bg-gray-800 dark:text-white"
                                                 :class="{ 'border-red-500': form.errors.shipping_email }"
                                             />
                                             <p
@@ -343,7 +343,7 @@ const submit = () => {
                                             type="tel"
                                             required
                                             :disabled="useSavedAddress && selectedAddressId"
-                                            class="w-full rounded-lg border border-gray-300 px-4 py-2 dark:border-gray-600 dark:bg-gray-800 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                                            class="w-full rounded-lg border border-gray-200 px-4 py-2 dark:border-gray-600 dark:bg-gray-800 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
                                             :class="{ 'border-red-500': form.errors.shipping_phone }"
                                         />
                                         <p
@@ -366,7 +366,7 @@ const submit = () => {
                                             type="text"
                                             required
                                             :disabled="useSavedAddress && selectedAddressId"
-                                            class="w-full rounded-lg border border-gray-300 px-4 py-2 dark:border-gray-600 dark:bg-gray-800 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                                            class="w-full rounded-lg border border-gray-200 px-4 py-2 dark:border-gray-600 dark:bg-gray-800 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
                                             :class="{ 'border-red-500': form.errors.shipping_address }"
                                         />
                                         <p
@@ -390,7 +390,7 @@ const submit = () => {
                                                 type="text"
                                                 required
                                                 :disabled="useSavedAddress && selectedAddressId"
-                                                class="w-full rounded-lg border border-gray-300 px-4 py-2 dark:border-gray-600 dark:bg-gray-800 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                                                class="w-full rounded-lg border border-gray-200 px-4 py-2 dark:border-gray-600 dark:bg-gray-800 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
                                                 :class="{ 'border-red-500': form.errors.shipping_city }"
                                             />
                                             <p
@@ -412,7 +412,7 @@ const submit = () => {
                                                 v-model="form.shipping_postal_code"
                                                 type="text"
                                                 :disabled="useSavedAddress && selectedAddressId"
-                                                class="w-full rounded-lg border border-gray-300 px-4 py-2 dark:border-gray-600 dark:bg-gray-800 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                                                class="w-full rounded-lg border border-gray-200 px-4 py-2 dark:border-gray-600 dark:bg-gray-800 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
                                                 :class="{ 'border-red-500': form.errors.shipping_postal_code }"
                                             />
                                         </div>
@@ -429,7 +429,7 @@ const submit = () => {
                                                 type="text"
                                                 required
                                                 :disabled="useSavedAddress && selectedAddressId"
-                                                class="w-full rounded-lg border border-gray-300 px-4 py-2 dark:border-gray-600 dark:bg-gray-800 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                                                class="w-full rounded-lg border border-gray-200 px-4 py-2 dark:border-gray-600 dark:bg-gray-800 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
                                                 :class="{ 'border-red-500': form.errors.shipping_country }"
                                             />
                                         </div>
@@ -446,7 +446,7 @@ const submit = () => {
                                             v-model="form.notes"
                                             rows="3"
                                             placeholder="Note suplimentare pentru comandă..."
-                                            class="w-full rounded-lg border border-gray-300 px-4 py-2 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                                            class="w-full rounded-lg border border-gray-200 px-4 py-2 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
                                         />
                                     </div>
                                 </CardContent>

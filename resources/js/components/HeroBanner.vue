@@ -29,34 +29,49 @@ const rotatingWords = ['HAINE', 'CĂRȚI DE VIZITE', 'BANERE', 'CUTII', 'POSTERE
 const currentWordIndex = ref(0);
 const displayedText = ref('');
 const isDeleting = ref(false);
-const typingSpeed = ref(100);
 let typingTimeout: ReturnType<typeof setTimeout> | null = null;
 
 const typeText = () => {
+    // Clear any existing timeout
+    if (typingTimeout) {
+        clearTimeout(typingTimeout);
+        typingTimeout = null;
+    }
+    
     const currentWord = rotatingWords[currentWordIndex.value];
+    if (!currentWord) return;
+    
+    let typingSpeed = 100;
     
     if (isDeleting.value) {
         // Deleting text
-        displayedText.value = currentWord.substring(0, displayedText.value.length - 1);
-        typingSpeed.value = 50; // Faster when deleting
+        if (displayedText.value.length > 0) {
+            displayedText.value = currentWord.substring(0, displayedText.value.length - 1);
+            typingSpeed = 50; // Faster when deleting
+        } else {
+            // Finished deleting, move to next word
+            isDeleting.value = false;
+            currentWordIndex.value = (currentWordIndex.value + 1) % rotatingWords.length;
+            typingSpeed = 300; // Wait 0.3 seconds before typing next word
+        }
     } else {
         // Typing text
-        displayedText.value = currentWord.substring(0, displayedText.value.length + 1);
-        typingSpeed.value = 100; // Normal speed when typing
+        const currentLength = displayedText.value.length;
+        const targetLength = currentWord.length;
+        
+        if (currentLength < targetLength) {
+            displayedText.value = currentWord.substring(0, currentLength + 1);
+            typingSpeed = 100; // Normal speed when typing
+        } else {
+            // Finished typing, wait then start deleting
+            typingSpeed = 2000; // Wait 2 seconds before deleting
+            isDeleting.value = true;
+        }
     }
     
-    if (!isDeleting.value && displayedText.value === currentWord) {
-        // Finished typing, wait then start deleting
-        typingSpeed.value = 2000; // Wait 2 seconds before deleting
-        isDeleting.value = true;
-    } else if (isDeleting.value && displayedText.value === '') {
-        // Finished deleting, move to next word
-        isDeleting.value = false;
-        currentWordIndex.value = (currentWordIndex.value + 1) % rotatingWords.length;
-        typingSpeed.value = 500; // Wait 0.5 seconds before typing next word
-    }
-    
-    typingTimeout = setTimeout(typeText, typingSpeed.value);
+    typingTimeout = setTimeout(() => {
+        typeText();
+    }, typingSpeed);
 };
 
 const fetchBanner = async () => {
@@ -72,8 +87,10 @@ const fetchBanner = async () => {
             }
         );
         
-        if (data.data && Array.isArray(data.data) && data.data.length > 0) {
+        if (data && data.data && Array.isArray(data.data) && data.data.length > 0) {
             banner.value = data.data[0];
+        } else {
+            console.warn('No hero banner found in API response');
         }
     } catch (error) {
         console.error('Error fetching hero banner:', error);
@@ -92,8 +109,10 @@ const fetchBanner = async () => {
 };
 
 onMounted(() => {
+    // Fetch banner data
     fetchBanner();
-    // Start typing animation
+    // Start typing animation immediately (works independently of banner data)
+    // Start animation after component is mounted
     typeText();
 });
 
@@ -106,51 +125,49 @@ onUnmounted(() => {
 const hasContent = computed(() => {
     return banner.value && !isLoading.value;
 });
+
+// Show component even without banner data (for typing animation)
+// Show immediately to allow typing animation to work
+const shouldShow = computed(() => {
+    return true;
+});
 </script>
 
 <template>
-    <div v-if="isLoading" class="w-full bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-900 dark:to-neutral-800">
-        <div class="mx-auto max-w-7xl px-4 py-12 md:px-6">
-            <div class="grid grid-cols-1 gap-8 lg:grid-cols-2">
-                <div class="space-y-4">
-                    <div class="h-6 w-32 animate-pulse rounded-md bg-neutral-200 dark:bg-neutral-700"></div>
-                    <div class="h-12 w-64 animate-pulse rounded-md bg-neutral-200 dark:bg-neutral-700"></div>
-                    <div class="h-24 w-full animate-pulse rounded-md bg-neutral-200 dark:bg-neutral-700"></div>
-                </div>
-                <div class="h-64 animate-pulse rounded-lg bg-neutral-200 dark:bg-neutral-700 lg:h-96"></div>
-            </div>
-        </div>
-    </div>
-
     <div
-        v-else-if="hasContent"
-        class="w-full bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-900 dark:to-neutral-800 rounded-lg mt-10"
+        v-if="shouldShow"
+        class="text-gray-900 dark:text-white w-full bg-transparent dark:bg-gray-800 rounded-lg mt-10"
     >
-        <div class="mx-auto max-w-7xl px-4 py-12 md:px-6 lg:py-16 rounded-lg">
+        <div class="text-gray-900 dark:text-white bg-gray-200 dark:bg-gray-800 mx-auto max-w-7xl px-4 py-12 md:px-6 lg:py-16 rounded-lg">
             <div class="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:items-center rounded-lg">
                 <!-- Left Section: Text Content -->
                 <div class="space-y-6">
                     <!-- Headline -->
                     <div v-if="banner?.headline" class="flex items-center gap-2">
-                        <span class="text-lg">🔥</span>
+                        <span class="text-gray-900 dark:text-white text-lg">🔥</span>
                         <span class="text-sm font-semibold uppercase tracking-wide text-orange-600 dark:text-orange-400">
                             {{ banner?.headline }}
                         </span>
                     </div>
 
                     <!-- Title with typing animation -->
-                    <h1 class="text-4xl font-bold uppercase tracking-tight text-gray-900 dark:text-white md:text-5xl lg:text-6xl">
-                        PRINTĂM 
-                        <span class="inline-block min-w-[200px] text-primary dark:text-primary-400">
-                            {{ displayedText }}
-                            <span class="animate-pulse">|</span>
-                        </span>
+                    <h1 class="text-4xl font-bold uppercase tracking-tight text-gray-800 dark:text-white md:text-5xl lg:text-6xl">
+                        <template v-if="banner?.title && banner.title.trim()">
+                            {{ banner.title }}
+                        </template>
+                        <template v-else>
+                            PRINTĂM 
+                            <span class="inline-block min-w-[200px] text-teal-800 dark:text-teal-500">
+                                {{ displayedText || '&nbsp;' }}
+                                <span v-if="displayedText" class="animate-pulse">|</span>
+                            </span>
+                        </template>
                     </h1>
 
                     <!-- Description -->
                     <p
                         v-if="banner?.description"
-                        class="text-lg text-gray-700 dark:text-gray-300"
+                        class="text-lg text-gray-600 dark:text-gray-300"
                     >
                         {{ banner?.description }}
                     </p>
@@ -162,10 +179,10 @@ const hasContent = computed(() => {
                             :key="index"
                             class="flex items-center gap-2"
                         >
-                            <div class="flex h-6 w-6 items-center justify-center rounded-full bg-green-500 text-white">
+                            <div class="flex h-6 w-6 items-center justify-center rounded-full bg-teal-800 text-white dark:bg-teal-500">
                                 <Check class="h-4 w-4" />
                             </div>
-                            <span class="font-semibold text-gray-900 dark:text-white">
+                            <span class="font-semibold text-gray-800 dark:text-white">
                                 {{ feature }}
                             </span>
                         </div>
@@ -177,7 +194,7 @@ const hasContent = computed(() => {
                             v-if="banner?.button1_text && banner.button1_link"
                             as-child
                             size="lg"
-                            class="bg-[#2d5016] hover:bg-[#1f350e] dark:bg-[#3d6b1f] dark:hover:bg-[#2d5016]"
+                            class="bg-teal-800 hover:bg-teal-800 dark:bg-teal-500 dark:hover:bg-teal-600 text-white"
                         >
                             <Link :href="banner.button1_link">
                                 {{ banner.button1_text }}
@@ -189,7 +206,7 @@ const hasContent = computed(() => {
                             as-child
                             size="lg"
                             variant="outline"
-                            class="border-2 border-gray-900 bg-gray-900 text-white hover:bg-gray-800 dark:border-gray-100 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
+                            class="border-2 border-gray-800 bg-gray-800 text-white hover:bg-gray-800 dark:border-gray-200 dark:bg-gray-200 dark:text-gray-900 dark:hover:bg-gray-300"
                         >
                             <Link :href="banner.button2_link">
                                 {{ banner.button2_text }}
@@ -203,7 +220,7 @@ const hasContent = computed(() => {
                 <div class="relative">
                     <div
                         v-if="banner?.image"
-                        class="relative h-64 w-full overflow-hidden rounded-lg bg-neutral-200 dark:bg-neutral-700 lg:h-96"
+                        class="relative h-64 w-full overflow-hidden rounded-lg bg-gray-200 dark:bg-gray-800 lg:h-96"
                     >
                         <img
                             :src="banner.image"
@@ -213,10 +230,10 @@ const hasContent = computed(() => {
                     </div>
                     <div
                         v-else
-                        class="relative h-64 w-full overflow-hidden rounded-lg bg-gradient-to-br from-blue-400 via-purple-500 to-pink-500 lg:h-96"
+                        class="relative h-64 w-full overflow-hidden rounded-lg bg-gradient-to-br from-blue-400 via-purple-500 to-pink-500 dark:from-blue-600 dark:via-purple-600 dark:to-pink-600 lg:h-96"
                     >
                         <div class="flex h-full w-full items-center justify-center">
-                            <span class="text-2xl font-bold text-white opacity-50">
+                            <span class="text-2xl font-bold text-white opacity-50 dark:opacity-70">
                                 {{ banner?.title || 'PRINTĂM' }}
                             </span>
                         </div>

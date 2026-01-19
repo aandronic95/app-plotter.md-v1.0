@@ -6,6 +6,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
 
 class PromotionResource extends JsonResource
 {
@@ -16,12 +17,21 @@ class PromotionResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $bannerUrl = null;
+        if ($this->banner) {
+            if (str_starts_with($this->banner, 'http://') || str_starts_with($this->banner, 'https://')) {
+                $bannerUrl = $this->banner;
+            } else {
+                $bannerUrl = Storage::disk('public')->url($this->banner);
+            }
+        }
+
         return [
             'id' => $this->id,
             'title' => $this->title,
             'description' => $this->description,
-            'image' => $this->banner,
-            'banner' => $this->banner,
+            'image' => $bannerUrl,
+            'banner' => $bannerUrl,
             'external_link' => $this->external_link,
             'page_id' => $this->page_id,
             'product_id' => $this->product_id,
