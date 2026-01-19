@@ -649,20 +649,30 @@ const removeFromWishlist = async (productId: number) => {
                                     <!-- Pagination -->
                                     <div v-if="props.orders.links.length > 3" class="mt-6 flex justify-center">
                                         <div class="flex gap-2">
-                                            <component
-                                                :is="link.url ? Link : 'span'"
-                                                v-for="link in props.orders.links"
-                                                :key="link.label"
-                                                :href="link.url || undefined"
-                                                :class="[
-                                                    'px-3 py-2 rounded-md text-sm font-medium transition-colors',
-                                                    link.active
-                                                        ? 'bg-primary text-white'
-                                                        : 'bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700',
-                                                    !link.url && 'opacity-50 cursor-not-allowed',
-                                                ]"
-                                                v-html="link.label"
-                                            />
+                                            <template v-for="link in props.orders.links" :key="link.label">
+                                                <Link
+                                                    v-if="link.url"
+                                                    :href="link.url"
+                                                    :class="[
+                                                        'px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                                                        link.active
+                                                            ? 'bg-primary text-white'
+                                                            : 'bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700',
+                                                    ]"
+                                                >
+                                                    <span v-html="link.label"></span>
+                                                </Link>
+                                                <span
+                                                    v-else
+                                                    :class="[
+                                                        'px-3 py-2 rounded-md text-sm font-medium transition-colors opacity-50 cursor-not-allowed',
+                                                        link.active
+                                                            ? 'bg-primary text-white'
+                                                            : 'bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-300',
+                                                    ]"
+                                                    v-html="link.label"
+                                                />
+                                            </template>
                                         </div>
                                     </div>
                                 </div>
