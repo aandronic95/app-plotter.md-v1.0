@@ -122,10 +122,6 @@ onUnmounted(() => {
     }
 });
 
-const hasContent = computed(() => {
-    return banner.value && !isLoading.value;
-});
-
 // Show component even without banner data (for typing animation)
 // Show immediately to allow typing animation to work
 const shouldShow = computed(() => {

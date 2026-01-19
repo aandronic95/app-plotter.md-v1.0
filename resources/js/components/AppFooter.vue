@@ -8,7 +8,6 @@ import {
     Mail,
     Phone,
     MapPin,
-    Heart,
     Copyright,
 } from 'lucide-vue-next';
 import { ref, onMounted, computed } from 'vue';
