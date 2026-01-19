@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { ChevronDown } from 'lucide-vue-next';
 import { useTranslations } from '@/composables/useTranslations';
 
 interface NavigationItem {

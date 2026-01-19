@@ -52,7 +52,6 @@ const errorMessage = ref('');
 
 // Watch for flash messages
 watch(flash, (newFlash) => {
-    console.log('Flash messages:', newFlash);
     if (newFlash?.success) {
         successMessage.value = newFlash.success;
         showSuccessMessage.value = true;
@@ -70,9 +69,7 @@ watch(flash, (newFlash) => {
 }, { immediate: true });
 
 // Also check on mount
-import { onMounted } from 'vue';
 onMounted(() => {
-    console.log('Page props flash:', page.props.flash);
     if (flash.value?.success) {
         successMessage.value = flash.value.success;
         showSuccessMessage.value = true;

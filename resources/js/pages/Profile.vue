@@ -6,11 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
-import { User, Package, Gift, Edit2, Save, X, MapPin, Phone, Mail, Plus, Trash2, Star, Heart } from 'lucide-vue-next';
+import { User, Package, Gift, Edit2, Save, X, MapPin, Phone, Plus, Trash2, Star, Heart } from 'lucide-vue-next';
 import { ref, computed, onMounted } from 'vue';
 import { useTranslations } from '@/composables/useTranslations';
 import { useSiteSettings } from '@/composables/useSiteSettings';
-import ProductCard from '@/components/ProductCard.vue';
 
 interface UserData {
     id: number;

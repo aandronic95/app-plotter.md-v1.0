@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue';
-import { Zap, Settings, Truck, Smile, Star } from 'lucide-vue-next';
+import { Zap, Star } from 'lucide-vue-next';
 import * as lucideIcons from 'lucide-vue-next';
 import { useSiteSettings } from '@/composables/useSiteSettings';
 

@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { ShoppingCart, Heart } from 'lucide-vue-next';
 import { Link } from '@inertiajs/vue3';
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed } from 'vue';
 import { useTranslations } from '@/composables/useTranslations';
 
 interface Product {

@@ -31,8 +31,6 @@ export const useCacheManager = () => {
                 });
             });
         }
-        
-        console.log('[Cache Manager] All caches cleared');
     };
 
     /**
@@ -49,8 +47,6 @@ export const useCacheManager = () => {
                 localStorage.removeItem(key);
             }
         });
-        
-        console.log(`[Cache Manager] Cleared caches matching pattern: ${pattern}`);
     };
 
     /**
@@ -67,7 +63,6 @@ export const useCacheManager = () => {
         if (typeof window === 'undefined') return;
         localStorage.removeItem('site_settings_cache');
         localStorage.removeItem('site_settings_version');
-        console.log('[Cache Manager] Site settings cache cleared');
     };
 
     /**
@@ -78,7 +73,6 @@ export const useCacheManager = () => {
         clearCacheByPattern(/wishlist/);
         // Navigation might change based on user role
         clearNavigationCaches();
-        console.log('[Cache Manager] Caches invalidated due to auth change');
     };
 
     /**

@@ -3,7 +3,7 @@ import AppFooter from '@/components/AppFooter.vue';
 import PublicHeader from '@/components/PublicHeader.vue';
 import PromotionCard from '@/components/PromotionCard.vue';
 import { Head } from '@inertiajs/vue3';
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useTranslations } from '@/composables/useTranslations';
 
 interface Promotion {

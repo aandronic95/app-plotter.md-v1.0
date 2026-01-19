@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AppFooter from '@/components/AppFooter.vue';
 import PublicHeader from '@/components/PublicHeader.vue';
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
 import { Search } from 'lucide-vue-next';
 import { useTranslations } from '@/composables/useTranslations';

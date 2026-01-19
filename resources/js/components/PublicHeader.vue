@@ -16,16 +16,7 @@ import {
     SheetTitle,
     SheetTrigger,
 } from '@/components/ui/sheet';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSub,
-    DropdownMenuSubContent,
-    DropdownMenuSubTrigger,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { home, register, dashboard, login, logout } from '@/routes';
+import { home, register, login, logout } from '@/routes';
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { Menu, Search, ShoppingCart, User, Package, FileText, List, ChevronDown, ChevronRight, Sun, Moon, LogOut } from 'lucide-vue-next';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
@@ -156,14 +147,10 @@ const fetchNavigationItems = async () => {
             }
         );
         
-        console.log('Navigation API response:', data);
-        
         if (data.data && Array.isArray(data.data) && data.data.length > 0) {
             menuItems.value = data.data;
-            console.log('Navigation items loaded:', menuItems.value.length);
         } else {
             // Dacă nu există elemente în baza de date, folosește fallback
-            console.warn('No navigation items found, using fallback');
             menuItems.value = fallbackMenuItems.value;
         }
     } catch (error) {

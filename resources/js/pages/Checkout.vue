@@ -3,9 +3,8 @@ import AppFooter from '@/components/AppFooter.vue';
 import PublicHeader from '@/components/PublicHeader.vue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
-import { ArrowLeft, MapPin, Star, CheckCircle, AlertCircle, X } from 'lucide-vue-next';
+import { ArrowLeft, Star, CheckCircle, AlertCircle, X } from 'lucide-vue-next';
 import { ref, computed, watch, onMounted } from 'vue';
 
 interface CartItem {
@@ -51,7 +50,6 @@ const errorMessage = ref('');
 
 // Watch for flash messages
 watch(flash, (newFlash) => {
-    console.log('Flash messages:', newFlash);
     if (newFlash?.success) {
         successMessage.value = newFlash.success;
         showSuccessMessage.value = true;
@@ -69,9 +67,7 @@ watch(flash, (newFlash) => {
 }, { immediate: true });
 
 // Also check on mount
-import { onMounted } from 'vue';
 onMounted(() => {
-    console.log('Page props flash:', page.props.flash);
     if (flash.value?.success) {
         successMessage.value = flash.value.success;
         showSuccessMessage.value = true;
