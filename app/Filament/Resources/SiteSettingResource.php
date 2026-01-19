@@ -230,6 +230,90 @@ class SiteSettingResource extends Resource
                             ->columnSpanFull(),
                     ]),
 
+                Section::make('Servicii - Secțiunea Principală')
+                    ->description('Configurare pentru secțiunea de servicii afișată pe pagina principală')
+                    ->schema([
+                        Forms\Components\TextInput::make('service_feature_1_icon')
+                            ->label('Icon Serviciu 1 (Rapiditate)')
+                            ->maxLength(255)
+                            ->default('Zap')
+                            ->helperText('Numele iconului din lucide-vue-next (ex: Zap, Settings, Truck, Smile)')
+                            ->required()
+                            ->columnSpanFull(),
+                        Forms\Components\TextInput::make('service_feature_1_title')
+                            ->label('Titlu Serviciu 1')
+                            ->maxLength(255)
+                            ->default('RAPIDITATE')
+                            ->required()
+                            ->columnSpanFull(),
+                        Forms\Components\Textarea::make('service_feature_1_description')
+                            ->label('Descriere Serviciu 1')
+                            ->rows(3)
+                            ->default('Efectuăm rapid comenzile dvs., asigurându-ne că fiecare detaliu este gestionat cu precizie și promptitudine.')
+                            ->required()
+                            ->columnSpanFull(),
+
+                        Forms\Components\TextInput::make('service_feature_2_icon')
+                            ->label('Icon Serviciu 2 (Suport în Alegere)')
+                            ->maxLength(255)
+                            ->default('Settings')
+                            ->helperText('Numele iconului din lucide-vue-next')
+                            ->required()
+                            ->columnSpanFull(),
+                        Forms\Components\TextInput::make('service_feature_2_title')
+                            ->label('Titlu Serviciu 2')
+                            ->maxLength(255)
+                            ->default('SUPORT ÎN ALEGERE')
+                            ->required()
+                            ->columnSpanFull(),
+                        Forms\Components\Textarea::make('service_feature_2_description')
+                            ->label('Descriere Serviciu 2')
+                            ->rows(3)
+                            ->default('Echipa noastră dedicată vă garantează că veți fi ajutați să faceți o alegere corectă pentru rezultatul dorit.')
+                            ->required()
+                            ->columnSpanFull(),
+
+                        Forms\Components\TextInput::make('service_feature_3_icon')
+                            ->label('Icon Serviciu 3 (Transport)')
+                            ->maxLength(255)
+                            ->default('Truck')
+                            ->helperText('Numele iconului din lucide-vue-next')
+                            ->required()
+                            ->columnSpanFull(),
+                        Forms\Components\TextInput::make('service_feature_3_title')
+                            ->label('Titlu Serviciu 3')
+                            ->maxLength(255)
+                            ->default('TRANSPORT')
+                            ->required()
+                            ->columnSpanFull(),
+                        Forms\Components\Textarea::make('service_feature_3_description')
+                            ->label('Descriere Serviciu 3')
+                            ->rows(3)
+                            ->default('Cu mândrie vă asigurăm că fiecare comandă beneficiază de un angajament ferm: garantăm livrare fără deteriorare')
+                            ->required()
+                            ->columnSpanFull(),
+
+                        Forms\Components\TextInput::make('service_feature_4_icon')
+                            ->label('Icon Serviciu 4 (Calitate Garantată)')
+                            ->maxLength(255)
+                            ->default('Smile')
+                            ->helperText('Numele iconului din lucide-vue-next')
+                            ->required()
+                            ->columnSpanFull(),
+                        Forms\Components\TextInput::make('service_feature_4_title')
+                            ->label('Titlu Serviciu 4')
+                            ->maxLength(255)
+                            ->default('CALITATE GARANTATĂ')
+                            ->required()
+                            ->columnSpanFull(),
+                        Forms\Components\Textarea::make('service_feature_4_description')
+                            ->label('Descriere Serviciu 4')
+                            ->rows(3)
+                            ->default('Suntem mândri să vă asigurăm că fiecare produs sau serviciu pe care îl oferim vine însoţit de o promisiune fermă: calitate garantată.')
+                            ->required()
+                            ->columnSpanFull(),
+                    ]),
+
                 Section::make('Loading Screen')
                     ->schema([
                         Forms\Components\TextInput::make('loading_text_main')

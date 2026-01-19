@@ -43,6 +43,18 @@ class SiteSetting extends Model
         'header_contact_2_email',
         'header_contact_3_phone',
         'header_contact_3_email',
+        'service_feature_1_icon',
+        'service_feature_1_title',
+        'service_feature_1_description',
+        'service_feature_2_icon',
+        'service_feature_2_title',
+        'service_feature_2_description',
+        'service_feature_3_icon',
+        'service_feature_3_title',
+        'service_feature_3_description',
+        'service_feature_4_icon',
+        'service_feature_4_title',
+        'service_feature_4_description',
     ];
 
     /**

@@ -23,7 +23,7 @@ const goBack = () => {
 
 <template>
     <Head :title="t('page_not_found')" />
-    <div class="flex min-h-screen flex-col">
+    <div class="flex min-h-screen flex-col dark:bg-gray-900">
         <PublicHeader />
 
         <main class="flex-1">
@@ -52,14 +52,14 @@ const goBack = () => {
                     </Link>
                     <Link
                         href="/products"
-                        class="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-6 py-3 font-semibold text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:focus:ring-offset-gray-800"
+                        class="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-6 py-3 font-semibold text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:focus:ring-offset-gray-800"
                     >
                         <Search class="h-5 w-5" />
                         {{ t('search_products_button') }}
                     </Link>
                     <button
                         @click="goBack"
-                        class="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-6 py-3 font-semibold text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:focus:ring-offset-gray-800"
+                        class="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-6 py-3 font-semibold text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:focus:ring-offset-gray-800"
                     >
                         <ArrowLeft class="h-5 w-5" />
                         {{ t('back') }}
@@ -74,7 +74,7 @@ const goBack = () => {
                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <Link
                             href="/products"
-                            class="rounded-lg border border-gray-200 bg-white p-4 transition-colors hover:border-primary-300 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:border-primary-600"
+                            class="rounded-lg bg-white p-4 transition-colors hover:bg-gray-50 dark:bg-gray-800"
                         >
                             <h4 class="mb-2 font-semibold text-gray-900 dark:text-white">
                                 {{ t('products') }}
@@ -85,7 +85,7 @@ const goBack = () => {
                         </Link>
                         <Link
                             href="/pages"
-                            class="rounded-lg border border-gray-200 bg-white p-4 transition-colors hover:border-primary-300 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:border-primary-600"
+                            class="rounded-lg bg-white p-4 transition-colors hover:bg-gray-50 dark:bg-gray-800"
                         >
                             <h4 class="mb-2 font-semibold text-gray-900 dark:text-white">
                                 {{ t('pages') }}

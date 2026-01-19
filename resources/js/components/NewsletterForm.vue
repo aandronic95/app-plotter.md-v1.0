@@ -160,7 +160,7 @@ onMounted(async () => {
                             v-model="formData.name"
                             type="text"
                             :placeholder="t('newsletter_name_placeholder') || 'Nume/Prenume'"
-                            class="w-full rounded-md border border-white bg-white/10 px-4 py-3 text-white placeholder:text-white/70 focus:border-white focus:outline-none focus:ring-2 focus:ring-white/50 dark:border-gray-300 dark:bg-gray-700/50 dark:text-gray-100 dark:placeholder:text-gray-300 dark:focus:border-gray-200 dark:focus:ring-gray-200/50"
+                            class="w-full rounded-md bg-white/10 px-4 py-3 text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-white/50 dark:bg-gray-700/50 dark:text-gray-100 dark:placeholder:text-gray-300 dark:focus:ring-gray-200/50"
                             required
                         />
                     </div>
@@ -171,7 +171,7 @@ onMounted(async () => {
                             v-model="formData.email"
                             type="email"
                             placeholder="Email"
-                            class="w-full rounded-md border border-white bg-white/10 px-4 py-3 text-white placeholder:text-white/70 focus:border-white focus:outline-none focus:ring-2 focus:ring-white/50 dark:border-gray-300 dark:bg-gray-700/50 dark:text-gray-100 dark:placeholder:text-gray-300 dark:focus:border-gray-200 dark:focus:ring-gray-200/50"
+                            class="w-full rounded-md bg-white/10 px-4 py-3 text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-white/50 dark:bg-gray-700/50 dark:text-gray-100 dark:placeholder:text-gray-300 dark:focus:ring-gray-200/50"
                             required
                         />
                     </div>
@@ -184,7 +184,7 @@ onMounted(async () => {
                             v-model="formData.phone"
                             type="tel"
                             :placeholder="t('newsletter_phone_placeholder') || 'Tel. ex: 079123456'"
-                            class="w-full rounded-md border border-white bg-white/10 px-4 py-3 text-white placeholder:text-white/70 focus:border-white focus:outline-none focus:ring-2 focus:ring-white/50 dark:border-gray-300 dark:bg-gray-700/50 dark:text-gray-100 dark:placeholder:text-gray-300 dark:focus:border-gray-200 dark:focus:ring-gray-200/50"
+                            class="w-full rounded-md bg-white/10 px-4 py-3 text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-white/50 dark:bg-gray-700/50 dark:text-gray-100 dark:placeholder:text-gray-300 dark:focus:ring-gray-200/50"
                         />
                     </div>
 
@@ -193,7 +193,7 @@ onMounted(async () => {
                         <button
                             type="submit"
                             :disabled="isLoading"
-                            class="w-full rounded-md border border-white bg-pink-500 px-6 py-3 font-semibold text-white transition-colors hover:bg-pink-600 focus:outline-none focus:ring-2 focus:ring-white/50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-300 dark:bg-pink-600 dark:hover:bg-pink-700 dark:focus:ring-gray-200/50"
+                            class="w-full rounded-md bg-pink-500 px-6 py-3 font-semibold text-white transition-colors hover:bg-pink-600 focus:outline-none focus:ring-2 focus:ring-white/50 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-pink-600 dark:hover:bg-pink-700 dark:focus:ring-gray-200/50"
                         >
                             <span v-if="!isLoading">
                                 {{ t('newsletter_subscribe') || 'Abonează-te' }}
@@ -211,7 +211,7 @@ onMounted(async () => {
                         v-model="formData.privacy_accepted"
                         type="checkbox"
                         id="privacy-accepted"
-                        class="mt-1 h-4 w-4 rounded border-white text-pink-600 focus:ring-2 focus:ring-white/50 dark:border-gray-300 dark:text-pink-500 dark:focus:ring-gray-200/50"
+                        class="mt-1 h-4 w-4 rounded text-pink-600 focus:ring-2 focus:ring-white/50 dark:text-pink-500 dark:focus:ring-gray-200/50"
                         required
                     />
                     <label for="privacy-accepted" class="text-sm text-white dark:text-gray-100">

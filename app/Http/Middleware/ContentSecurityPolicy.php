@@ -94,13 +94,12 @@ class ContentSecurityPolicy
             $viteHost = env('VITE_HOST', 'localhost');
             $vitePort = env('VITE_PORT', '5173');
             
+            // Note: CSP does not support IPv6 addresses with brackets
+            // Use localhost and 127.0.0.1 which cover most development scenarios
             $hosts = [
                 "http://{$viteHost}:{$vitePort}",
                 "http://127.0.0.1:{$vitePort}",
-                "http://[::1]:{$vitePort}",
-                // Support for different localhost variations
                 "http://localhost:{$vitePort}",
-                "http://0.0.0.0:{$vitePort}",
             ];
             
             // Remove duplicates and filter out empty values

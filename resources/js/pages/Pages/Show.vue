@@ -30,7 +30,7 @@ const { t } = useTranslations();
         :title="page.meta_title || page.title"
         :description="page.meta_description || page.excerpt"
     />
-    <div class="flex min-h-screen flex-col">
+    <div class="flex min-h-screen flex-col dark:bg-gray-900">
         <PublicHeader />
 
         <main class="flex-1">
@@ -55,7 +55,7 @@ const { t } = useTranslations();
                 </nav>
 
                 <!-- Page Content -->
-                <article class="rounded-lg border border-gray-200 bg-white p-8 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                <article class="rounded-lg bg-white p-8 dark:bg-gray-800">
                     <header class="mb-6">
                         <h1 class="mb-4 text-4xl font-bold text-gray-900 dark:text-white">
                             {{ page.title }}

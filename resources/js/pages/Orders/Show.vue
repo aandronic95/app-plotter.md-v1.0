@@ -120,7 +120,7 @@ const getPaymentStatusLabel = (status: string) => {
 
 <template>
     <Head :title="`Comandă ${props.order.order_number}`" />
-    <div class="flex min-h-screen flex-col">
+    <div class="flex min-h-screen flex-col dark:bg-gray-900">
         <PublicHeader />
 
         <main class="flex-1">
@@ -138,7 +138,7 @@ const getPaymentStatusLabel = (status: string) => {
                 <!-- Success Message -->
                 <div
                     v-if="showSuccessMessage"
-                    class="mb-6 relative rounded-lg border bg-green-50 p-4 dark:bg-green-900/20 dark:border-green-800"
+                    class="mb-6 relative rounded-lg bg-green-50 p-4 dark:bg-green-900/20"
                 >
                     <div class="flex items-start gap-3">
                         <CheckCircle class="h-5 w-5 text-green-600 dark:text-green-400 mt-0.5" />
@@ -162,7 +162,7 @@ const getPaymentStatusLabel = (status: string) => {
                 <!-- Error Message -->
                 <div
                     v-if="showErrorMessage"
-                    class="mb-6 relative rounded-lg border border-red-200 bg-red-50 p-4 dark:bg-red-900/20 dark:border-red-800"
+                    class="mb-6 relative rounded-lg bg-red-50 p-4 dark:bg-red-900/20"
                 >
                     <div class="flex items-start gap-3">
                         <AlertCircle class="h-5 w-5 text-red-600 dark:text-red-400 mt-0.5" />
@@ -205,7 +205,7 @@ const getPaymentStatusLabel = (status: string) => {
                                     <div
                                         v-for="item in props.order.items"
                                         :key="item.id"
-                                        class="flex items-center justify-between border-b pb-4 last:border-0"
+                                        class="flex items-center justify-between pb-4"
                                     >
                                         <div class="flex-1">
                                             <p class="font-medium">{{ item.product_name }}</p>
@@ -296,7 +296,7 @@ const getPaymentStatusLabel = (status: string) => {
                                         {{ getPaymentStatusLabel(props.order.payment_status) }}
                                     </p>
                                 </div>
-                                <div class="border-t pt-4 space-y-2">
+                                <div class="pt-4 space-y-2">
                                     <div class="flex justify-between text-sm">
                                         <span class="text-gray-600 dark:text-gray-400">
                                             Subtotal
@@ -321,7 +321,7 @@ const getPaymentStatusLabel = (status: string) => {
                                             {{ props.order.shipping_cost === 0 ? 'Gratuit' : formatPrice(props.order.shipping_cost) }}
                                         </span>
                                     </div>
-                                    <div class="border-t pt-2">
+                                    <div class="pt-2">
                                         <div class="flex justify-between text-lg font-bold">
                                             <span>Total</span>
                                             <span>{{ formatPrice(props.order.total) }}</span>

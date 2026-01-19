@@ -153,7 +153,7 @@ const submit = () => {
 
 <template>
     <Head title="Finalizare comandă" />
-    <div class="flex min-h-screen flex-col">
+    <div class="flex min-h-screen flex-col dark:bg-gray-900">
         <PublicHeader />
 
         <main class="flex-1">
@@ -175,7 +175,7 @@ const submit = () => {
                 <!-- Success Message -->
                 <div
                     v-if="showSuccessMessage"
-                    class="mb-6 relative rounded-lg border bg-green-50 p-4 dark:bg-green-900/20 dark:border-green-800"
+                    class="mb-6 relative rounded-lg bg-green-50 p-4 dark:bg-green-900/20"
                 >
                     <div class="flex items-start gap-3">
                         <CheckCircle class="h-5 w-5 text-green-600 dark:text-green-400 mt-0.5" />
@@ -199,7 +199,7 @@ const submit = () => {
                 <!-- Error Message -->
                 <div
                     v-if="showErrorMessage"
-                    class="mb-6 relative rounded-lg border border-red-200 bg-red-50 p-4 dark:bg-red-900/20 dark:border-red-800"
+                    class="mb-6 relative rounded-lg bg-red-50 p-4 dark:bg-red-900/20"
                 >
                     <div class="flex items-start gap-3">
                         <AlertCircle class="h-5 w-5 text-red-600 dark:text-red-400 mt-0.5" />
@@ -233,11 +233,11 @@ const submit = () => {
                                     <div
                                         v-for="address in props.deliveryAddresses"
                                         :key="address.id"
-                                        class="rounded-lg border p-3 cursor-pointer transition-all"
+                                        class="rounded-lg p-3 cursor-pointer transition-all"
                                         :class="
                                             selectedAddressId === address.id && useSavedAddress
-                                                ? 'border-primary bg-primary/5'
-                                                : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
+                                                ? 'bg-primary/5'
+                                                : ''
                                         "
                                         @click="selectAddress(address)"
                                     >
@@ -301,7 +301,7 @@ const submit = () => {
                                                 v-model="form.shipping_name"
                                                 type="text"
                                                 required
-                                                class="w-full rounded-lg border border-gray-300 px-4 py-2 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                                                class="w-full rounded-lg px-4 py-2 dark:bg-gray-800 dark:text-white"
                                                 :class="{ 'border-red-500': form.errors.shipping_name }"
                                             />
                                             <p
@@ -323,7 +323,7 @@ const submit = () => {
                                                 v-model="form.shipping_email"
                                                 type="email"
                                                 required
-                                                class="w-full rounded-lg border border-gray-300 px-4 py-2 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                                                class="w-full rounded-lg px-4 py-2 dark:bg-gray-800 dark:text-white"
                                                 :class="{ 'border-red-500': form.errors.shipping_email }"
                                             />
                                             <p
@@ -483,7 +483,7 @@ const submit = () => {
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="border-t pt-4 space-y-2">
+                                    <div class="pt-4 space-y-2">
                                         <div class="flex justify-between text-sm">
                                             <span class="text-gray-600 dark:text-gray-400">
                                                 Subtotal
@@ -508,7 +508,7 @@ const submit = () => {
                                                 {{ props.shippingCost === 0 ? 'Gratuit' : formatPrice(props.shippingCost) }}
                                             </span>
                                         </div>
-                                        <div class="border-t pt-2">
+                                        <div class="pt-2">
                                             <div class="flex justify-between text-lg font-bold">
                                                 <span>Total</span>
                                                 <span>{{ formatPrice(props.total) }}</span>

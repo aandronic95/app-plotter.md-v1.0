@@ -59,7 +59,7 @@ onMounted(() => {
 
 <template>
     <Head :title="t('promotions_title')" />
-    <div class="flex min-h-screen flex-col">
+    <div class="flex min-h-screen flex-col dark:bg-gray-900">
         <PublicHeader />
 
         <main class="flex-1">
@@ -82,7 +82,7 @@ onMounted(() => {
                     <div
                         v-for="i in 6"
                         :key="i"
-                        class="animate-pulse rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800"
+                        class="animate-pulse rounded-lg bg-white dark:bg-gray-800"
                     >
                         <div class="aspect-[4/3] w-full bg-gray-200 dark:bg-gray-700" />
                         <div class="p-4">

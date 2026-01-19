@@ -37,6 +37,8 @@ class DatabaseSeeder extends Seeder
             ProductSeeder::class,
             NavigationSeeder::class,
             HeroBannerSeeder::class,
+            ProductCategoryShowcaseSeeder::class,
+            CustomPrintBannerSeeder::class,
         ]);
     }
 }
