@@ -39,6 +39,7 @@ class HeroBannerResource extends JsonResource
             'image' => $imageUrl,
             'is_active' => $this->is_active,
             'sort_order' => $this->sort_order,
+            'rotating_words' => $this->rotating_words ?? ['HAINE', 'CĂRȚI DE VIZITE', 'BANERE', 'CUTII', 'POSTERE'],
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
         ];

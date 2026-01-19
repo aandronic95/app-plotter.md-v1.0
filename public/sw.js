@@ -28,12 +28,10 @@ const EXCLUDE_PATTERNS = [
 
 // Install event - cache static assets
 self.addEventListener('install', (event) => {
-    console.log('[Service Worker] Installing...');
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
-            console.log('[Service Worker] Caching static assets');
             return cache.addAll(STATIC_ASSETS).catch((err) => {
-                console.warn('[Service Worker] Failed to cache some assets:', err);
+                // Silently fail
             });
         })
     );
@@ -42,13 +40,11 @@ self.addEventListener('install', (event) => {
 
 // Activate event - clean up old caches
 self.addEventListener('activate', (event) => {
-    console.log('[Service Worker] Activating...');
     event.waitUntil(
         caches.keys().then((cacheNames) => {
             return Promise.all(
                 cacheNames.map((cacheName) => {
                     if (cacheName !== CACHE_NAME) {
-                        console.log('[Service Worker] Deleting old cache:', cacheName);
                         return caches.delete(cacheName);
                     }
                 })
@@ -93,8 +89,6 @@ self.addEventListener('fetch', (event) => {
             caches.match(request).then((cachedResponse) => {
                 // Return cached version if available
                 if (cachedResponse) {
-                    console.log('[Service Worker] Serving from cache:', url.pathname);
-                    
                     // For API requests, also fetch in background to update cache
                     if (isApiRequest) {
                         fetch(request)
@@ -115,7 +109,6 @@ self.addEventListener('fetch', (event) => {
                 }
 
                 // Fetch from network
-                console.log('[Service Worker] Fetching from network:', url.pathname);
                 return fetch(request)
                     .then((response) => {
                         // Don't cache if not ok
@@ -134,7 +127,6 @@ self.addEventListener('fetch', (event) => {
                         return response;
                     })
                     .catch((error) => {
-                        console.error('[Service Worker] Fetch failed:', error);
                         throw error;
                     });
             })

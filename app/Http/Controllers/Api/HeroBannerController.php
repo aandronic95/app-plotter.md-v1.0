@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\HeroBannerResource;
 use App\Models\HeroBanner;
+use App\Models\SiteSetting;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -17,6 +18,91 @@ class HeroBannerController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
+        // Check if hero banner data exists in site_settings
+        $siteSettings = SiteSetting::current();
+        
+        // Check if site_settings has hero banner data and it's active
+        // Consider it has data if title exists OR if is_active is explicitly set
+        $hasSiteSettingsBanner = !empty($siteSettings->hero_banner_title) 
+            || ($siteSettings->hero_banner_is_active !== null);
+        
+        // Check if banner should be active (default to true if not set)
+        $isActive = $siteSettings->hero_banner_is_active ?? true;
+        
+        // If site_settings has hero banner data and active_only is requested, return it
+        // Only return if active_only is true AND banner is active, OR if active_only is false
+        $shouldReturnSiteSettings = $hasSiteSettingsBanner 
+            && (!$request->boolean('active_only') || $isActive);
+        
+        if ($shouldReturnSiteSettings) {
+            $perPage = min((int) $request->get('per_page', 15), 100);
+            
+            // Get image path (relative, not full URL, so HeroBannerResource can handle it)
+            $imagePath = $siteSettings->hero_banner_image;
+            
+            // Transform site_settings data to HeroBanner format
+            $bannerData = [
+                'id' => 1,
+                'headline' => $siteSettings->hero_banner_headline,
+                'title' => $siteSettings->hero_banner_title ?? 'PRINTĂM',
+                'description' => $siteSettings->hero_banner_description,
+                'features' => $siteSettings->hero_banner_features_array ?? [],
+                'button1_text' => $siteSettings->hero_banner_button1_text,
+                'button1_link' => $siteSettings->hero_banner_button1_link,
+                'button2_text' => $siteSettings->hero_banner_button2_text,
+                'button2_link' => $siteSettings->hero_banner_button2_link,
+                'image' => $imagePath, // Store relative path, HeroBannerResource will convert to URL
+                'is_active' => $isActive,
+                'sort_order' => $siteSettings->hero_banner_sort_order ?? 0,
+                'rotating_words' => $siteSettings->hero_banner_rotating_words_array ?? ['HAINE', 'CĂRȚI DE VIZITE', 'BANERE', 'CUTII', 'POSTERE'],
+                'created_at' => $siteSettings->created_at,
+                'updated_at' => $siteSettings->updated_at,
+            ];
+            
+            // Create a HeroBanner model instance for the resource using make()
+            $banner = HeroBanner::make($bannerData);
+            $banner->id = 1;
+            $banner->exists = true;
+            
+            // Ensure timestamps are set correctly
+            if ($siteSettings->created_at) {
+                $banner->created_at = $siteSettings->created_at;
+            }
+            if ($siteSettings->updated_at) {
+                $banner->updated_at = $siteSettings->updated_at;
+            }
+            
+            return response()->json([
+                'data' => [new HeroBannerResource($banner)],
+                'links' => [
+                    [
+                        'url' => null,
+                        'label' => '&laquo; Previous',
+                        'active' => false,
+                    ],
+                    [
+                        'url' => '/api/hero-banners?page=1',
+                        'label' => '1',
+                        'active' => true,
+                    ],
+                    [
+                        'url' => null,
+                        'label' => 'Next &raquo;',
+                        'active' => false,
+                    ],
+                ],
+                'meta' => [
+                    'current_page' => 1,
+                    'last_page' => 1,
+                    'per_page' => $perPage,
+                    'total' => 1,
+                    'from' => 1,
+                    'to' => 1,
+                ],
+            ]);
+        }
+        
+        // Otherwise, use the hero_banners table
         $query = HeroBanner::query();
 
         // Filter by active status

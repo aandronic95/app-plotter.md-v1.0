@@ -55,6 +55,35 @@ class SiteSetting extends Model
         'service_feature_4_icon',
         'service_feature_4_title',
         'service_feature_4_description',
+        'hero_banner_headline',
+        'hero_banner_title',
+        'hero_banner_description',
+        'hero_banner_features',
+        'hero_banner_button1_text',
+        'hero_banner_button1_link',
+        'hero_banner_button2_text',
+        'hero_banner_button2_link',
+        'hero_banner_image',
+        'hero_banner_is_active',
+        'hero_banner_sort_order',
+        'hero_banner_rotating_words',
+    ];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'show_login_modal' => 'boolean',
+        'show_site_name' => 'boolean',
+        'show_logo' => 'boolean',
+        'show_loyalty_points' => 'boolean',
+        'show_newsletter_form' => 'boolean',
+        'hero_banner_features' => 'array',
+        'hero_banner_is_active' => 'boolean',
+        'hero_banner_sort_order' => 'integer',
+        'hero_banner_rotating_words' => 'array',
     ];
 
     /**
@@ -129,5 +158,67 @@ class SiteSetting extends Model
         }
 
         return asset('storage/' . $this->site_favicon);
+    }
+
+    /**
+     * Get hero banner image URL.
+     */
+    public function getHeroBannerImageUrlAttribute(): ?string
+    {
+        if (!$this->hero_banner_image) {
+            return null;
+        }
+
+        if (str_starts_with($this->hero_banner_image, 'http://') || str_starts_with($this->hero_banner_image, 'https://')) {
+            return $this->hero_banner_image;
+        }
+
+        return asset('storage/' . $this->hero_banner_image);
+    }
+
+    /**
+     * Get hero banner features as simple array (for API/frontend).
+     */
+    public function getHeroBannerFeaturesArrayAttribute(): array
+    {
+        $features = $this->hero_banner_features ?? [];
+        
+        // Transform array of objects to simple array of strings
+        if (!empty($features) && is_array($features)) {
+            $firstItem = reset($features);
+            // If it's an array of objects with 'feature' key
+            if (is_array($firstItem) && isset($firstItem['feature'])) {
+                return array_column($features, 'feature');
+            }
+            // If it's already a simple array
+            if (is_string($firstItem)) {
+                return $features;
+            }
+        }
+        
+        return [];
+    }
+
+    /**
+     * Get hero banner rotating words as simple array (for API/frontend).
+     */
+    public function getHeroBannerRotatingWordsArrayAttribute(): array
+    {
+        $words = $this->hero_banner_rotating_words ?? [];
+        
+        // Transform array of objects to simple array of strings
+        if (!empty($words) && is_array($words)) {
+            $firstItem = reset($words);
+            // If it's an array of objects with 'word' key
+            if (is_array($firstItem) && isset($firstItem['word'])) {
+                return array_column($words, 'word');
+            }
+            // If it's already a simple array
+            if (is_string($firstItem)) {
+                return $words;
+            }
+        }
+        
+        return [];
     }
 }

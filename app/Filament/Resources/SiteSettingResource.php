@@ -314,6 +314,107 @@ class SiteSettingResource extends Resource
                             ->columnSpanFull(),
                     ]),
 
+                Section::make('Hero Banner')
+                    ->description('Configurare pentru banner-ul principal afișat pe pagina principală')
+                    ->schema([
+                        Forms\Components\TextInput::make('hero_banner_headline')
+                            ->label('Headline')
+                            ->maxLength(255)
+                            ->helperText('Textul de headline afișat deasupra titlului (ex: 🔥 OFERTĂ SPECIALĂ)')
+                            ->columnSpanFull(),
+
+                        Forms\Components\TextInput::make('hero_banner_title')
+                            ->label('Titlu principal')
+                            ->maxLength(255)
+                            ->default('PRINTĂM')
+                            ->helperText('Titlul principal al banner-ului. Dacă este gol, se va folosi animația cu cuvinte rotative.')
+                            ->columnSpanFull(),
+
+                        Forms\Components\Textarea::make('hero_banner_description')
+                            ->label('Descriere')
+                            ->rows(3)
+                            ->maxLength(1000)
+                            ->helperText('Descrierea banner-ului')
+                            ->columnSpanFull(),
+
+                        Forms\Components\Repeater::make('hero_banner_features')
+                            ->label('Features')
+                            ->schema([
+                                Forms\Components\TextInput::make('feature')
+                                    ->label('Feature')
+                                    ->maxLength(255),
+                            ])
+                            ->defaultItems(0)
+                            ->itemLabel(fn (array $state): ?string => $state['feature'] ?? null)
+                            ->helperText('Lista de features afișate cu checkmark-uri')
+                            ->columnSpanFull(),
+
+                        Forms\Components\TextInput::make('hero_banner_button1_text')
+                            ->label('Text Buton 1')
+                            ->maxLength(255)
+                            ->helperText('Textul pentru primul buton CTA'),
+
+                        Forms\Components\TextInput::make('hero_banner_button1_link')
+                            ->label('Link Buton 1')
+                            ->url()
+                            ->maxLength(255)
+                            ->helperText('Link-ul pentru primul buton CTA'),
+
+                        Forms\Components\TextInput::make('hero_banner_button2_text')
+                            ->label('Text Buton 2')
+                            ->maxLength(255)
+                            ->helperText('Textul pentru al doilea buton CTA'),
+
+                        Forms\Components\TextInput::make('hero_banner_button2_link')
+                            ->label('Link Buton 2')
+                            ->url()
+                            ->maxLength(255)
+                            ->helperText('Link-ul pentru al doilea buton CTA'),
+
+                        Forms\Components\FileUpload::make('hero_banner_image')
+                            ->label('Imagine Hero Banner')
+                            ->image()
+                            ->disk('public')
+                            ->directory('hero-banners')
+                            ->visibility('public')
+                            ->maxSize(10240)
+                            ->imageEditor()
+                            ->helperText('Imaginea pentru hero banner (recomandat 1200x600px)')
+                            ->columnSpanFull(),
+
+                        Forms\Components\Toggle::make('hero_banner_is_active')
+                            ->label('Banner activ')
+                            ->helperText('Activează/dezactivează afișarea banner-ului')
+                            ->default(true)
+                            ->columnSpanFull(),
+
+                        Forms\Components\TextInput::make('hero_banner_sort_order')
+                            ->label('Ordinea de sortare')
+                            ->numeric()
+                            ->default(0)
+                            ->helperText('Ordinea de sortare (0 = primul)')
+                            ->columnSpanFull(),
+
+                        Forms\Components\Repeater::make('hero_banner_rotating_words')
+                            ->label('Cuvinte rotative pentru animație')
+                            ->schema([
+                                Forms\Components\TextInput::make('word')
+                                    ->label('Cuvânt')
+                                    ->maxLength(255),
+                            ])
+                            ->defaultItems(5)
+                            ->default([
+                                ['word' => 'HAINE'],
+                                ['word' => 'CĂRȚI DE VIZITE'],
+                                ['word' => 'BANERE'],
+                                ['word' => 'CUTII'],
+                                ['word' => 'POSTERE'],
+                            ])
+                            ->itemLabel(fn (array $state): ?string => $state['word'] ?? null)
+                            ->helperText('Lista de cuvinte care se rotesc în animația de typing (folosit dacă titlul este gol)')
+                            ->columnSpanFull(),
+                    ]),
+
                 Section::make('Loading Screen')
                     ->schema([
                         Forms\Components\TextInput::make('loading_text_main')

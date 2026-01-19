@@ -281,10 +281,10 @@
                 window.addEventListener('load', function() {
                     navigator.serviceWorker.register('/sw.js')
                         .then(function(registration) {
-                            console.log('[Service Worker] Registered successfully:', registration.scope);
+                            // Service worker registered successfully
                         })
                         .catch(function(error) {
-                            console.log('[Service Worker] Registration failed:', error);
+                            // Service worker registration failed
                         });
                 });
             }
