@@ -527,9 +527,10 @@ const addToCart = async () => {
                             v-if="props.product.description"
                             class="prose max-w-none dark:prose-invert"
                         >
-                            <p class="text-gray-700 dark:text-gray-300">
-                                {{ props.product.description }}
-                            </p>
+                            <div 
+                                class="text-gray-700 dark:text-gray-300"
+                                v-html="props.product.description"
+                            ></div>
                         </div>
 
                         <div class="space-y-4 pt-6">
