@@ -138,7 +138,8 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureUserIsAdmin::class])
         Route::get('/', [\App\Http\Controllers\AdminerController::class, 'index'])->name('adminer.index');
     });
 
+// Settings routes (must be before catch-all route)
+require __DIR__.'/settings.php';
+
 // Page slug route (must be last to avoid conflicts with other routes)
 Route::get('{slug}', [PublicPageController::class, 'show'])->name('pages.show');
-
-require __DIR__.'/settings.php';

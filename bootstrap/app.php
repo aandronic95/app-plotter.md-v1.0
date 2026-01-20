@@ -37,8 +37,9 @@ return Application::configure(basePath: dirname(__DIR__))
                     return response()->json(['message' => 'Resursa nu a fost găsită.'], 404);
                 }
 
-                // Check if it's a product route
                 $path = $request->path();
+                
+                // Check if it's a product route
                 if (str_starts_with($path, 'products/')) {
                     $slug = str_replace('products/', '', $path);
                     return Inertia::render('Errors/ProductNotFound', [
@@ -46,6 +47,20 @@ return Application::configure(basePath: dirname(__DIR__))
                         'slug' => $slug,
                     ])->toResponse($request)->setStatusCode(404);
                 }
+                
+                // Check if it's a category route
+                if (str_starts_with($path, 'categories/')) {
+                    return Inertia::render('Errors/NotFound', [
+                        'status' => 404,
+                    ])->toResponse($request)->setStatusCode(404);
+                }
+                
+                // For other routes (like pages), check if it might be a page route
+                // The catch-all route {slug} should handle pages, so if ModelNotFoundException
+                // is thrown, it means the page doesn't exist or isn't published
+                return Inertia::render('Errors/NotFound', [
+                    'status' => 404,
+                ])->toResponse($request)->setStatusCode(404);
             }
 
             // Handle NotFoundHttpException
@@ -54,8 +69,9 @@ return Application::configure(basePath: dirname(__DIR__))
                     return response()->json(['message' => 'Pagina nu a fost găsită.'], 404);
                 }
 
-                // Check if it's a product route
                 $path = $request->path();
+                
+                // Check if it's a product route
                 if (str_starts_with($path, 'products/')) {
                     $slug = str_replace('products/', '', $path);
                     return Inertia::render('Errors/ProductNotFound', [

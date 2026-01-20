@@ -26,6 +26,12 @@ const banner = ref<HeroBanner | null>(null);
 const imageLoading = ref(true);
 const imageError = ref(false);
 
+// Helper function to check if a link is external
+const isExternalLink = (link: string | null): boolean => {
+    if (!link) return false;
+    return link.startsWith('http://') || link.startsWith('https://') || link.startsWith('mailto:') || link.startsWith('tel:');
+};
+
 const defaultRotatingWords = ['HAINE', 'CĂRȚI DE VIZITE', 'BANERE', 'CUTII', 'POSTERE'];
 const rotatingWords = ref<string[]>(defaultRotatingWords);
 const currentWordIndex = ref(0);
@@ -266,10 +272,22 @@ onUnmounted(() => {
                             size="lg"
                             class="bg-teal-800 hover:bg-teal-800 dark:bg-teal-500 dark:hover:bg-teal-600 text-white"
                         >
-                            <Link :href="banner.button1_link">
+                            <Link
+                                v-if="!isExternalLink(banner.button1_link)"
+                                :href="banner.button1_link"
+                            >
                                 {{ banner.button1_text }}
                                 <span class="ml-2">></span>
                             </Link>
+                            <a
+                                v-else
+                                :href="banner.button1_link"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                {{ banner.button1_text }}
+                                <span class="ml-2">></span>
+                            </a>
                         </Button>
                         <Button
                             v-if="banner?.button2_text && banner.button2_link"
@@ -278,10 +296,22 @@ onUnmounted(() => {
                             variant="outline"
                             class="border-2 border-gray-800 bg-gray-800 text-white hover:bg-gray-800 dark:border-gray-200 dark:bg-gray-200 dark:text-gray-900 dark:hover:bg-gray-300"
                         >
-                            <Link :href="banner.button2_link">
+                            <Link
+                                v-if="!isExternalLink(banner.button2_link)"
+                                :href="banner.button2_link"
+                            >
                                 {{ banner.button2_text }}
                                 <span class="ml-2">></span>
                             </Link>
+                            <a
+                                v-else
+                                :href="banner.button2_link"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                {{ banner.button2_text }}
+                                <span class="ml-2">></span>
+                            </a>
                         </Button>
                     </div>
                 </div>

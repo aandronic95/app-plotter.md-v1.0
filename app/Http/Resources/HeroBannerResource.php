@@ -11,6 +11,36 @@ use Illuminate\Support\Facades\Storage;
 class HeroBannerResource extends JsonResource
 {
     /**
+     * Normalize a link to ensure it's in the correct format for Inertia Link component.
+     * 
+     * @param string|null $link
+     * @return string|null
+     */
+    private function normalizeLink(?string $link): ?string
+    {
+        if (empty($link)) {
+            return null;
+        }
+
+        // If it's already a full URL (http:// or https://), return as is
+        if (str_starts_with($link, 'http://') || str_starts_with($link, 'https://')) {
+            return $link;
+        }
+
+        // If it's a mailto: or tel: link, return as is
+        if (str_starts_with($link, 'mailto:') || str_starts_with($link, 'tel:')) {
+            return $link;
+        }
+
+        // For internal links, ensure they start with /
+        // Remove any leading slashes first to avoid duplicates
+        $link = ltrim($link, '/');
+        
+        // Add leading slash for internal routes
+        return '/' . $link;
+    }
+
+    /**
      * Transform the resource into an array.
      *
      * @return array<string, mixed>
@@ -39,9 +69,9 @@ class HeroBannerResource extends JsonResource
             'description' => $this->description,
             'features' => $this->features ?? [],
             'button1_text' => $this->button1_text,
-            'button1_link' => $this->button1_link,
+            'button1_link' => $this->normalizeLink($this->button1_link),
             'button2_text' => $this->button2_text,
-            'button2_link' => $this->button2_link,
+            'button2_link' => $this->normalizeLink($this->button2_link),
             'image' => $imageUrl,
             'is_active' => $this->is_active,
             'sort_order' => $this->sort_order,

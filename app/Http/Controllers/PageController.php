@@ -30,9 +30,22 @@ class PageController extends Controller
      */
     public function show(string $slug): Response
     {
-        $page = Page::where('slug', $slug)
-            ->published()
-            ->firstOrFail();
+        // First check if page exists (without published scope for better error handling)
+        $page = Page::where('slug', $slug)->first();
+        
+        if (!$page) {
+            abort(404, 'Pagina nu a fost găsită.');
+        }
+        
+        // Check if page is published
+        if (!$page->is_published || !$page->is_active) {
+            abort(404, 'Pagina nu este publicată sau nu este activă.');
+        }
+        
+        // Check published_at date if set
+        if ($page->published_at && $page->published_at->isFuture()) {
+            abort(404, 'Pagina nu este încă publicată.');
+        }
 
         return Inertia::render('Pages/Show', [
             'page' => $page,
