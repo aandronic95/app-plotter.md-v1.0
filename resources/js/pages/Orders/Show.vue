@@ -31,6 +31,12 @@ interface Order {
     shipping_city: string;
     shipping_postal_code?: string;
     shipping_country: string;
+    delivery_method?: {
+        id: number;
+        name: string;
+        logo?: string | null;
+    } | null;
+    delivery_tracking_number?: string | null;
     notes?: string;
     created_at: string;
     items: OrderItem[];
@@ -221,6 +227,32 @@ const getPaymentStatusLabel = (status: string) => {
                                                 {{ formatPrice(item.subtotal) }}
                                             </p>
                                         </div>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <!-- Delivery Method -->
+                        <Card v-if="props.order.delivery_method">
+                            <CardHeader>
+                                <CardTitle>Metodă de livrare</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div class="flex items-center gap-3">
+                                    <img
+                                        v-if="props.order.delivery_method.logo"
+                                        :src="props.order.delivery_method.logo"
+                                        :alt="props.order.delivery_method.name"
+                                        class="h-12 w-12 object-contain rounded"
+                                    />
+                                    <div>
+                                        <p class="font-medium">{{ props.order.delivery_method.name }}</p>
+                                        <p
+                                            v-if="props.order.delivery_tracking_number"
+                                            class="text-sm text-gray-600 dark:text-gray-400 mt-1"
+                                        >
+                                            AWB / Tracking: <span class="font-mono">{{ props.order.delivery_tracking_number }}</span>
+                                        </p>
                                     </div>
                                 </div>
                             </CardContent>

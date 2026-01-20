@@ -131,6 +131,10 @@ Route::get('api/product-category-showcases', [\App\Http\Controllers\Api\ProductC
 // Newsletter API routes
 Route::post('api/newsletter', [\App\Http\Controllers\Api\NewsletterController::class, 'store'])->name('api.newsletter.store');
 
+// Delivery Methods API routes
+Route::get('api/delivery-methods', [\App\Http\Controllers\Api\DeliveryMethodController::class, 'index'])->name('api.delivery-methods.index');
+Route::get('api/delivery-methods/{deliveryMethod}', [\App\Http\Controllers\Api\DeliveryMethodController::class, 'show'])->name('api.delivery-methods.show');
+
 // Adminer route (protected by admin middleware)
 Route::middleware(['auth', \App\Http\Middleware\EnsureUserIsAdmin::class])
     ->prefix('adminer')

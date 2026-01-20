@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Models\DeliveryMethod;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
@@ -51,8 +52,32 @@ class OrderController extends Controller
         }
 
         $tax = $subtotal * 0.19; // TVA 19%
-        $shippingCost = $subtotal > 500 ? 0 : 50; // Transport gratuit peste 500 lei
-        $total = $subtotal + $tax + $shippingCost;
+        
+        // Obține metodele de livrare active
+        $deliveryMethods = DeliveryMethod::active()
+            ->orderBy('sort_order')
+            ->get()
+            ->map(function ($method) use ($subtotal) {
+                return [
+                    'id' => $method->id,
+                    'name' => $method->name,
+                    'slug' => $method->slug,
+                    'description' => $method->description,
+                    'logo' => $method->logo ? asset('storage/' . $method->logo) : null,
+                    'base_cost' => (float) $method->base_cost,
+                    'free_shipping_threshold' => $method->free_shipping_threshold ? (float) $method->free_shipping_threshold : null,
+                    'estimated_days_min' => $method->estimated_days_min,
+                    'estimated_days_max' => $method->estimated_days_max,
+                    'calculated_cost' => $method->calculateShippingCost($subtotal),
+                ];
+            });
+
+        // Calculăm costul de livrare implicit (prima metodă activă sau 0)
+        $defaultShippingCost = $deliveryMethods->isNotEmpty() 
+            ? $deliveryMethods->first()['calculated_cost'] 
+            : ($subtotal > 500 ? 0 : 50);
+        
+        $total = $subtotal + $tax + $defaultShippingCost;
 
         // Obține adresele salvate ale utilizatorului (dacă este autentificat)
         $deliveryAddresses = [];
@@ -76,9 +101,10 @@ class OrderController extends Controller
             'items' => $items,
             'subtotal' => $subtotal,
             'tax' => $tax,
-            'shippingCost' => $shippingCost,
+            'shippingCost' => $defaultShippingCost,
             'total' => $total,
             'deliveryAddresses' => $deliveryAddresses,
+            'deliveryMethods' => $deliveryMethods,
         ]);
     }
 
@@ -88,6 +114,7 @@ class OrderController extends Controller
     public function store(Request $request): \Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
     {
         $request->validate([
+            'delivery_method_id' => 'required|exists:delivery_methods,id',
             'shipping_name' => 'required|string|max:255',
             'shipping_email' => 'required|email|max:255',
             'shipping_phone' => 'required|string|max:20',
@@ -137,7 +164,10 @@ class OrderController extends Controller
             }
 
             $tax = $subtotal * 0.19;
-            $shippingCost = $subtotal > 500 ? 0 : 50;
+            
+            // Obține metoda de livrare selectată și calculează costul
+            $deliveryMethod = DeliveryMethod::findOrFail($request->delivery_method_id);
+            $shippingCost = $deliveryMethod->calculateShippingCost($subtotal);
             $total = $subtotal + $tax + $shippingCost;
 
             // Creează comanda
@@ -149,6 +179,7 @@ class OrderController extends Controller
                 'shipping_cost' => $shippingCost,
                 'total' => $total,
                 'payment_status' => 'pending',
+                'delivery_method_id' => $request->delivery_method_id,
                 'shipping_name' => $request->shipping_name,
                 'shipping_email' => $request->shipping_email,
                 'shipping_phone' => $request->shipping_phone,
@@ -202,7 +233,7 @@ class OrderController extends Controller
      */
     public function show(int $id): Response
     {
-        $order = Order::with('orderItems.product')
+        $order = Order::with(['orderItems.product', 'deliveryMethod'])
             ->where('id', $id)
             ->where(function ($query) {
                 $query->where('user_id', auth()->id())
@@ -220,6 +251,12 @@ class OrderController extends Controller
                 'tax' => (float) $order->tax,
                 'shipping_cost' => (float) $order->shipping_cost,
                 'total' => (float) $order->total,
+                'delivery_method' => $order->deliveryMethod ? [
+                    'id' => $order->deliveryMethod->id,
+                    'name' => $order->deliveryMethod->name,
+                    'logo' => $order->deliveryMethod->logo ? asset('storage/' . $order->deliveryMethod->logo) : null,
+                ] : null,
+                'delivery_tracking_number' => $order->delivery_tracking_number,
                 'shipping_name' => $order->shipping_name,
                 'shipping_email' => $order->shipping_email,
                 'shipping_phone' => $order->shipping_phone,

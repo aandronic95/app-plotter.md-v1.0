@@ -30,7 +30,7 @@ class OrderResource extends Resource
 
     public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
     {
-        return parent::getEloquentQuery()->with('orderItems');
+        return parent::getEloquentQuery()->with(['orderItems', 'deliveryMethod']);
     }
 
     public static function form(Schema $schema): Schema
@@ -80,6 +80,18 @@ class OrderResource extends Resource
                         Forms\Components\TextInput::make('payment_method')
                             ->label('Metodă plată')
                             ->maxLength(255),
+
+                        Forms\Components\Select::make('delivery_method_id')
+                            ->label('Metodă de livrare')
+                            ->relationship('deliveryMethod', 'name')
+                            ->searchable()
+                            ->preload()
+                            ->nullable(),
+
+                        Forms\Components\TextInput::make('delivery_tracking_number')
+                            ->label('Număr AWB / Tracking')
+                            ->maxLength(255)
+                            ->nullable(),
                     ])->columns(3),
 
                 Section::make('Detalii financiare')
@@ -299,6 +311,18 @@ class OrderResource extends Resource
                         default => $state,
                     })
                     ->sortable(),
+
+                Tables\Columns\TextColumn::make('deliveryMethod.name')
+                    ->label('Metodă livrare')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(),
+
+                Tables\Columns\TextColumn::make('delivery_tracking_number')
+                    ->label('AWB / Tracking')
+                    ->searchable()
+                    ->copyable()
+                    ->toggleable(),
 
                 Tables\Columns\TextColumn::make('total')
                     ->label('Total')

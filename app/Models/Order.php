@@ -30,6 +30,8 @@ class Order extends Model
         'total',
         'payment_status',
         'payment_method',
+        'delivery_method_id',
+        'delivery_tracking_number',
         'shipping_name',
         'shipping_email',
         'shipping_phone',
@@ -111,6 +113,14 @@ class Order extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the delivery method for the order.
+     */
+    public function deliveryMethod(): BelongsTo
+    {
+        return $this->belongsTo(DeliveryMethod::class);
     }
 
     /**

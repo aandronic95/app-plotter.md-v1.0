@@ -28,6 +28,19 @@ interface DeliveryAddress {
     full_address: string;
 }
 
+interface DeliveryMethod {
+    id: number;
+    name: string;
+    slug: string;
+    description?: string;
+    logo?: string | null;
+    base_cost: number;
+    free_shipping_threshold?: number | null;
+    estimated_days_min?: number | null;
+    estimated_days_max?: number | null;
+    calculated_cost: number;
+}
+
 interface Props {
     items: CartItem[];
     subtotal: number;
@@ -35,6 +48,7 @@ interface Props {
     shippingCost: number;
     total: number;
     deliveryAddresses?: DeliveryAddress[];
+    deliveryMethods?: DeliveryMethod[];
 }
 
 const props = defineProps<Props>();
@@ -89,7 +103,15 @@ const selectedAddressId = ref<number | null>(
 );
 const useSavedAddress = ref(!!selectedAddressId.value);
 
+const selectedDeliveryMethodId = ref<number | null>(
+    props.deliveryMethods && props.deliveryMethods.length > 0 ? props.deliveryMethods[0].id : null
+);
+
+const currentShippingCost = ref(props.shippingCost);
+const currentTotal = ref(props.total);
+
 const form = useForm({
+    delivery_method_id: selectedDeliveryMethodId.value,
     shipping_name: auth.value?.user?.name || '',
     shipping_email: auth.value?.user?.email || '',
     shipping_phone: '',
@@ -98,6 +120,18 @@ const form = useForm({
     shipping_postal_code: '',
     shipping_country: 'Republica Moldova',
     notes: '',
+});
+
+// Watch for delivery method changes to update shipping cost
+watch(selectedDeliveryMethodId, (newMethodId) => {
+    if (newMethodId && props.deliveryMethods) {
+        const method = props.deliveryMethods.find(m => m.id === newMethodId);
+        if (method) {
+            currentShippingCost.value = method.calculated_cost;
+            currentTotal.value = props.subtotal + props.tax + method.calculated_cost;
+            form.delivery_method_id = newMethodId;
+        }
+    }
 });
 
 const formatPrice = (price: number) => {
@@ -274,6 +308,78 @@ const submit = () => {
                                     >
                                         Folosește o adresă nouă
                                     </Button>
+                                </CardContent>
+                            </Card>
+
+                            <!-- Delivery Method Selection -->
+                            <Card v-if="props.deliveryMethods && props.deliveryMethods.length > 0">
+                                <CardHeader>
+                                    <CardTitle>Metodă de livrare</CardTitle>
+                                </CardHeader>
+                                <CardContent class="space-y-3">
+                                    <div
+                                        v-for="method in props.deliveryMethods"
+                                        :key="method.id"
+                                        class="rounded-lg border p-4 cursor-pointer transition-all"
+                                        :class="
+                                            selectedDeliveryMethodId === method.id
+                                                ? 'border-primary bg-primary/5'
+                                                : 'border-gray-200 dark:border-gray-700'
+                                        "
+                                        @click="selectedDeliveryMethodId = method.id"
+                                    >
+                                        <div class="flex items-start justify-between gap-4">
+                                            <div class="flex items-start gap-3 flex-1">
+                                                <img
+                                                    v-if="method.logo"
+                                                    :src="method.logo"
+                                                    :alt="method.name"
+                                                    class="h-12 w-12 object-contain rounded"
+                                                />
+                                                <div class="flex-1">
+                                                    <div class="flex items-center gap-2 mb-1">
+                                                        <h4 class="font-medium text-gray-900 dark:text-white">
+                                                            {{ method.name }}
+                                                        </h4>
+                                                    </div>
+                                                    <p
+                                                        v-if="method.description"
+                                                        class="text-sm text-gray-600 dark:text-gray-400 mb-2"
+                                                    >
+                                                        {{ method.description }}
+                                                    </p>
+                                                    <div class="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                                                        <span class="font-medium text-gray-900 dark:text-white">
+                                                            {{ method.calculated_cost === 0 ? 'Gratuit' : formatPrice(method.calculated_cost) }}
+                                                        </span>
+                                                        <span
+                                                            v-if="method.estimated_days_min || method.estimated_days_max"
+                                                        >
+                                                            {{
+                                                                method.estimated_days_min && method.estimated_days_max
+                                                                    ? `${method.estimated_days_min}-${method.estimated_days_max} zile`
+                                                                    : method.estimated_days_min
+                                                                    ? `${method.estimated_days_min}+ zile`
+                                                                    : `${method.estimated_days_max} zile`
+                                                            }}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <input
+                                                type="radio"
+                                                :checked="selectedDeliveryMethodId === method.id"
+                                                @change="selectedDeliveryMethodId = method.id"
+                                                class="h-4 w-4 text-primary"
+                                            />
+                                        </div>
+                                    </div>
+                                    <p
+                                        v-if="form.errors.delivery_method_id"
+                                        class="text-sm text-red-500"
+                                    >
+                                        {{ form.errors.delivery_method_id }}
+                                    </p>
                                 </CardContent>
                             </Card>
 
@@ -501,13 +607,13 @@ const submit = () => {
                                                 Transport
                                             </span>
                                             <span class="font-medium">
-                                                {{ props.shippingCost === 0 ? 'Gratuit' : formatPrice(props.shippingCost) }}
+                                                {{ currentShippingCost === 0 ? 'Gratuit' : formatPrice(currentShippingCost) }}
                                             </span>
                                         </div>
                                         <div class="pt-2">
                                             <div class="flex justify-between text-lg font-bold">
                                                 <span>Total</span>
-                                                <span>{{ formatPrice(props.total) }}</span>
+                                                <span>{{ formatPrice(currentTotal) }}</span>
                                             </div>
                                         </div>
                                     </div>
