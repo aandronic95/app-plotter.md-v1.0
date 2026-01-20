@@ -55,6 +55,9 @@ class ProductResource extends Resource
                             ->relationship('category', 'name')
                             ->searchable()
                             ->preload()
+                            ->getOptionLabelFromRecordUsing(fn (Category $record): string => $record->parent 
+                                ? "{$record->parent->name} > {$record->name}" 
+                                : $record->name)
                             ->createOptionForm([
                                 Forms\Components\TextInput::make('name')
                                     ->label('Nume')
