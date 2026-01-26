@@ -105,6 +105,7 @@ Route::get('robots.txt', [\App\Http\Controllers\RobotsController::class, 'index'
 
 // Products API routes
 Route::get('api/products', [ApiProductController::class, 'index'])->name('api.products.index');
+Route::get('api/products/{productId}/configurations', [ApiProductController::class, 'configurations'])->name('api.products.configurations');
 
 // Pages API routes
 Route::get('api/pages', [PageController::class, 'index'])->name('api.pages.index');

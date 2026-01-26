@@ -22,6 +22,9 @@ class OrderItem extends Model
         'product_id',
         'product_name',
         'product_sku',
+        'print_size',
+        'print_sides',
+        'configuration_quantity',
         'quantity',
         'price',
         'subtotal',
@@ -35,6 +38,7 @@ class OrderItem extends Model
     protected function casts(): array
     {
         return [
+            'configuration_quantity' => 'integer',
             'quantity' => 'integer',
             'price' => 'decimal:2',
             'subtotal' => 'decimal:2',

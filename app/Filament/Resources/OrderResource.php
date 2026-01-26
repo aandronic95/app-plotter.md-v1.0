@@ -196,6 +196,34 @@ class OrderResource extends Resource
                                     ->maxLength(255)
                                     ->disabled(fn ($context) => $context === 'view'),
                                 
+                                Forms\Components\Select::make('print_size')
+                                    ->label('Dimensiune')
+                                    ->options([
+                                        'A3' => 'A3 (420x297 mm)',
+                                        'A4' => 'A4 (297x210 mm)',
+                                    ])
+                                    ->nullable()
+                                    ->disabled(fn ($context) => $context === 'view')
+                                    ->native(false),
+                                
+                                Forms\Components\Select::make('print_sides')
+                                    ->label('Laturi de printare')
+                                    ->options([
+                                        '4+0' => '1-сторонняя печать (4+0)',
+                                        '4+4' => '2-сторонняя печать (4+4)',
+                                    ])
+                                    ->nullable()
+                                    ->disabled(fn ($context) => $context === 'view')
+                                    ->native(false),
+                                
+                                Forms\Components\TextInput::make('configuration_quantity')
+                                    ->label('Cantitate configurație')
+                                    ->numeric()
+                                    ->minValue(1)
+                                    ->nullable()
+                                    ->disabled(fn ($context) => $context === 'view')
+                                    ->helperText('Cantitatea din configurația selectată (500, 1000, 2000)'),
+                                
                                 Forms\Components\TextInput::make('quantity')
                                     ->label('Cantitate')
                                     ->required()
@@ -234,7 +262,7 @@ class OrderResource extends Resource
                                     ->default(0)
                                     ->formatStateUsing(fn ($state) => $state ? number_format((float) $state, 2, '.', '') : '0.00'),
                             ])
-                            ->columns(3)
+                            ->columns(4)
                             ->addable(fn ($context) => $context !== 'view')
                             ->deletable(fn ($context) => $context !== 'view')
                             ->reorderable(fn ($context) => $context !== 'view')
@@ -346,7 +374,19 @@ class OrderResource extends Resource
                         if ($items->isEmpty()) {
                             return '—';
                         }
-                        return $items->map(fn ($item) => ($item->product_name ?? 'N/A') . ' (x' . ($item->quantity ?? 0) . ')')->join(', ');
+                        return $items->map(function ($item) {
+                            $name = ($item->product_name ?? 'N/A') . ' (x' . ($item->quantity ?? 0) . ')';
+                            if ($item->print_size || $item->print_sides) {
+                                $config = [];
+                                if ($item->print_size) $config[] = $item->print_size;
+                                if ($item->print_sides) $config[] = $item->print_sides;
+                                if ($item->configuration_quantity) $config[] = $item->configuration_quantity . ' buc';
+                                if (!empty($config)) {
+                                    $name .= ' [' . implode(', ', $config) . ']';
+                                }
+                            }
+                            return $name;
+                        })->join(', ');
                     })
                     ->wrap()
                     ->limit(50)
@@ -358,7 +398,19 @@ class OrderResource extends Resource
                         if ($items->isEmpty()) {
                             return null;
                         }
-                        return $items->map(fn ($item) => ($item->product_name ?? 'N/A') . ' (x' . ($item->quantity ?? 0) . ')')->join(', ');
+                        return $items->map(function ($item) {
+                            $name = ($item->product_name ?? 'N/A') . ' (x' . ($item->quantity ?? 0) . ')';
+                            if ($item->print_size || $item->print_sides) {
+                                $config = [];
+                                if ($item->print_size) $config[] = $item->print_size;
+                                if ($item->print_sides) $config[] = $item->print_sides;
+                                if ($item->configuration_quantity) $config[] = $item->configuration_quantity . ' buc';
+                                if (!empty($config)) {
+                                    $name .= ' [' . implode(', ', $config) . ']';
+                                }
+                            }
+                            return $name;
+                        })->join(', ');
                     })
                     ->toggleable(),
 

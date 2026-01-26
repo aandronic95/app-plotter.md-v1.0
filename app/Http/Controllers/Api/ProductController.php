@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\ProductConfigurationResource;
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\JsonResponse;
@@ -289,6 +290,25 @@ class ProductController extends Controller
                 'from' => $products->firstItem(),
                 'to' => $products->lastItem(),
             ],
+        ]);
+    }
+
+    /**
+     * Get configurations for a specific product.
+     */
+    public function configurations(Request $request, string $productId): JsonResponse
+    {
+        $product = Product::where('id', $productId)
+            ->orWhere('slug', $productId)
+            ->where('is_active', true)
+            ->firstOrFail();
+
+        $configurations = $product->activeConfigurations()
+            ->orderBy('sort_order')
+            ->get();
+
+        return response()->json([
+            'data' => ProductConfigurationResource::collection($configurations),
         ]);
     }
 }

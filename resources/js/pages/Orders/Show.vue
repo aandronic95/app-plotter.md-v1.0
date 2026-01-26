@@ -5,11 +5,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import { CheckCircle, ArrowLeft, X, AlertCircle } from 'lucide-vue-next';
 import { computed, ref, watch, onMounted } from 'vue';
+import { useTranslations } from '@/composables/useTranslations';
 
 interface OrderItem {
     id: number;
     product_name: string;
     product_sku?: string;
+    print_size?: string | null;
+    print_sides?: string | null;
+    configuration_quantity?: number | null;
     quantity: number;
     price: number;
     subtotal: number;
@@ -48,6 +52,7 @@ interface Props {
 
 const props = defineProps<Props>();
 const page = usePage();
+const { t } = useTranslations();
 
 // Flash messages
 const flash = computed(() => page.props.flash as { success?: string; error?: string } | undefined);
@@ -127,7 +132,7 @@ const getPaymentStatusLabel = (status: string) => {
         <PublicHeader />
 
         <main class="flex-1">
-            <div class="mx-auto max-w-4xl px-4 py-6 md:px-6">
+            <div class="mx-auto max-w-7xl px-4 py-6 md:px-6">
                 <div class="mb-6 flex items-center gap-4">
                     <Link
                         href="/"
@@ -208,24 +213,173 @@ const getPaymentStatusLabel = (status: string) => {
                                     <div
                                         v-for="item in props.order.items"
                                         :key="item.id"
-                                        class="flex items-center justify-between pb-4"
+                                        class="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800"
                                     >
-                                        <div class="flex-1">
-                                            <p class="font-medium">{{ item.product_name }}</p>
-                                            <p
-                                                v-if="item.product_sku"
-                                                class="text-sm text-gray-500"
-                                            >
-                                                SKU: {{ item.product_sku }}
-                                            </p>
-                                        </div>
-                                        <div class="text-right">
-                                            <p class="font-medium">
-                                                {{ item.quantity }} x {{ formatPrice(item.price) }}
-                                            </p>
-                                            <p class="text-sm text-gray-500">
-                                                {{ formatPrice(item.subtotal) }}
-                                            </p>
+                                        <div class="flex items-start justify-between">
+                                            <div class="flex-1">
+                                                <p class="font-semibold text-gray-900 dark:text-white">
+                                                    {{ item.product_name }}
+                                                </p>
+                                                <p
+                                                    v-if="item.product_sku"
+                                                    class="mt-1 text-sm text-gray-500 dark:text-gray-400"
+                                                >
+                                                    SKU: {{ item.product_sku }}
+                                                </p>
+                                                
+                                                <!-- Configurații produs -->
+                                                <div
+                                                    v-if="item.print_size || item.print_sides || item.configuration_quantity"
+                                                    class="mt-4 space-y-4"
+                                                >
+                                                    <!-- Section 1: Caracteristici de printare -->
+                                                    <Card>
+                                                        <CardHeader>
+                                                            <div class="flex items-center gap-2">
+                                                                <div class="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
+                                                                    1
+                                                                </div>
+                                                                <h3 class="text-lg font-semibold">{{ t('select_print_characteristics') }}</h3>
+                                                            </div>
+                                                        </CardHeader>
+                                                        <CardContent class="space-y-6">
+                                                            <!-- Dimensiuni -->
+                                                            <div v-if="item.print_size">
+                                                                <h4 class="mb-3 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                                    {{ t('sizes_in_unfolded_view') }}
+                                                                </h4>
+                                                                <div class="grid grid-cols-2 gap-4">
+                                                                    <div
+                                                                        class="relative rounded-lg border-2 border-green-500 bg-green-50 p-4 text-left dark:bg-green-900/20"
+                                                                    >
+                                                                        <div class="flex items-center justify-center mb-2">
+                                                                            <div class="h-16 w-24 rounded border-2 border-dashed border-green-500">
+                                                                                <div
+                                                                                    v-if="item.print_size === 'A3'"
+                                                                                    class="h-full w-full flex items-center justify-center"
+                                                                                >
+                                                                                    <div class="h-full w-1/3 border-r-2 border-dashed border-gray-400"></div>
+                                                                                    <div class="h-full w-1/3 border-r-2 border-dashed border-gray-400"></div>
+                                                                                    <div class="h-full w-1/3"></div>
+                                                                                </div>
+                                                                                <div
+                                                                                    v-else-if="item.print_size === 'A4'"
+                                                                                    class="h-full w-full flex items-center justify-center"
+                                                                                >
+                                                                                    <div class="h-full w-1/2 border-r-2 border-dashed border-gray-400"></div>
+                                                                                    <div class="h-full w-1/2"></div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                        <p class="text-sm font-medium text-gray-900 dark:text-white">
+                                                                            {{ item.print_size === 'A3' ? t('print_size_a3') : (item.print_size === 'A4' ? t('print_size_a4') : item.print_size) }}
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                            <!-- Laturi de printare -->
+                                                            <div v-if="item.print_sides">
+                                                                <h4 class="mb-3 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                                    {{ t('print_sides') }}
+                                                                </h4>
+                                                                <div class="grid grid-cols-2 gap-4">
+                                                                    <div
+                                                                        class="relative rounded-lg border-2 border-green-500 bg-green-50 p-4 text-left dark:bg-green-900/20"
+                                                                    >
+                                                                        <div class="flex items-center justify-center mb-2 gap-1">
+                                                                            <!-- Left page -->
+                                                                            <div class="h-12 w-16 rounded border border-gray-300 dark:border-gray-600 p-1">
+                                                                                <div class="flex gap-0.5">
+                                                                                    <div class="h-2 w-2 rounded-full bg-cyan-500"></div>
+                                                                                    <div class="h-2 w-2 rounded-full bg-magenta-500"></div>
+                                                                                    <div class="h-2 w-2 rounded-full bg-yellow-500"></div>
+                                                                                    <div class="h-2 w-2 rounded-full bg-black dark:bg-white"></div>
+                                                                                </div>
+                                                                            </div>
+                                                                            <!-- Right page -->
+                                                                            <div
+                                                                                :class="[
+                                                                                    'h-12 w-16 rounded border p-1',
+                                                                                    item.print_sides === '4+0'
+                                                                                        ? 'border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900'
+                                                                                        : 'border-gray-300 dark:border-gray-600'
+                                                                                ]"
+                                                                            >
+                                                                                <div v-if="item.print_sides === '4+4'" class="flex gap-0.5">
+                                                                                    <div class="h-2 w-2 rounded-full bg-cyan-500"></div>
+                                                                                    <div class="h-2 w-2 rounded-full bg-magenta-500"></div>
+                                                                                    <div class="h-2 w-2 rounded-full bg-yellow-500"></div>
+                                                                                    <div class="h-2 w-2 rounded-full bg-black dark:bg-white"></div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                        <p class="text-sm font-medium text-gray-900 dark:text-white">
+                                                                            {{ item.print_sides === '4+0' ? t('print_sides_one_sided') : (item.print_sides === '4+4' ? t('print_sides_two_sided') : item.print_sides) }}
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </CardContent>
+                                                    </Card>
+
+                                                    <!-- Section 2: Tiraj -->
+                                                    <Card v-if="item.configuration_quantity">
+                                                        <CardHeader>
+                                                            <div class="flex items-center gap-2">
+                                                                <div class="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
+                                                                    2
+                                                                </div>
+                                                                <h3 class="text-lg font-semibold">{{ t('select_quantity') }}</h3>
+                                                            </div>
+                                                        </CardHeader>
+                                                        <CardContent>
+                                                            <div class="overflow-x-auto">
+                                                                <table class="w-full">
+                                                                    <thead>
+                                                                        <tr class="border-b border-gray-200 dark:border-gray-700">
+                                                                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                                                {{ t('quantity_pcs') }}
+                                                                            </th>
+                                                                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                                                {{ t('production_time') }}
+                                                                            </th>
+                                                                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                                                {{ t('price') }}
+                                                                            </th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        <tr class="bg-green-50 dark:bg-green-900/20 border-green-500 border-2">
+                                                                            <td class="px-4 py-4 text-sm font-medium text-gray-900 dark:text-white">
+                                                                                {{ item.configuration_quantity }}
+                                                                            </td>
+                                                                            <td class="px-4 py-4 text-sm text-gray-600 dark:text-gray-400">
+                                                                                <!-- Calculăm data de producție aproximativă (3-5 zile) -->
+                                                                                {{ new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toLocaleDateString('ro-RO', { day: '2-digit', month: '2-digit', year: 'numeric' }) }}
+                                                                            </td>
+                                                                            <td class="px-4 py-4 text-sm text-gray-900 dark:text-white">
+                                                                                <div class="font-semibold">{{ formatPrice(item.subtotal) }}</div>
+                                                                                <div class="text-xs text-gray-500 dark:text-gray-400">
+                                                                                    {{ formatPrice(item.subtotal / item.configuration_quantity) }} {{ t('per_piece') }}
+                                                                                </div>
+                                                                            </td>
+                                                                        </tr>
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </CardContent>
+                                                    </Card>
+                                                </div>
+                                            </div>
+                                            <div class="ml-4 text-right">
+                                                <p class="text-sm font-medium text-gray-900 dark:text-white">
+                                                    {{ item.quantity }} x {{ formatPrice(item.price) }}
+                                                </p>
+                                                <p class="mt-1 text-base font-bold text-gray-900 dark:text-white">
+                                                    {{ formatPrice(item.subtotal) }}
+                                                </p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

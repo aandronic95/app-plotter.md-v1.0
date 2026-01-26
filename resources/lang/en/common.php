@@ -307,5 +307,19 @@ return [
     'newsletter_subscribe' => 'Subscribe',
     'newsletter_privacy_text' => 'I agree with the',
     'loading' => 'Processing...',
+    
+    // Product Configuration
+    'select_print_characteristics' => 'Select print characteristics',
+    'sizes_in_unfolded_view' => 'SIZES IN UNFOLDED VIEW',
+    'print_sides' => 'PRINT SIDES',
+    'print_sides_one_sided' => '1-sided printing (4+0)',
+    'print_sides_two_sided' => '2-sided printing (4+4)',
+    'print_size_a3' => 'A3, 420x297 mm',
+    'print_size_a4' => 'A4, 297x210 mm',
+    'select_quantity' => 'Select quantity',
+    'quantity_pcs' => 'Quantity (pcs)',
+    'production_time' => 'Production time',
+    'per_piece' => 'per piece',
+    'save_changes_before_checkout' => 'Save changes before completing the order',
 ];
 

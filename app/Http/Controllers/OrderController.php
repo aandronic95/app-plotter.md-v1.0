@@ -31,7 +31,23 @@ class OrderController extends Controller
         $items = [];
         $subtotal = 0;
 
-        foreach ($cart as $productId => $item) {
+        foreach ($cart as $cartKey => $item) {
+            // Extrage product_id din key sau din item
+            $productId = $item['product_id'] ?? null;
+            
+            if (!$productId) {
+                if (is_numeric($cartKey)) {
+                    $productId = (int) $cartKey;
+                } elseif (is_string($cartKey) && str_contains($cartKey, '_')) {
+                    $parts = explode('_', $cartKey);
+                    $productId = isset($parts[0]) && is_numeric($parts[0]) ? (int) $parts[0] : null;
+                }
+            }
+            
+            if (!$productId) {
+                continue;
+            }
+            
             $product = Product::find($productId);
             if (!$product || !$product->is_active || !$product->in_stock) {
                 continue;
@@ -48,6 +64,9 @@ class OrderController extends Controller
                 'image' => $product->image ?? '/images/placeholder.jpg',
                 'quantity' => $item['quantity'],
                 'subtotal' => $itemSubtotal,
+                'print_size' => $item['print_size'] ?? null,
+                'print_sides' => $item['print_sides'] ?? null,
+                'configuration_quantity' => $item['configuration_quantity'] ?? null,
             ];
         }
 
@@ -139,7 +158,27 @@ class OrderController extends Controller
             $subtotal = 0;
 
             // Verifică disponibilitatea produselor
-            foreach ($cart as $productId => $item) {
+            foreach ($cart as $cartKey => $item) {
+                // Pentru compatibilitate cu items vechi (fără product_id) și items noi (cu key compus)
+                $productId = null;
+                
+                if (isset($item['product_id'])) {
+                    $productId = $item['product_id'];
+                } elseif (is_numeric($cartKey)) {
+                    // Key simplu (pentru items vechi)
+                    $productId = (int) $cartKey;
+                } elseif (is_string($cartKey) && str_contains($cartKey, '_')) {
+                    // Key compus: productId_size_sides_quantity
+                    $parts = explode('_', $cartKey);
+                    $productId = isset($parts[0]) && is_numeric($parts[0]) ? (int) $parts[0] : null;
+                }
+                
+                if (!$productId) {
+                    DB::rollBack();
+                    return redirect()->route('cart.index')
+                        ->with('error', 'Eroare: produs invalid în coș. Te rugăm să golești coșul și să încerci din nou.');
+                }
+                
                 $product = Product::find($productId);
                 if (!$product || !$product->is_active || !$product->in_stock) {
                     DB::rollBack();
@@ -153,13 +192,32 @@ class OrderController extends Controller
                         ->with('error', "Produsul '{$product->name}' nu are stoc suficient.");
                 }
 
+                // Pentru configurații, calculează subtotalul corect
                 $itemSubtotal = (float) $item['price'] * $item['quantity'];
+                
+                // Dacă există configurație, folosește prețul total din configurație
+                if (isset($item['print_size']) && isset($item['print_sides']) && isset($item['configuration_quantity'])) {
+                    $configuration = $product->activeConfigurations()
+                        ->where('print_size', $item['print_size'])
+                        ->where('print_sides', $item['print_sides'])
+                        ->where('quantity', $item['configuration_quantity'])
+                        ->first();
+                    
+                    if ($configuration) {
+                        // Pentru configurații, subtotalul este prețul total din configurație
+                        $itemSubtotal = (float) $configuration->price;
+                    }
+                }
+                
                 $subtotal += $itemSubtotal;
 
                 $items[] = [
                     'product' => $product,
                     'quantity' => $item['quantity'],
                     'price' => (float) $item['price'],
+                    'print_size' => $item['print_size'] ?? null,
+                    'print_sides' => $item['print_sides'] ?? null,
+                    'configuration_quantity' => $item['configuration_quantity'] ?? null,
                 ];
             }
 
@@ -192,14 +250,37 @@ class OrderController extends Controller
 
             // Creează articolele comenzii și actualizează stocul
             foreach ($items as $item) {
+                // Dacă există configurație, folosește prețul total din configurație
+                $price = (float) $item['price'];
+                $subtotal = $price * $item['quantity'];
+                
+                if ($item['print_size'] && $item['print_sides'] && $item['configuration_quantity']) {
+                    $configuration = $item['product']->activeConfigurations()
+                        ->where('print_size', $item['print_size'])
+                        ->where('print_sides', $item['print_sides'])
+                        ->where('quantity', $item['configuration_quantity'])
+                        ->first();
+                    
+                    if ($configuration) {
+                        // Pentru configurații, prețul per bucată este price_per_unit
+                        $price = (float) $configuration->price_per_unit;
+                        // Subtotalul este prețul total din configurație (nu price_per_unit * quantity)
+                        // Deoarece quantity din item este de obicei 1 (când se comandă o configurație)
+                        $subtotal = (float) $configuration->price;
+                    }
+                }
+                
                 OrderItem::create([
                     'order_id' => $order->id,
                     'product_id' => $item['product']->id,
                     'product_name' => $item['product']->name,
                     'product_sku' => $item['product']->sku,
+                    'print_size' => $item['print_size'] ?? null,
+                    'print_sides' => $item['print_sides'] ?? null,
+                    'configuration_quantity' => $item['configuration_quantity'] ?? null,
                     'quantity' => $item['quantity'],
-                    'price' => $item['price'],
-                    'subtotal' => $item['price'] * $item['quantity'],
+                    'price' => $price,
+                    'subtotal' => $subtotal,
                 ]);
 
                 // Actualizează stocul (in_stock se actualizează automat prin mutator/observer)
@@ -271,6 +352,9 @@ class OrderController extends Controller
                         'id' => $item->id,
                         'product_name' => $item->product_name,
                         'product_sku' => $item->product_sku,
+                        'print_size' => $item->print_size,
+                        'print_sides' => $item->print_sides,
+                        'configuration_quantity' => $item->configuration_quantity,
                         'quantity' => $item->quantity,
                         'price' => (float) $item->price,
                         'subtotal' => (float) $item->subtotal,

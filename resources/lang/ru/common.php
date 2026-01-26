@@ -307,5 +307,19 @@ return [
     'newsletter_subscribe' => 'Подписаться',
     'newsletter_privacy_text' => 'Я согласен с',
     'loading' => 'Обработка...',
+    
+    // Product Configuration
+    'select_print_characteristics' => 'Выберите характеристики печати',
+    'sizes_in_unfolded_view' => 'РАЗМЕРЫ В РАЗВЁРНУТОМ ВИДЕ',
+    'print_sides' => 'СТОРОНЫ ПЕЧАТИ',
+    'print_sides_one_sided' => '1-сторонняя печать (4+0)',
+    'print_sides_two_sided' => '2-сторонняя печать (4+4)',
+    'print_size_a3' => 'A3, 420x297 мм',
+    'print_size_a4' => 'A4, 297x210 мм',
+    'select_quantity' => 'Выберите тираж',
+    'quantity_pcs' => 'Тираж (шт)',
+    'production_time' => 'Срок изгот.',
+    'per_piece' => 'за шт.',
+    'save_changes_before_checkout' => 'Сохраните изменения перед оформлением заказа',
 ];
 

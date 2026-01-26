@@ -309,7 +309,7 @@ class ProductController extends Controller
     {
         $product = Product::where('slug', $slug)
             ->where('is_active', true)
-            ->with('category')
+            ->with(['category', 'activeConfigurations'])
             ->firstOrFail();
 
         $relatedProducts = Product::where('is_active', true)
@@ -339,6 +339,23 @@ class ProductController extends Controller
             }, $product->images);
         }
 
+        // Format configurations
+        $configurations = $product->activeConfigurations->map(function ($config) {
+            return [
+                'id' => $config->id,
+                'print_size' => $config->print_size,
+                'print_sides' => $config->print_sides,
+                'quantity' => $config->quantity,
+                'price' => (float) $config->price,
+                'price_per_unit' => (float) $config->price_per_unit,
+                'production_days' => $config->production_days,
+                'production_date' => $config->formatted_production_date,
+                'production_date_raw' => $config->production_date->format('Y-m-d'),
+                'formatted_price' => $config->formatted_price,
+                'formatted_price_per_unit' => $config->formatted_price_per_unit,
+            ];
+        });
+
         return Inertia::render('Products/Show', [
             'product' => [
                 'id' => $product->id,
@@ -359,6 +376,7 @@ class ProductController extends Controller
                     'name' => $product->category->name,
                     'slug' => $product->category->slug,
                 ] : null,
+                'configurations' => $configurations,
             ],
             'relatedProducts' => $relatedProducts,
         ]);

@@ -2,6 +2,7 @@
 import AppFooter from '@/components/AppFooter.vue';
 import PublicHeader from '@/components/PublicHeader.vue';
 import ProductCard from '@/components/ProductCard.vue';
+import ProductConfiguration from '@/components/ProductConfiguration.vue';
 import { Button } from '@/components/ui/button';
 import Dialog from '@/components/ui/dialog/Dialog.vue';
 import DialogContent from '@/components/ui/dialog/DialogContent.vue';
@@ -14,6 +15,20 @@ import StructuredData from '@/components/StructuredData.vue';
 
 const STORAGE_KEY = 'recently_viewed_products';
 const MAX_RECENT_PRODUCTS = 8;
+
+interface Configuration {
+    id: number;
+    print_size: string;
+    print_sides: string;
+    quantity: number;
+    price: number;
+    price_per_unit: number;
+    production_days: number;
+    production_date: string;
+    production_date_raw: string;
+    formatted_price: string;
+    formatted_price_per_unit: string;
+}
 
 interface Product {
     id: number;
@@ -34,6 +49,7 @@ interface Product {
         name: string;
         slug: string;
     };
+    configurations?: Configuration[];
 }
 
 interface RelatedProduct {
@@ -145,6 +161,7 @@ const showSuccessDialog = ref(false);
 const showErrorDialog = ref(false);
 const dialogMessage = ref('');
 const dialogTitle = ref('');
+const selectedConfiguration = ref<Configuration | null>(null);
 
 // Calculează toate imaginile disponibile (imaginea principală + imagini suplimentare)
 const allImages = computed(() => {
@@ -374,6 +391,14 @@ const addToCart = async () => {
         return;
     }
 
+    // Verifică dacă produsul are configurații și dacă este selectată o configurație
+    if (props.product.configurations && props.product.configurations.length > 0) {
+        if (!selectedConfiguration.value) {
+            showErrorMessage('Vă rugăm să selectați o configurație pentru acest produs.');
+            return;
+        }
+    }
+
     loading.value = true;
     try {
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
@@ -382,6 +407,19 @@ const addToCart = async () => {
             showErrorMessage(t('error_csrf_missing'));
             loading.value = false;
             return;
+        }
+
+        const requestBody: any = {
+            product_id: props.product.id,
+            quantity: 1,
+        };
+
+        // Adaugă configurația dacă este selectată
+        if (selectedConfiguration.value) {
+            requestBody.print_size = selectedConfiguration.value.print_size;
+            requestBody.print_sides = selectedConfiguration.value.print_sides;
+            requestBody.configuration_quantity = selectedConfiguration.value.quantity;
+            requestBody.quantity = 1; // Cantitatea din configurație este deja în configuration_quantity
         }
 
         const response = await fetch('/cart/add', {
@@ -393,10 +431,7 @@ const addToCart = async () => {
                 'X-Requested-With': 'XMLHttpRequest',
             },
             credentials: 'same-origin',
-            body: JSON.stringify({
-                product_id: props.product.id,
-                quantity: 1,
-            }),
+            body: JSON.stringify(requestBody),
         });
 
         if (!response.ok) {
@@ -567,6 +602,14 @@ const addToCart = async () => {
                                     {{ props.product.stockQuantity }} {{ t('pieces') }}
                                 </span>
                             </div>
+                        </div>
+
+                        <!-- Product Configuration -->
+                        <div v-if="props.product.configurations && props.product.configurations.length > 0" class="pt-6">
+                            <ProductConfiguration
+                                :configurations="props.product.configurations"
+                                @configuration-selected="selectedConfiguration = $event"
+                            />
                         </div>
 
                         <div class="flex gap-4">

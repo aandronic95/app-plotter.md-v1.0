@@ -94,6 +94,24 @@ class Product extends Model
     }
 
     /**
+     * Get the configurations for the product.
+     */
+    public function configurations(): HasMany
+    {
+        return $this->hasMany(ProductConfiguration::class)->orderBy('sort_order');
+    }
+
+    /**
+     * Get the active configurations for the product.
+     */
+    public function activeConfigurations(): HasMany
+    {
+        return $this->hasMany(ProductConfiguration::class)
+            ->where('is_active', true)
+            ->orderBy('sort_order');
+    }
+
+    /**
      * Calculate the discount percentage if original price exists.
      */
     public function getDiscountAttribute(): ?int

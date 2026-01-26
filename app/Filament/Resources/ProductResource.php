@@ -181,6 +181,109 @@ class ProductResource extends Resource
                             ->default(0)
                             ->minValue(0),
                     ])->columns(3),
+
+                Section::make('Configurații Produs')
+                    ->schema([
+                        Forms\Components\Repeater::make('configurations')
+                            ->label('Configurații')
+                            ->relationship('configurations')
+                            ->orderColumn('sort_order')
+                            ->schema([
+                                Forms\Components\Select::make('print_size')
+                                    ->label('Dimensiune')
+                                    ->options([
+                                        'A3' => 'A3 (420x297 mm)',
+                                        'A4' => 'A4 (297x210 mm)',
+                                    ])
+                                    ->required()
+                                    ->native(false),
+
+                                Forms\Components\Select::make('print_sides')
+                                    ->label('Laturi de printare')
+                                    ->options([
+                                        '4+0' => '1-сторонняя печать (4+0)',
+                                        '4+4' => '2-сторонняя печать (4+4)',
+                                    ])
+                                    ->required()
+                                    ->native(false),
+
+                                Forms\Components\TextInput::make('quantity')
+                                    ->label('Cantitate (buc)')
+                                    ->required()
+                                    ->numeric()
+                                    ->minValue(1)
+                                    ->default(500)
+                                    ->live(onBlur: true)
+                                    ->afterStateUpdated(function (callable $set, callable $get, $state) {
+                                        $pricePerUnit = (float) $get('price_per_unit');
+                                        if ($state && $pricePerUnit > 0) {
+                                            $totalPrice = (float) $state * $pricePerUnit;
+                                            $set('price', round($totalPrice, 2));
+                                        }
+                                    }),
+
+                                Forms\Components\TextInput::make('price')
+                                    ->label('Preț total')
+                                    ->required()
+                                    ->numeric()
+                                    ->prefix('LEI')
+                                    ->step(0.01)
+                                    ->minValue(0)
+                                    ->live(onBlur: true)
+                                    ->afterStateUpdated(function (callable $set, callable $get, $state) {
+                                        $quantity = (float) $get('quantity');
+                                        if ($quantity > 0 && $state) {
+                                            $pricePerUnit = (float) $state / $quantity;
+                                            $set('price_per_unit', round($pricePerUnit, 2));
+                                        }
+                                    }),
+
+                                Forms\Components\TextInput::make('price_per_unit')
+                                    ->label('Preț per bucată')
+                                    ->required()
+                                    ->numeric()
+                                    ->prefix('LEI')
+                                    ->step(0.01)
+                                    ->minValue(0)
+                                    ->live(onBlur: true)
+                                    ->afterStateUpdated(function (callable $set, callable $get, $state) {
+                                        $quantity = (float) $get('quantity');
+                                        if ($quantity > 0 && $state) {
+                                            $totalPrice = (float) $state * $quantity;
+                                            $set('price', round($totalPrice, 2));
+                                        }
+                                    }),
+
+                                Forms\Components\TextInput::make('production_days')
+                                    ->label('Zile de producție')
+                                    ->required()
+                                    ->numeric()
+                                    ->minValue(1)
+                                    ->default(5),
+
+                                Forms\Components\Toggle::make('is_active')
+                                    ->label('Activ')
+                                    ->default(true),
+
+                                Forms\Components\TextInput::make('sort_order')
+                                    ->label('Ordine')
+                                    ->numeric()
+                                    ->default(0)
+                                    ->minValue(0),
+                            ])
+                            ->columns(4)
+                            ->collapsible()
+                            ->itemLabel(fn (array $state): ?string => 
+                                $state['print_size'] && $state['print_sides'] && $state['quantity']
+                                    ? "{$state['print_size']} - {$state['print_sides']} - {$state['quantity']} buc"
+                                    : null
+                            )
+                            ->defaultItems(0)
+                            ->addActionLabel('Adaugă configurație')
+                            ->reorderableWithButtons()
+                            ->cloneable()
+                            ->deletable(),
+                    ])->columns(1),
             ]);
     }
 

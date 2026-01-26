@@ -30,14 +30,44 @@ interface DeliveryAddress {
     full_address: string;
 }
 
+interface OrderItem {
+    id: number;
+    product_name: string;
+    product_sku?: string;
+    print_size?: string | null;
+    print_sides?: string | null;
+    configuration_quantity?: number | null;
+    quantity: number;
+    price: number;
+    subtotal: number;
+}
+
 interface Order {
     id: number;
     order_number: string;
     status: string;
     payment_status: string;
+    subtotal: number;
+    tax: number;
+    shipping_cost: number;
     total: number;
+    delivery_method?: {
+        id: number;
+        name: string;
+        logo?: string | null;
+    } | null;
+    delivery_tracking_number?: string | null;
+    shipping_name: string;
+    shipping_email: string;
+    shipping_phone: string;
+    shipping_address: string;
+    shipping_city: string;
+    shipping_postal_code?: string;
+    shipping_country: string;
+    notes?: string;
     created_at: string;
     items_count: number;
+    items: OrderItem[];
 }
 
 interface WishlistItem {
@@ -599,15 +629,16 @@ const removeFromWishlist = async (productId: number) => {
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
-                                <div v-if="props.orders.data.length > 0" class="space-y-4">
+                                <div v-if="props.orders.data.length > 0" class="space-y-6">
                                     <div
                                         v-for="order in props.orders.data"
                                         :key="order.id"
-                                        class="rounded-lg p-4 transition-all"
+                                        class="rounded-lg border border-gray-200 bg-white p-6 transition-all dark:border-gray-700 dark:bg-gray-800"
                                     >
-                                        <div class="flex items-start justify-between">
+                                        <!-- Order Header -->
+                                        <div class="mb-4 flex items-start justify-between border-b border-gray-200 pb-4 dark:border-gray-700">
                                             <div class="flex-1">
-                                                <div class="flex items-center gap-3">
+                                                <div class="flex flex-wrap items-center gap-3">
                                                     <Link
                                                         :href="`/orders/${order.id}`"
                                                         class="font-semibold text-primary hover:underline"
@@ -621,25 +652,151 @@ const removeFromWishlist = async (productId: number) => {
                                                         {{ getStatusLabel(order.status) }}
                                                     </span>
                                                     <span
-                                                        v-if="order.payment_status === 'paid'"
-                                                        class="rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-800 dark:bg-green-900/20 dark:text-green-400"
+                                                        :class="[
+                                                            order.payment_status === 'paid'
+                                                                ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+                                                                : order.payment_status === 'pending'
+                                                                ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400'
+                                                                : 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400',
+                                                            'rounded-full px-2 py-1 text-xs font-medium',
+                                                        ]"
                                                     >
                                                         {{ getPaymentStatusLabel(order.payment_status) }}
                                                     </span>
                                                 </div>
-                                                <div class="mt-2 flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
-                                                    <span>{{ order.created_at }}</span>
-                                                    <span>•</span>
-                                                    <span>{{ order.items_count }} {{ order.items_count === 1 ? t('common.product') : t('common.products') }}</span>
-                                                    <span>•</span>
-                                                    <span class="font-semibold text-gray-900 dark:text-white">
-                                                        {{ formatPrice(order.total) }}
-                                                    </span>
+                                                <div class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                                                    {{ order.created_at }}
                                                 </div>
                                             </div>
+                                            <div class="text-right">
+                                                <div class="text-lg font-bold text-gray-900 dark:text-white">
+                                                    {{ formatPrice(order.total) }}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Order Items -->
+                                        <div class="mb-4">
+                                            <h4 class="mb-3 text-sm font-semibold text-gray-900 dark:text-white">
+                                                {{ t('common.products') }} ({{ order.items_count }})
+                                            </h4>
+                                            <div class="space-y-2">
+                                                <div
+                                                    v-for="item in order.items"
+                                                    :key="item.id"
+                                                    class="flex items-start justify-between rounded-lg bg-gray-50 p-3 dark:bg-gray-900"
+                                                >
+                                                    <div class="flex-1">
+                                                        <p class="font-medium text-gray-900 dark:text-white">
+                                                            {{ item.product_name }}
+                                                        </p>
+                                                        <p
+                                                            v-if="item.product_sku"
+                                                            class="mt-1 text-xs text-gray-500 dark:text-gray-400"
+                                                        >
+                                                            SKU: {{ item.product_sku }}
+                                                        </p>
+                                                        <div
+                                                            v-if="item.print_size || item.print_sides || item.configuration_quantity"
+                                                            class="mt-2 space-y-1"
+                                                        >
+                                                            <p
+                                                                v-if="item.print_size"
+                                                                class="text-xs text-gray-600 dark:text-gray-400"
+                                                            >
+                                                                {{ t('print_size') }}: {{ item.print_size === 'A3' ? t('print_size_a3') : (item.print_size === 'A4' ? t('print_size_a4') : item.print_size) }}
+                                                            </p>
+                                                            <p
+                                                                v-if="item.print_sides"
+                                                                class="text-xs text-gray-600 dark:text-gray-400"
+                                                            >
+                                                                {{ t('print_sides') }}: {{ item.print_sides === '4+0' ? t('print_sides_one_sided') : (item.print_sides === '4+4' ? t('print_sides_two_sided') : item.print_sides) }}
+                                                            </p>
+                                                            <p
+                                                                v-if="item.configuration_quantity"
+                                                                class="text-xs text-gray-600 dark:text-gray-400"
+                                                            >
+                                                                {{ t('quantity_pcs') }}: {{ item.configuration_quantity }}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <div class="ml-4 text-right">
+                                                        <p class="text-sm font-medium text-gray-900 dark:text-white">
+                                                            {{ item.quantity }} x {{ formatPrice(item.price) }}
+                                                        </p>
+                                                        <p class="text-xs text-gray-500 dark:text-gray-400">
+                                                            {{ formatPrice(item.subtotal) }}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Order Summary -->
+                                        <div class="mb-4 border-t border-gray-200 pt-4 dark:border-gray-700">
+                                            <div class="space-y-2 text-sm">
+                                                <div class="flex justify-between">
+                                                    <span class="text-gray-600 dark:text-gray-400">{{ t('common.subtotal') }}</span>
+                                                    <span class="font-medium text-gray-900 dark:text-white">{{ formatPrice(order.subtotal) }}</span>
+                                                </div>
+                                                <div class="flex justify-between">
+                                                    <span class="text-gray-600 dark:text-gray-400">{{ t('common.tax') }} (19%)</span>
+                                                    <span class="font-medium text-gray-900 dark:text-white">{{ formatPrice(order.tax) }}</span>
+                                                </div>
+                                                <div class="flex justify-between">
+                                                    <span class="text-gray-600 dark:text-gray-400">{{ t('common.shipping') }}</span>
+                                                    <span class="font-medium text-gray-900 dark:text-white">
+                                                        {{ order.shipping_cost === 0 ? t('common.free') : formatPrice(order.shipping_cost) }}
+                                                    </span>
+                                                </div>
+                                                <div class="flex justify-between border-t border-gray-200 pt-2 dark:border-gray-700">
+                                                    <span class="font-semibold text-gray-900 dark:text-white">{{ t('common.total') }}</span>
+                                                    <span class="font-bold text-gray-900 dark:text-white">{{ formatPrice(order.total) }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Delivery Information -->
+                                        <div class="mb-4 border-t border-gray-200 pt-4 dark:border-gray-700">
+                                            <h4 class="mb-2 text-sm font-semibold text-gray-900 dark:text-white">
+                                                {{ t('common.delivery_info') }}
+                                            </h4>
+                                            <div class="space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                                                <p>
+                                                    <span class="font-medium">{{ order.shipping_name }}</span>
+                                                </p>
+                                                <p>{{ order.shipping_phone }}</p>
+                                                <p>{{ order.shipping_address }}, {{ order.shipping_city }}</p>
+                                                <p v-if="order.shipping_postal_code">{{ order.shipping_postal_code }}</p>
+                                                <p>{{ order.shipping_country }}</p>
+                                                <div v-if="order.delivery_method" class="mt-2 flex items-center gap-2">
+                                                    <img
+                                                        v-if="order.delivery_method.logo"
+                                                        :src="order.delivery_method.logo"
+                                                        :alt="order.delivery_method.name"
+                                                        class="h-6 w-6 object-contain"
+                                                    />
+                                                    <span class="text-sm">{{ order.delivery_method.name }}</span>
+                                                </div>
+                                                <p v-if="order.delivery_tracking_number" class="mt-2 font-mono text-xs">
+                                                    AWB/Tracking: {{ order.delivery_tracking_number }}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <!-- Notes -->
+                                        <div v-if="order.notes" class="mb-4 border-t border-gray-200 pt-4 dark:border-gray-700">
+                                            <h4 class="mb-2 text-sm font-semibold text-gray-900 dark:text-white">
+                                                {{ t('common.notes') }}
+                                            </h4>
+                                            <p class="text-sm text-gray-600 dark:text-gray-400">{{ order.notes }}</p>
+                                        </div>
+
+                                        <!-- View Details Button -->
+                                        <div class="border-t border-gray-200 pt-4 dark:border-gray-700">
                                             <Link :href="`/orders/${order.id}`">
-                                                <Button variant="outline" size="sm">
-                                                    {{ t('common.order_details') }}
+                                                <Button variant="outline" class="w-full">
+                                                    {{ t('common.view_full_details') }}
                                                 </Button>
                                             </Link>
                                         </div>

@@ -307,5 +307,19 @@ return [
     'newsletter_subscribe' => 'Abonează-te',
     'newsletter_privacy_text' => 'Sunt de acord cu',
     'loading' => 'Se procesează...',
+    
+    // Product Configuration
+    'select_print_characteristics' => 'Selectează caracteristicile de imprimare',
+    'sizes_in_unfolded_view' => 'DIMENSIUNI ÎN VEDERE DESFĂȘURATĂ',
+    'print_sides' => 'FEȚE DE IMPRIMARE',
+    'print_sides_one_sided' => 'Imprimare 1 față (4+0)',
+    'print_sides_two_sided' => 'Imprimare 2 fețe (4+4)',
+    'print_size_a3' => 'A3, 420x297 mm',
+    'print_size_a4' => 'A4, 297x210 mm',
+    'select_quantity' => 'Selectează tirajul',
+    'quantity_pcs' => 'Tiraj (buc)',
+    'production_time' => 'Termen de fabricație',
+    'per_piece' => 'pe buc.',
+    'save_changes_before_checkout' => 'Salvează modificările înainte de a finaliza comanda',
 ];
 

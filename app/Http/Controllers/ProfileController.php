@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Models\DeliveryAddress;
 use App\Models\Order;
+use App\Models\OrderItem;
 use App\Models\Wishlist;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -40,7 +41,7 @@ class ProfileController extends Controller
         $user = $request->user();
         
         $orders = Order::where('user_id', $user->id)
-            ->with('orderItems')
+            ->with(['orderItems.product', 'deliveryMethod'])
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
@@ -102,9 +103,39 @@ class ProfileController extends Controller
                     'order_number' => $order->order_number,
                     'status' => $order->status,
                     'payment_status' => $order->payment_status,
+                    'subtotal' => (float) $order->subtotal,
+                    'tax' => (float) $order->tax,
+                    'shipping_cost' => (float) $order->shipping_cost,
                     'total' => (float) $order->total,
+                    'delivery_method' => $order->deliveryMethod ? [
+                        'id' => $order->deliveryMethod->id,
+                        'name' => $order->deliveryMethod->name,
+                        'logo' => $order->deliveryMethod->logo ? asset('storage/' . $order->deliveryMethod->logo) : null,
+                    ] : null,
+                    'delivery_tracking_number' => $order->delivery_tracking_number,
+                    'shipping_name' => $order->shipping_name,
+                    'shipping_email' => $order->shipping_email,
+                    'shipping_phone' => $order->shipping_phone,
+                    'shipping_address' => $order->shipping_address,
+                    'shipping_city' => $order->shipping_city,
+                    'shipping_postal_code' => $order->shipping_postal_code,
+                    'shipping_country' => $order->shipping_country,
+                    'notes' => $order->notes,
                     'created_at' => $order->created_at->format('d.m.Y H:i'),
                     'items_count' => $order->orderItems->sum('quantity'),
+                    'items' => $order->orderItems->map(function ($item) {
+                        return [
+                            'id' => $item->id,
+                            'product_name' => $item->product_name,
+                            'product_sku' => $item->product_sku,
+                            'print_size' => $item->print_size,
+                            'print_sides' => $item->print_sides,
+                            'configuration_quantity' => $item->configuration_quantity,
+                            'quantity' => $item->quantity,
+                            'price' => (float) $item->price,
+                            'subtotal' => (float) $item->subtotal,
+                        ];
+                    }),
                 ];
             }),
             'wishlist' => $wishlistItems,
