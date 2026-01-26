@@ -29,6 +29,9 @@ Route::get('products/{slug}', [ProductController::class, 'show'])->name('product
 Route::get('categories', [CategoryController::class, 'index'])->name('categories.index');
 Route::get('categories/{slug}', [CategoryController::class, 'show'])->name('categories.show');
 
+// Portfolio routes
+Route::get('portfolios/{slug}', [\App\Http\Controllers\PortfolioController::class, 'show'])->name('portfolios.show');
+
 // Promotions routes
 Route::get('promotions', [\App\Http\Controllers\PromotionController::class, 'index'])->name('promotions.index');
 
@@ -124,6 +127,21 @@ Route::post('api/hero-banners', [HeroBannerController::class, 'store'])->name('a
 Route::get('api/hero-banners/{heroBanner}', [HeroBannerController::class, 'show'])->name('api.hero-banners.show');
 Route::put('api/hero-banners/{heroBanner}', [HeroBannerController::class, 'update'])->name('api.hero-banners.update');
 Route::delete('api/hero-banners/{heroBanner}', [HeroBannerController::class, 'destroy'])->name('api.hero-banners.destroy');
+
+// About Sections API routes
+Route::get('api/about-sections', [\App\Http\Controllers\Api\AboutSectionController::class, 'index'])->name('api.about-sections.index');
+Route::post('api/about-sections', [\App\Http\Controllers\Api\AboutSectionController::class, 'store'])->name('api.about-sections.store');
+Route::get('api/about-sections/{aboutSection}', [\App\Http\Controllers\Api\AboutSectionController::class, 'show'])->name('api.about-sections.show');
+Route::put('api/about-sections/{aboutSection}', [\App\Http\Controllers\Api\AboutSectionController::class, 'update'])->name('api.about-sections.update');
+Route::delete('api/about-sections/{aboutSection}', [\App\Http\Controllers\Api\AboutSectionController::class, 'destroy'])->name('api.about-sections.destroy');
+
+// Portfolios API routes
+Route::get('api/portfolios', [\App\Http\Controllers\Api\PortfolioController::class, 'index'])->name('api.portfolios.index');
+Route::post('api/portfolios', [\App\Http\Controllers\Api\PortfolioController::class, 'store'])->name('api.portfolios.store');
+Route::get('api/portfolios/{portfolio}', [\App\Http\Controllers\Api\PortfolioController::class, 'show'])->name('api.portfolios.show');
+Route::get('api/portfolios/slug/{slug}', [\App\Http\Controllers\Api\PortfolioController::class, 'showBySlug'])->name('api.portfolios.show-by-slug');
+Route::put('api/portfolios/{portfolio}', [\App\Http\Controllers\Api\PortfolioController::class, 'update'])->name('api.portfolios.update');
+Route::delete('api/portfolios/{portfolio}', [\App\Http\Controllers\Api\PortfolioController::class, 'destroy'])->name('api.portfolios.destroy');
 
 // Product Category Showcases API routes
 Route::get('api/product-category-showcases', [\App\Http\Controllers\Api\ProductCategoryShowcaseController::class, 'index'])->name('api.product-category-showcases.index');

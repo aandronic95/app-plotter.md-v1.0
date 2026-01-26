@@ -14,6 +14,8 @@ import { ref, computed, onMounted, nextTick } from 'vue';
 import StructuredData from '@/components/StructuredData.vue';
 import HeroBanner from '@/components/HeroBanner.vue';
 import ServiceFeatures from '@/components/ServiceFeatures.vue';
+import AboutSection from '@/components/AboutSection.vue';
+import PortfolioCarousel from '@/components/PortfolioCarousel.vue';
 
 interface Product {
     id: number;
@@ -107,7 +109,6 @@ const tabs = computed(() => [
     { id: 'reviews', label: t('reviews'), route: '/reviews' },
 ]);
 </script>
-
 <template>
     <Head>
         <title>{{ seo.title.value }}</title>
@@ -119,12 +120,10 @@ const tabs = computed(() => [
         <meta property="og:type" content="website" />
         <link rel="canonical" :href="seo.url.value" />
     </Head>
-    
     <StructuredData type="Organization" :data="organizationStructuredData.value" />
     <div class="flex min-h-screen flex-col bg-gray-50 dark:bg-gray-900">
         <!-- Header with Main Menu -->
         <PublicHeader />
-
         <!-- Main Content -->
         <main class="flex-1">
             <div class="mx-auto max-w-7xl px-4 py-6 md:px-6">
@@ -133,18 +132,15 @@ const tabs = computed(() => [
                     <HeroBanner />  
                 </div>
 
-            
-
                 <!-- Content Grid: Categories (stânga) + Products (dreapta) -->
                 <div class="grid grid-cols-1 gap-6 lg:grid-cols-4">
                     <!-- Categories Sidebar - Col 3 (stânga) -->
                     <aside class="lg:col-span-1">
                         <CategoriesSidebar :categories="$props.categories" />
                     </aside>
-
                     <!-- Products Grid - Col 3 (dreapta) -->
                     <div class="lg:col-span-3">
-                                        <!-- Content Tabs -->
+                    <!-- Content Tabs -->
                 <div class="mb-6">
                     <ContentTabs
                         :tabs="tabs"
@@ -180,13 +176,15 @@ const tabs = computed(() => [
                 </div>
             </div>
         </main>
-
         <!-- Service Features Section -->
         <ServiceFeatures />
+        <!-- About Section -->
+        <AboutSection />
+        <!-- Portfolio Carousel -->
+        <PortfolioCarousel />
         <!-- Newsletter Form -->
         <div class="w-full bg-gray-50 dark:bg-gray-900 py-8">
             <div class="mx-auto max-w-7xl px-4 md:px-6">
-
                 <NewsletterForm />
             </div>
         </div>
@@ -194,7 +192,6 @@ const tabs = computed(() => [
         <!-- Footer -->
         <AppFooter />
     </div>
-
     <!-- Login Success Modal -->
     <LoginSuccessModal />
 </template>
