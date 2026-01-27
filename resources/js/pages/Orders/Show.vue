@@ -54,7 +54,7 @@ const props = defineProps<Props>();
 const page = usePage();
 const { t } = useTranslations();
 
-// Flash messages
+// Flash messagesRR
 const flash = computed(() => page.props.flash as { success?: string; error?: string } | undefined);
 const showSuccessMessage = ref(false);
 const showErrorMessage = ref(false);
@@ -114,6 +114,7 @@ const getStatusLabel = (status: string) => {
     };
     return labels[status] || status;
 };
+
 
 const getPaymentStatusLabel = (status: string) => {
     const labels: Record<string, string> = {
