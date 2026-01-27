@@ -4,7 +4,6 @@ import PublicHeader from '@/components/PublicHeader.vue';
 import { ArrowLeft, ChevronLeft, ChevronRight, X } from 'lucide-vue-next';
 import { Head, Link } from '@inertiajs/vue3';
 import { computed, ref, onMounted, onUnmounted } from 'vue';
-import { useTranslations } from '@/composables/useTranslations';
 import { useSEO } from '@/composables/useSEO';
 import StructuredData from '@/components/StructuredData.vue';
 
@@ -23,7 +22,6 @@ interface Props {
 }
 
 const props = defineProps<Props>();
-const { t } = useTranslations();
 
 const portfolio = computed(() => props.portfolio);
 
