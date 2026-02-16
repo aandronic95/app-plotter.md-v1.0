@@ -339,12 +339,16 @@ class ProductController extends Controller
             }, $product->images);
         }
 
-        // Format configurations
-        $configurations = $product->activeConfigurations->map(function ($config) {
+        // Format configurations - include all configurations, not just active ones
+        $configurations = $product->configurations()->orderBy('sort_order')->get()->map(function ($config) {
             return [
                 'id' => $config->id,
                 'print_size' => $config->print_size,
                 'print_sides' => $config->print_sides,
+                'format' => $config->format,
+                'suport' => $config->suport,
+                'culoare' => $config->culoare,
+                'colturi' => $config->colturi,
                 'quantity' => $config->quantity,
                 'price' => (float) $config->price,
                 'price_per_unit' => (float) $config->price_per_unit,
@@ -353,8 +357,76 @@ class ProductController extends Controller
                 'production_date_raw' => $config->production_date->format('Y-m-d'),
                 'formatted_price' => $config->formatted_price,
                 'formatted_price_per_unit' => $config->formatted_price_per_unit,
+                'is_active' => $config->is_active,
             ];
         });
+
+        // Get category configurations for frontend
+        $categoryConfigurations = null;
+        if ($product->category) {
+            // Procesează formatele cu URL-uri pentru imagini
+            $formats = [];
+            if ($product->category->formats && is_array($product->category->formats)) {
+                foreach ($product->category->formats as $format) {
+                    $formats[] = [
+                        'name' => $format['name'] ?? null,
+                        'image' => isset($format['image']) && !empty($format['image']) 
+                            ? $this->getImageUrl($format['image']) 
+                            : null,
+                        'description' => $format['description'] ?? null,
+                    ];
+                }
+            }
+            
+            // Procesează suporturile cu URL-uri pentru imagini
+            $suport = [];
+            if ($product->category->suport && is_array($product->category->suport)) {
+                foreach ($product->category->suport as $s) {
+                    $suport[] = [
+                        'name' => $s['name'] ?? null,
+                        'image' => isset($s['image']) && !empty($s['image']) 
+                            ? $this->getImageUrl($s['image']) 
+                            : null,
+                        'description' => $s['description'] ?? null,
+                    ];
+                }
+            }
+            
+            // Procesează culorile cu URL-uri pentru imagini
+            $culoare = [];
+            if ($product->category->culoare && is_array($product->category->culoare)) {
+                foreach ($product->category->culoare as $c) {
+                    $culoare[] = [
+                        'name' => $c['name'] ?? null,
+                        'image' => isset($c['image']) && !empty($c['image']) 
+                            ? $this->getImageUrl($c['image']) 
+                            : null,
+                        'description' => $c['description'] ?? null,
+                    ];
+                }
+            }
+            
+            // Procesează colțurile cu URL-uri pentru imagini
+            $colturi = [];
+            if ($product->category->colturi && is_array($product->category->colturi)) {
+                foreach ($product->category->colturi as $col) {
+                    $colturi[] = [
+                        'name' => $col['name'] ?? null,
+                        'image' => isset($col['image']) && !empty($col['image']) 
+                            ? $this->getImageUrl($col['image']) 
+                            : null,
+                        'description' => $col['description'] ?? null,
+                    ];
+                }
+            }
+            
+            $categoryConfigurations = [
+                'formats' => $formats,
+                'suport' => $suport,
+                'culoare' => $culoare,
+                'colturi' => $colturi,
+            ];
+        }
 
         return Inertia::render('Products/Show', [
             'product' => [
@@ -377,6 +449,7 @@ class ProductController extends Controller
                     'slug' => $product->category->slug,
                 ] : null,
                 'configurations' => $configurations,
+                'categoryConfigurations' => $categoryConfigurations,
             ],
             'relatedProducts' => $relatedProducts,
         ]);

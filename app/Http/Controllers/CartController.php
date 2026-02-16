@@ -64,11 +64,45 @@ class CartController extends Controller
             
             // Dacă există configurație, folosește prețul total din configurație
             if (isset($item['print_size']) && isset($item['print_sides']) && isset($item['configuration_quantity'])) {
-                $configuration = $product->activeConfigurations()
+                $query = $product->activeConfigurations()
                     ->where('print_size', $item['print_size'])
                     ->where('print_sides', $item['print_sides'])
-                    ->where('quantity', $item['configuration_quantity'])
-                    ->first();
+                    ->where('quantity', $item['configuration_quantity']);
+                
+                // Adaugă filtre pentru configurații suplimentare dacă există
+                if (isset($item['format']) && $item['format']) {
+                    $query->where('format', $item['format']);
+                } else {
+                    $query->where(function($q) {
+                        $q->whereNull('format')->orWhere('format', '');
+                    });
+                }
+                
+                if (isset($item['suport']) && $item['suport']) {
+                    $query->where('suport', $item['suport']);
+                } else {
+                    $query->where(function($q) {
+                        $q->whereNull('suport')->orWhere('suport', '');
+                    });
+                }
+                
+                if (isset($item['culoare']) && $item['culoare']) {
+                    $query->where('culoare', $item['culoare']);
+                } else {
+                    $query->where(function($q) {
+                        $q->whereNull('culoare')->orWhere('culoare', '');
+                    });
+                }
+                
+                if (isset($item['colturi']) && $item['colturi']) {
+                    $query->where('colturi', $item['colturi']);
+                } else {
+                    $query->where(function($q) {
+                        $q->whereNull('colturi')->orWhere('colturi', '');
+                    });
+                }
+                
+                $configuration = $query->first();
                 
                 if ($configuration) {
                     // Pentru configurații, subtotalul este prețul total din configurație
@@ -89,6 +123,10 @@ class CartController extends Controller
                             'id' => $config->id,
                             'print_size' => $config->print_size,
                             'print_sides' => $config->print_sides,
+                            'format' => $config->format,
+                            'suport' => $config->suport,
+                            'culoare' => $config->culoare,
+                            'colturi' => $config->colturi,
                             'quantity' => $config->quantity,
                             'price' => (float) $config->price,
                             'price_per_unit' => (float) $config->price_per_unit,
@@ -111,6 +149,10 @@ class CartController extends Controller
                 'stock_quantity' => $product->stock_quantity,
                 'print_size' => $item['print_size'] ?? null,
                 'print_sides' => $item['print_sides'] ?? null,
+                'format' => $item['format'] ?? null,
+                'suport' => $item['suport'] ?? null,
+                'culoare' => $item['culoare'] ?? null,
+                'colturi' => $item['colturi'] ?? null,
                 'configuration_quantity' => $item['configuration_quantity'] ?? null,
                 'configurations' => $configurations,
             ];
@@ -131,8 +173,12 @@ class CartController extends Controller
         $request->validate([
             'product_id' => 'required|exists:products,id',
             'quantity' => 'required|integer|min:1',
-            'print_size' => 'nullable|string|in:A3,A4',
-            'print_sides' => 'nullable|string|in:4+0,4+4',
+            'print_size' => 'nullable|string|in:A0,A1,A2,A3,A4,A5,A6,Personalizat',
+            'print_sides' => 'nullable|string|in:4+0,4+4,5+0,5+5',
+            'format' => 'nullable|string|max:255',
+            'suport' => 'nullable|string|max:100',
+            'culoare' => 'nullable|string|max:100',
+            'colturi' => 'nullable|string|max:100',
             'configuration_quantity' => 'nullable|integer|min:1',
         ]);
 
@@ -150,7 +196,12 @@ class CartController extends Controller
         // Creează un key unic pentru produs + configurație
         $cartKey = (string) $product->id;
         if ($request->print_size && $request->print_sides && $request->configuration_quantity) {
-            $cartKey = "{$product->id}_{$request->print_size}_{$request->print_sides}_{$request->configuration_quantity}";
+            // Include toate configurațiile în key pentru a diferenția între ele
+            $formatKey = $request->format ? md5($request->format) : 'no-format';
+            $suportKey = $request->suport ? md5($request->suport) : 'no-suport';
+            $culoareKey = $request->culoare ? md5($request->culoare) : 'no-culoare';
+            $colturiKey = $request->colturi ? md5($request->colturi) : 'no-colturi';
+            $cartKey = "{$product->id}_{$request->print_size}_{$request->print_sides}_{$formatKey}_{$suportKey}_{$culoareKey}_{$colturiKey}_{$request->configuration_quantity}";
         }
 
         // Verifică stocul disponibil
@@ -172,11 +223,45 @@ class CartController extends Controller
             // Determină prețul - folosește prețul din configurație dacă există
             $price = (float) $product->price;
             if ($request->print_size && $request->print_sides && $request->configuration_quantity) {
-                $configuration = $product->activeConfigurations()
+                $query = $product->activeConfigurations()
                     ->where('print_size', $request->print_size)
                     ->where('print_sides', $request->print_sides)
-                    ->where('quantity', $request->configuration_quantity)
-                    ->first();
+                    ->where('quantity', $request->configuration_quantity);
+                
+                // Adaugă filtre pentru configurații dacă sunt specificate
+                if ($request->has('format')) {
+                    if ($request->format) {
+                        $query->where('format', $request->format);
+                    } else {
+                        $query->whereNull('format');
+                    }
+                }
+                
+                if ($request->has('suport')) {
+                    if ($request->suport) {
+                        $query->where('suport', $request->suport);
+                    } else {
+                        $query->whereNull('suport');
+                    }
+                }
+                
+                if ($request->has('culoare')) {
+                    if ($request->culoare) {
+                        $query->where('culoare', $request->culoare);
+                    } else {
+                        $query->whereNull('culoare');
+                    }
+                }
+                
+                if ($request->has('colturi')) {
+                    if ($request->colturi) {
+                        $query->where('colturi', $request->colturi);
+                    } else {
+                        $query->whereNull('colturi');
+                    }
+                }
+                
+                $configuration = $query->first();
                 
                 if ($configuration) {
                     $price = (float) $configuration->price_per_unit;
@@ -189,6 +274,10 @@ class CartController extends Controller
                 'price' => $price,
                 'print_size' => $request->print_size,
                 'print_sides' => $request->print_sides,
+                'format' => $request->format,
+                'suport' => $request->suport,
+                'culoare' => $request->culoare,
+                'colturi' => $request->colturi,
                 'configuration_quantity' => $request->configuration_quantity,
             ];
         }
@@ -206,11 +295,19 @@ class CartController extends Controller
         $request->validate([
             'product_id' => 'required|exists:products,id',
             'quantity' => 'required|integer|min:1',
-            'print_size' => 'nullable|string|in:A3,A4',
-            'print_sides' => 'nullable|string|in:4+0,4+4',
+            'print_size' => 'nullable|string|in:A0,A1,A2,A3,A4,A5,A6,Personalizat',
+            'print_sides' => 'nullable|string|in:4+0,4+4,5+0,5+5',
+            'format' => 'nullable|string|max:255',
+            'suport' => 'nullable|string|max:100',
+            'culoare' => 'nullable|string|max:100',
+            'colturi' => 'nullable|string|max:100',
             'configuration_quantity' => 'nullable|integer|min:1',
             'old_print_size' => 'nullable|string',
             'old_print_sides' => 'nullable|string',
+            'old_format' => 'nullable|string|max:255',
+            'old_suport' => 'nullable|string|max:100',
+            'old_culoare' => 'nullable|string|max:100',
+            'old_colturi' => 'nullable|string|max:100',
             'old_configuration_quantity' => 'nullable|integer',
         ]);
 
@@ -221,7 +318,12 @@ class CartController extends Controller
         // Găsește item-ul vechi în cart
         $oldCartKey = (string) $product->id;
         if ($request->old_print_size && $request->old_print_sides && $request->old_configuration_quantity) {
-            $oldCartKey = "{$product->id}_{$request->old_print_size}_{$request->old_print_sides}_{$request->old_configuration_quantity}";
+            // Construiește key-ul vechi cu toate configurațiile
+            $oldFormatKey = $request->old_format ? md5($request->old_format) : 'no-format';
+            $oldSuportKey = $request->old_suport ? md5($request->old_suport) : 'no-suport';
+            $oldCuloareKey = $request->old_culoare ? md5($request->old_culoare) : 'no-culoare';
+            $oldColturiKey = $request->old_colturi ? md5($request->old_colturi) : 'no-colturi';
+            $oldCartKey = "{$product->id}_{$request->old_print_size}_{$request->old_print_sides}_{$oldFormatKey}_{$oldSuportKey}_{$oldCuloareKey}_{$oldColturiKey}_{$request->old_configuration_quantity}";
         }
 
         // Caută item-ul în cart
@@ -271,11 +373,19 @@ class CartController extends Controller
         $oldItem = $cart[$foundKey];
         $newPrintSize = $request->print_size ?? $oldItem['print_size'] ?? null;
         $newPrintSides = $request->print_sides ?? $oldItem['print_sides'] ?? null;
+        $newFormat = $request->format ?? $oldItem['format'] ?? null;
+        $newSuport = $request->suport ?? $oldItem['suport'] ?? null;
+        $newCuloare = $request->culoare ?? $oldItem['culoare'] ?? null;
+        $newColturi = $request->colturi ?? $oldItem['colturi'] ?? null;
         $newConfigQty = $request->configuration_quantity ?? $oldItem['configuration_quantity'] ?? null;
 
         // Verifică dacă configurația s-a schimbat
         $configChanged = ($newPrintSize != ($oldItem['print_size'] ?? null)) ||
                         ($newPrintSides != ($oldItem['print_sides'] ?? null)) ||
+                        ($newFormat != ($oldItem['format'] ?? null)) ||
+                        ($newSuport != ($oldItem['suport'] ?? null)) ||
+                        ($newCuloare != ($oldItem['culoare'] ?? null)) ||
+                        ($newColturi != ($oldItem['colturi'] ?? null)) ||
                         ($newConfigQty != ($oldItem['configuration_quantity'] ?? null));
 
         if ($configChanged) {
@@ -285,11 +395,37 @@ class CartController extends Controller
             // Calculează noul preț
             $price = (float) $product->price;
             if ($newPrintSize && $newPrintSides && $newConfigQty) {
-                $configuration = $product->activeConfigurations()
+                $query = $product->activeConfigurations()
                     ->where('print_size', $newPrintSize)
                     ->where('print_sides', $newPrintSides)
-                    ->where('quantity', $newConfigQty)
-                    ->first();
+                    ->where('quantity', $newConfigQty);
+                
+                // Adaugă filtre pentru configurații dacă sunt specificate
+                if ($newFormat) {
+                    $query->where('format', $newFormat);
+                } else {
+                    $query->whereNull('format');
+                }
+                
+                if ($newSuport) {
+                    $query->where('suport', $newSuport);
+                } else {
+                    $query->whereNull('suport');
+                }
+                
+                if ($newCuloare) {
+                    $query->where('culoare', $newCuloare);
+                } else {
+                    $query->whereNull('culoare');
+                }
+                
+                if ($newColturi) {
+                    $query->where('colturi', $newColturi);
+                } else {
+                    $query->whereNull('colturi');
+                }
+                
+                $configuration = $query->first();
                 
                 if ($configuration) {
                     $price = (float) $configuration->price_per_unit;
@@ -299,7 +435,11 @@ class CartController extends Controller
             // Creează noul key
             $newCartKey = (string) $product->id;
             if ($newPrintSize && $newPrintSides && $newConfigQty) {
-                $newCartKey = "{$product->id}_{$newPrintSize}_{$newPrintSides}_{$newConfigQty}";
+                $newFormatKey = $newFormat ? md5($newFormat) : 'no-format';
+                $newSuportKey = $newSuport ? md5($newSuport) : 'no-suport';
+                $newCuloareKey = $newCuloare ? md5($newCuloare) : 'no-culoare';
+                $newColturiKey = $newColturi ? md5($newColturi) : 'no-colturi';
+                $newCartKey = "{$product->id}_{$newPrintSize}_{$newPrintSides}_{$newFormatKey}_{$newSuportKey}_{$newCuloareKey}_{$newColturiKey}_{$newConfigQty}";
             }
 
             // Verifică dacă există deja un item cu noua configurație
@@ -312,6 +452,10 @@ class CartController extends Controller
                     'price' => $price,
                     'print_size' => $newPrintSize,
                     'print_sides' => $newPrintSides,
+                    'format' => $newFormat,
+                    'suport' => $newSuport,
+                    'culoare' => $newCuloare,
+                    'colturi' => $newColturi,
                     'configuration_quantity' => $newConfigQty,
                 ];
             }

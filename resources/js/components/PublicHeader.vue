@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/sheet';
 import { home, register, login, logout } from '@/routes';
 import { Link, router, usePage } from '@inertiajs/vue3';
-import { Menu, Search, ShoppingCart, User, Package, FileText, List, ChevronDown, ChevronRight, Sun, Moon, LogOut } from 'lucide-vue-next';
+import { Menu, Search, ShoppingCart, User, Package, FileText, List, ChevronDown, ChevronRight, Sun, Moon, LogOut, LogIn, UserPlus } from 'lucide-vue-next';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useSiteSettings } from '@/composables/useSiteSettings';
 import { useTranslations } from '@/composables/useTranslations';
@@ -593,7 +593,21 @@ onUnmounted(() => {
                     
                     <!-- Language Switcher -->
                     <LanguageSwitcher  class="text-gray-900 dark:text-white"/>
-                    
+                    <Link href="/cart">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            class="group relative h-10 w-10 text-white dark:text-white transition-all duration-200 hover:bg-white/10 dark:hover:bg-white/10 hover:text-white dark:hover:text-white"
+                        >
+                            <ShoppingCart class="text-gray-900 dark:text-white h-5 w-5 transition-transform duration-200 group-hover:scale-110" />
+                            <span
+                                v-if="cartCount > 0"
+                                class="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br from-red-500 to-red-600 dark:from-red-500 dark:to-red-600 text-xs font-bold text-white dark:text-white shadow-lg ring-2 ring-white dark:ring-gray-900 transition-all duration-300"
+                            >
+                                {{ cartCount > 99 ? '99+' : cartCount }}
+                            </span>
+                        </Button>
+                    </Link>
                     <!-- Desktop Auth Buttons -->
                     <template v-if="auth.user">
                         <Link href="/profile">
@@ -620,32 +634,28 @@ onUnmounted(() => {
                     </template>
                     <template v-else>
                         <Link :href="login().url">
-                            <Button variant="ghost" size="sm" class="text-gray-900 dark:text-white transition-all duration-200 hover:bg-white/10 dark:hover:bg-white/10 hover:text-white dark:hover:text-white">
-                                {{ t('login') }}
+                            <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                class="group relative h-10 w-10 text-white dark:text-white transition-all duration-200 hover:bg-white/10 dark:hover:bg-white/10 hover:text-white dark:hover:text-white"
+                                :title="t('login')"
+                            >
+                                <LogIn class="text-gray-900 dark:text-white h-5 w-5 transition-transform duration-200 group-hover:scale-110" />
                             </Button>
                         </Link>
                         <Link :href="register()">
-                            <Button size="sm" class="bg-gradient-to-r from-primary to-primary/80 dark:from-primary dark:to-primary/80 text-gray-900 dark:text-white transition-all duration-200 hover:scale-105 hover:from-primary/90 hover:to-primary/70 dark:hover:from-primary/90 dark:hover:to-primary/70 hover:shadow-lg">
-                                {{ t('register') }}
+                            <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                class="group relative h-10 w-10 text-white dark:text-white transition-all duration-200 hover:bg-white/10 dark:hover:bg-white/10 hover:text-white dark:hover:text-white"
+                                :title="t('register')"
+                            >
+                                <UserPlus class="text-gray-900 dark:text-white h-5 w-5 transition-transform duration-200 group-hover:scale-110" />
                             </Button>
                         </Link>
                     </template>
                     
-                    <Link href="/cart">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            class="group relative h-10 w-10 text-white dark:text-white transition-all duration-200 hover:bg-white/10 dark:hover:bg-white/10 hover:text-white dark:hover:text-white"
-                        >
-                            <ShoppingCart class="text-gray-900 dark:text-white h-5 w-5 transition-transform duration-200 group-hover:scale-110" />
-                            <span
-                                v-if="cartCount > 0"
-                                class="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br from-red-500 to-red-600 dark:from-red-500 dark:to-red-600 text-xs font-bold text-white dark:text-white shadow-lg ring-2 ring-white dark:ring-gray-900 transition-all duration-300"
-                            >
-                                {{ cartCount > 99 ? '99+' : cartCount }}
-                            </span>
-                        </Button>
-                    </Link>
+                    
 
                     <!-- Mobile Menu -->
                     <div class="md:hidden">

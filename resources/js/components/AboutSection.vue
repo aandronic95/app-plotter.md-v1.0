@@ -75,27 +75,27 @@ onMounted(() => {
 </script>
 
 <template>
-    <div v-if="section" class="w-full bg-gray-50 dark:bg-gray-900 py-12">
+    <div v-if="section" class="w-full bg-gray-50 dark:bg-gray-900">
         <div class="mx-auto max-w-7xl px-4 md:px-6">
-            <div class="rounded-lg bg-white p-8 dark:bg-gray-800">
+            <div class="rounded-lg bg-white py-8 px-4 dark:bg-gray-800">
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:items-center">
                     <!-- Left Section: Text Content -->
                     <div class="space-y-6">
                         <!-- Title -->
-                        <h2 class="text-lg font-bold uppercase tracking-tight text-gray-800 dark:text-white">
+                        <h1 class="text-lg font-bold uppercase tracking-tight text-gray-800 dark:text-white">
                             {{ section.name }}
-                        </h2>
+                        </h1>
 
                         <!-- Description -->
-                        <div
+                        <h4
                             v-if="section.description"
-                            class="text-sm leading-relaxed text-gray-600 dark:text-gray-300 prose max-w-none [&_*]:text-gray-600 dark:[&_*]:text-gray-300 [&_p]:text-gray-600 dark:[&_p]:text-gray-300 [&_strong]:text-gray-800 dark:[&_strong]:text-white [&_a]:text-gray-700 dark:[&_a]:text-gray-300 hover:[&_a]:text-gray-900 dark:hover:[&_a]:text-gray-100 [&_ul]:text-gray-600 dark:[&_ul]:text-gray-300 [&_ol]:text-gray-600 dark:[&_ol]:text-gray-300 [&_li]:text-gray-600 dark:[&_li]:text-gray-300"
+                            class="leading-relaxed text-gray-600 dark:text-gray-300 prose max-w-none [&_*]:text-gray-600 dark:[&_*]:text-gray-300 [&_p]:text-gray-600 dark:[&_p]:text-gray-300 [&_strong]:text-gray-800 dark:[&_strong]:text-white [&_a]:text-gray-700 dark:[&_a]:text-gray-300 hover:[&_a]:text-gray-900 dark:hover:[&_a]:text-gray-100 [&_ul]:text-gray-600 dark:[&_ul]:text-gray-300 [&_ol]:text-gray-600 dark:[&_ol]:text-gray-300 [&_li]:text-gray-600 dark:[&_li]:text-gray-300"
                             v-html="section.description"
-                        ></div>
+                        ></h4>
                     </div>
 
                     <!-- Right Section: Image -->
-                    <div class="relative h-64 lg:h-[500px] max-h-[500px]">
+                    <div class="relative h-64 lg:h-[400px] max-h-[400px]">
                         <div
                             v-if="section.image && !imageError"
                             class="relative h-full w-full overflow-hidden rounded-lg bg-gray-200 dark:bg-gray-700"
@@ -106,6 +106,7 @@ onMounted(() => {
                                 class="h-full w-full object-cover"
                                 @error="handleImageError"
                                 @load="handleImageLoad"
+                                
                             />
                             <div
                                 v-if="imageLoading"

@@ -321,5 +321,23 @@ return [
     'production_time' => 'Termen de fabricație',
     'per_piece' => 'pe buc.',
     'save_changes_before_checkout' => 'Salvează modificările înainte de a finaliza comanda',
+    
+    // Format
+    'format' => 'Format',
+    'formats' => 'Formate',
+    'available_formats' => 'Formate disponibile',
+    'select_format' => 'Selectați formatul',
+    'select_format_for_category' => 'Selectați formatul disponibil pentru categoria produsului',
+    'add_format' => 'Adaugă format',
+    'format_name' => 'Nume format',
+    'format_description' => 'Descriere',
+    'format_name_placeholder' => 'ex: 90x50 mm, Frontlit, etc.',
+    'format_description_placeholder' => 'Descriere opțională a formatului',
+    'formats_helper_text' => 'Adăugați formate disponibile pentru această categorie (ex: pentru Cărți de vizită: 90x50 mm, 85x55mm; pentru Banner: Frontlit, Mesh, BlackOut)',
+    'no_format' => 'Fără format',
+    'select_configuration' => 'Vă rugăm să selectați o configurație completă pentru acest produs (dimensiune, laturi, format și cantitate).',
+    'suport' => 'Suport',
+    'culoare' => 'Culoare',
+    'colturi' => 'Colțuri',
 ];
 

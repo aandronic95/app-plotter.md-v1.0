@@ -321,5 +321,23 @@ return [
     'production_time' => 'Production time',
     'per_piece' => 'per piece',
     'save_changes_before_checkout' => 'Save changes before completing the order',
+    
+    // Format
+    'format' => 'Format',
+    'formats' => 'Formats',
+    'available_formats' => 'Available formats',
+    'select_format' => 'Select format',
+    'select_format_for_category' => 'Select format available for product category',
+    'add_format' => 'Add format',
+    'format_name' => 'Format name',
+    'format_description' => 'Description',
+    'format_name_placeholder' => 'e.g.: 90x50 mm, Frontlit, etc.',
+    'format_description_placeholder' => 'Optional format description',
+    'formats_helper_text' => 'Add available formats for this category (e.g.: for Business Cards: 90x50 mm, 85x55mm; for Banner: Frontlit, Mesh, BlackOut)',
+    'no_format' => 'No format',
+    'select_configuration' => 'Please select a complete configuration for this product (size, sides, format and quantity).',
+    'suport' => 'Support',
+    'culoare' => 'Color',
+    'colturi' => 'Corners',
 ];
 

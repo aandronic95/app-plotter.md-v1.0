@@ -321,5 +321,23 @@ return [
     'production_time' => 'Срок изгот.',
     'per_piece' => 'за шт.',
     'save_changes_before_checkout' => 'Сохраните изменения перед оформлением заказа',
+    
+    // Format
+    'format' => 'Формат',
+    'formats' => 'Форматы',
+    'available_formats' => 'Доступные форматы',
+    'select_format' => 'Выберите формат',
+    'select_format_for_category' => 'Выберите формат, доступный для категории товара',
+    'add_format' => 'Добавить формат',
+    'format_name' => 'Название формата',
+    'format_description' => 'Описание',
+    'format_name_placeholder' => 'например: 90x50 мм, Frontlit и т.д.',
+    'format_description_placeholder' => 'Необязательное описание формата',
+    'formats_helper_text' => 'Добавьте доступные форматы для этой категории (например: для Визиток: 90x50 мм, 85x55мм; для Баннеров: Frontlit, Mesh, BlackOut)',
+    'no_format' => 'Без формата',
+    'select_configuration' => 'Пожалуйста, выберите полную конфигурацию для этого товара (размер, стороны, формат и количество).',
+    'suport' => 'Подложка',
+    'culoare' => 'Цвет',
+    'colturi' => 'Углы',
 ];
 

@@ -95,3 +95,7 @@ const handleCategoryClick = (categorySlug: string) => {
         </div>
     </div>
 </template>
+
+
+
+

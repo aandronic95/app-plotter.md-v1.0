@@ -12,6 +12,10 @@ interface Configuration {
     id: number;
     print_size: string;
     print_sides: string;
+    format?: string | null;
+    suport?: string | null;
+    culoare?: string | null;
+    colturi?: string | null;
     quantity: number;
     price: number;
     price_per_unit: number;
@@ -31,6 +35,10 @@ interface CartItem {
     stock_quantity: number;
     print_size?: string | null;
     print_sides?: string | null;
+    format?: string | null;
+    suport?: string | null;
+    culoare?: string | null;
+    colturi?: string | null;
     configuration_quantity?: number | null;
     configurations?: Configuration[];
 }
@@ -80,10 +88,49 @@ const getAvailableSides = (item: CartItem, size: string) => {
     return Array.from(sides).sort();
 };
 
-const getAvailableQuantities = (item: CartItem, size: string, sides: string) => {
+const getAvailableQuantities = (item: CartItem, size: string, sides: string, format?: string | null, suport?: string | null, culoare?: string | null, colturi?: string | null) => {
     if (!item.configurations || item.configurations.length === 0) return [];
     return item.configurations
-        .filter(c => c.print_size === size && c.print_sides === sides)
+        .filter(c => {
+            const matchesSize = c.print_size === size;
+            const matchesSides = c.print_sides === sides;
+            
+            if (!matchesSize || !matchesSides) return false;
+            
+            // Format matching: dacă este specificat, trebuie să se potrivească; altfel acceptă orice
+            let matchesFormat = true;
+            if (format !== null && format !== undefined) {
+                matchesFormat = c.format === format;
+            } else {
+                matchesFormat = !c.format || c.format === '';
+            }
+            
+            // Suport matching
+            let matchesSuport = true;
+            if (suport !== null && suport !== undefined) {
+                matchesSuport = c.suport === suport;
+            } else {
+                matchesSuport = !c.suport || c.suport === '';
+            }
+            
+            // Culoare matching
+            let matchesCuloare = true;
+            if (culoare !== null && culoare !== undefined) {
+                matchesCuloare = c.culoare === culoare;
+            } else {
+                matchesCuloare = !c.culoare || c.culoare === '';
+            }
+            
+            // Colturi matching
+            let matchesColturi = true;
+            if (colturi !== null && colturi !== undefined) {
+                matchesColturi = c.colturi === colturi;
+            } else {
+                matchesColturi = !c.colturi || c.colturi === '';
+            }
+            
+            return matchesFormat && matchesSuport && matchesCuloare && matchesColturi;
+        })
         .sort((a, b) => a.quantity - b.quantity);
 };
 
@@ -189,15 +236,25 @@ const updateConfiguration = async (item: CartItem, config: Configuration | null)
                 quantity: item.quantity,
                 print_size: config?.print_size || null,
                 print_sides: config?.print_sides || null,
+                format: config?.format || null,
+                suport: config?.suport || null,
+                culoare: config?.culoare || null,
+                colturi: config?.colturi || null,
                 configuration_quantity: config?.quantity || null,
                 old_print_size: item.print_size,
                 old_print_sides: item.print_sides,
+                old_format: item.format,
+                old_suport: item.suport,
+                old_culoare: item.culoare,
+                old_colturi: item.colturi,
                 old_configuration_quantity: item.configuration_quantity,
             }),
         });
 
         if (response.ok) {
             await fetchCart();
+            editingConfigItemId.value = null;
+            pendingConfigChanges.value.delete(item.id);
         } else {
             const data = await response.json();
             alert(data.message || t('error_updating_quantity'));
@@ -225,6 +282,10 @@ const removeItem = async (item: CartItem) => {
             params.append('print_size', item.print_size);
             params.append('print_sides', item.print_sides);
             params.append('configuration_quantity', item.configuration_quantity.toString());
+            if (item.format) params.append('format', item.format);
+            if (item.suport) params.append('suport', item.suport);
+            if (item.culoare) params.append('culoare', item.culoare);
+            if (item.colturi) params.append('colturi', item.colturi);
             url += '?' + params.toString();
         }
 
@@ -333,7 +394,7 @@ onMounted(() => {
                                             
                                             <!-- Configurații curente -->
                                             <div
-                                                v-if="item.print_size || item.print_sides || item.configuration_quantity"
+                                                v-if="item.print_size || item.print_sides || item.configuration_quantity || item.format || item.suport || item.culoare || item.colturi"
                                                 class="mt-2 space-y-1 text-xs text-gray-500 dark:text-gray-400"
                                             >
                                                 <p v-if="item.print_size">
@@ -341,6 +402,18 @@ onMounted(() => {
                                                 </p>
                                                 <p v-if="item.print_sides">
                                                     {{ t('print_sides') }}: {{ getSidesLabel(item.print_sides) }}
+                                                </p>
+                                                <p v-if="item.format">
+                                                    {{ t('format') }}: {{ item.format }}
+                                                </p>
+                                                <p v-if="item.suport">
+                                                    {{ t('suport') || 'Suport' }}: {{ item.suport }}
+                                                </p>
+                                                <p v-if="item.culoare">
+                                                    {{ t('culoare') || 'Culoare' }}: {{ item.culoare }}
+                                                </p>
+                                                <p v-if="item.colturi">
+                                                    {{ t('colturi') || 'Colturi' }}: {{ item.colturi }}
                                                 </p>
                                                 <p v-if="item.configuration_quantity">
                                                     {{ t('circulation_pieces') }}: {{ item.configuration_quantity }}

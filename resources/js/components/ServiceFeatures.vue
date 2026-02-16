@@ -72,12 +72,7 @@ onMounted(async () => {
                                     v-if="feature.title === 'CALITATE GARANTATĂ'"
                                     class="absolute -top-2 left-1/2 flex -translate-x-1/2 gap-0.5"
                                 >
-                                    <Star
-                                        class="h-3 w-3 fill-teal-700 text-teal-700 dark:fill-teal-500 dark:text-teal-500"
-                                    />
-                                    <Star
-                                        class="h-3 w-3 fill-teal-700 text-teal-700 dark:fill-teal-500 dark:text-teal-500"
-                                    />
+                                   
                                 </div>
                                 <div
                                     class="flex h-12 w-12 items-center justify-center rounded-lg"

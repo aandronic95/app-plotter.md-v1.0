@@ -40,7 +40,12 @@ const formatPrice = (price: number) => {
     }).format(price);
 };
 
-const addToCart = async () => {
+const addToCart = async (event?: Event) => {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    
     loading.value = true;
     try {
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
@@ -172,81 +177,91 @@ defineExpose({
 </script>
 
 <template>
-    <Card class="group flex h-full flex-col overflow-hidden">
-        <div class="relative aspect-square w-full overflow-hidden bg-gray-100 dark:bg-gray-800">
-            <img
-                :src="product.image"
-                :alt="product.name"
-                loading="lazy"
-                decoding="async"
-                class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-            />
-            <div
-                v-if="!isInStock"
-                class="absolute left-2 top-2 rounded bg-gray-600 px-2 py-1 text-xs font-bold text-white"
+    <div class="block h-full">
+        <Card class="group flex h-full flex-col overflow-hidden cursor-pointer transition-shadow hover:shadow-lg">
+            <Link
+                :href="`/products/${product.slug || product.id}?image=0`"
+                class="relative aspect-square w-full overflow-hidden bg-gray-100 dark:bg-gray-800 block"
             >
-                {{ t('not_in_stock') }}
-            </div>
-            <div
-                v-else-if="product.discount"
-                class="absolute left-2 top-2 rounded bg-red-500 px-2 py-1 text-xs font-bold text-white"
-            >
-                -{{ product.discount }}%
-            </div>
-            <Button
-                variant="ghost"
-                size="icon"
-                :disabled="wishlistLoading"
-                :class="[
-                    'absolute right-2 top-2 bg-white/80 dark:bg-gray-800/80 opacity-0 transition-opacity hover:bg-white dark:hover:bg-gray-800 group-hover:opacity-100',
-                    isInWishlist && 'text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300',
-                ]"
-                @click="toggleWishlist"
-            >
-                <Heart 
-                    class="h-4 w-4 text-current" 
-                    :class="{ 'fill-current': isInWishlist }"
+                <img
+                    :src="product.image"
+                    :alt="product.name"
+                    loading="lazy"
+                    decoding="async"
+                    class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                 />
-            </Button>
-        </div>
-        <CardHeader class="flex-1">
-            <h3 class="line-clamp-2 text-lg font-semibold text-gray-900 dark:text-white">
-                {{ product.name }}
-            </h3>
-            <p
-                v-if="product.description"
-                class="mt-1 line-clamp-2 text-sm text-gray-600 dark:text-gray-400"
-            >
-                {{ product.description }}
-            </p>
-        </CardHeader>
-        <CardContent class="pt-0">
-            <div class="flex items-center gap-2">
-                <span class="text-xl font-bold text-gray-900 dark:text-white">
-                    {{ formatPrice(product.price) }}
-                </span>
-                <span
-                    v-if="product.originalPrice"
-                    class="text-sm text-gray-500 dark:text-gray-400 line-through"
+                <div
+                    v-if="!isInStock"
+                    class="absolute left-2 top-2 rounded bg-gray-600 px-2 py-1 text-xs font-bold text-white"
                 >
-                    {{ formatPrice(product.originalPrice) }}
-                </span>
-            </div>
-        </CardContent>
-        <CardFooter class="gap-2 pt-0">
-            <Button
+                    {{ t('not_in_stock') }}
+                </div>
+                <div
+                    v-else-if="product.discount"
+                    class="absolute left-2 top-2 rounded bg-red-500 px-2 py-1 text-xs font-bold text-white"
+                >
+                    -{{ product.discount }}%
+                </div>
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    :disabled="wishlistLoading"
+                    :class="[
+                        'absolute right-2 top-2 bg-white/80 dark:bg-gray-800/80 opacity-0 transition-opacity hover:bg-white dark:hover:bg-gray-800 group-hover:opacity-100 z-10',
+                        isInWishlist && 'text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300',
+                    ]"
+                    @click.stop="toggleWishlist"
+                >
+                    <Heart 
+                        class="h-4 w-4 text-current" 
+                        :class="{ 'fill-current': isInWishlist }"
+                    />
+                </Button>
+            </Link>
+            <Link
+                :href="`/products/${product.slug || product.id}`"
                 class="flex-1"
-                size="sm"
-                :disabled="loading || !isInStock"
-                @click="addToCart"
             >
-                <ShoppingCart class="mr-2 h-4 w-4 text-current" />
-                {{ !isInStock ? t('not_in_stock') : (loading ? t('adding_to_cart') : t('add_to_cart')) }}
-            </Button>
-            <Button variant="outline" size="sm" as-child>
-                <Link :href="`/products/${product.slug || product.id}`">{{ t('details') }}</Link>
-            </Button>
-        </CardFooter>
-    </Card>
+                <CardHeader class="flex-1">
+                    <h3 class="line-clamp-2 text-lg font-semibold text-gray-900 dark:text-white">
+                        {{ product.name }}
+                    </h3>
+                    <p
+                        v-if="product.description"
+                        class="mt-1 line-clamp-2 text-sm text-gray-600 dark:text-gray-400"
+                    >
+                        {{ product.description }}
+                    </p>
+                </CardHeader>
+                <CardContent class="pt-0">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xl font-bold text-gray-900 dark:text-white">
+                            {{ formatPrice(product.price) }}
+                        </span>
+                        <span
+                            v-if="product.originalPrice"
+                            class="text-sm text-gray-500 dark:text-gray-400 line-through"
+                        >
+                            {{ formatPrice(product.originalPrice) }}
+                        </span>
+                    </div>
+                </CardContent>
+            </Link>
+            <CardFooter class="gap-2 pt-0" @click.stop>
+                <Button
+                    class="flex-1"
+                    size="sm"
+                    :disabled="loading || !isInStock"
+                    @click.stop="addToCart"
+                >
+                    <ShoppingCart class="mr-2 h-4 w-4 text-current" />
+                    {{ !isInStock ? t('not_in_stock') : (loading ? t('adding_to_cart') : t('add_to_cart')) }}
+                </Button>
+                <Button variant="outline" size="sm" as-child>
+                    <Link :href="`/products/${product.slug || product.id}`">{{ t('details') }}</Link>
+                </Button>
+            </CardFooter>
+        </Card>
+    </div>
 </template>
 

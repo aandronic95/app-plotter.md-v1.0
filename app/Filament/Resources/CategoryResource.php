@@ -70,7 +70,169 @@ class CategoryResource extends Resource
                             ->maxSize(5120)
                             ->imageEditor()
                             ->columnSpanFull(),
-                    ])->columns(2),
+                    ])
+                    ->columnSpanFull(),
+
+                Section::make('Configurații Categorie')
+                    ->schema([
+                        // Formate
+                        Forms\Components\Repeater::make('formats')
+                            ->label('Formate')
+                            ->schema([
+                                Forms\Components\TextInput::make('name')
+                                    ->label('Denumire')
+                                    ->required()
+                                    ->maxLength(255)
+                                    ->placeholder('ex: 90x50 mm, Frontlit, etc.'),
+
+                                Forms\Components\FileUpload::make('image')
+                                    ->label('Imagine')
+                                    ->image()
+                                    ->disk('public')
+                                    ->directory('categories/configurations/formats')
+                                    ->visibility('public')
+                                    ->maxSize(2048)
+                                    ->imageEditor()
+                                    ->deletable()
+                                    ->downloadable()
+                                    ->previewable()
+                                    ->openable()
+                                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp']),
+
+                                Forms\Components\Textarea::make('description')
+                                    ->label('Descriere')
+                                    ->rows(2)
+                                    ->maxLength(500)
+                                    ->placeholder('Descriere opțională'),
+                            ])
+                            ->columns(3)
+                            ->collapsible()
+                            ->itemLabel(fn (array $state): ?string => $state['name'] ?? null)
+                            ->defaultItems(0)
+                            ->addActionLabel('Adaugă format')
+                            ->reorderableWithButtons()
+                            ->cloneable()
+                            ->deletable(),
+
+                        // Suport
+                        Forms\Components\Repeater::make('suport')
+                            ->label('Suport')
+                            ->schema([
+                                Forms\Components\TextInput::make('name')
+                                    ->label('Denumire')
+                                    ->required()
+                                    ->maxLength(255)
+                                    ->placeholder('ex: Carton Premium, PVC, etc.'),
+
+                                Forms\Components\FileUpload::make('image')
+                                    ->label('Imagine')
+                                    ->image()
+                                    ->disk('public')
+                                    ->directory('categories/configurations/suport')
+                                    ->visibility('public')
+                                    ->maxSize(2048)
+                                    ->imageEditor()
+                                    ->deletable()
+                                    ->downloadable()
+                                    ->previewable()
+                                    ->openable()
+                                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp']),
+
+                                Forms\Components\Textarea::make('description')
+                                    ->label('Descriere')
+                                    ->rows(2)
+                                    ->maxLength(500)
+                                    ->placeholder('Descriere opțională'),
+                            ])
+                            ->columns(3)
+                            ->collapsible()
+                            ->itemLabel(fn (array $state): ?string => $state['name'] ?? null)
+                            ->defaultItems(0)
+                            ->addActionLabel('Adaugă suport')
+                            ->reorderableWithButtons()
+                            ->cloneable()
+                            ->deletable(),
+
+                        // Culoare
+                        Forms\Components\Repeater::make('culoare')
+                            ->label('Culoare')
+                            ->schema([
+                                Forms\Components\TextInput::make('name')
+                                    ->label('Denumire')
+                                    ->required()
+                                    ->maxLength(255)
+                                    ->placeholder('ex: Alb, Negru, Roșu, etc.'),
+
+                                Forms\Components\FileUpload::make('image')
+                                    ->label('Imagine')
+                                    ->image()
+                                    ->disk('public')
+                                    ->directory('categories/configurations/culoare')
+                                    ->visibility('public')
+                                    ->maxSize(2048)
+                                    ->imageEditor()
+                                    ->deletable()
+                                    ->downloadable()
+                                    ->previewable()
+                                    ->openable()
+                                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp']),
+
+                                Forms\Components\Textarea::make('description')
+                                    ->label('Descriere')
+                                    ->rows(2)
+                                    ->maxLength(500)
+                                    ->placeholder('Descriere opțională'),
+                            ])
+                            ->columns(3)
+                            ->collapsible()
+                            ->itemLabel(fn (array $state): ?string => $state['name'] ?? null)
+                            ->defaultItems(0)
+                            ->addActionLabel('Adaugă culoare')
+                            ->reorderableWithButtons()
+                            ->cloneable()
+                            ->deletable(),
+
+                        // Colturi
+                        Forms\Components\Repeater::make('colturi')
+                            ->label('Colțuri')
+                            ->schema([
+                                Forms\Components\TextInput::make('name')
+                                    ->label('Denumire')
+                                    ->required()
+                                    ->maxLength(255)
+                                    ->placeholder('ex: Drepte, Rotunjite, etc.'),
+
+                                Forms\Components\FileUpload::make('image')
+                                    ->label('Imagine')
+                                    ->image()
+                                    ->disk('public')
+                                    ->directory('categories/configurations/colturi')
+                                    ->visibility('public')
+                                    ->maxSize(2048)
+                                    ->imageEditor()
+                                    ->deletable()
+                                    ->downloadable()
+                                    ->previewable()
+                                    ->openable()
+                                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp']),
+
+                                Forms\Components\Textarea::make('description')
+                                    ->label('Descriere')
+                                    ->rows(2)
+                                    ->maxLength(500)
+                                    ->placeholder('Descriere opțională'),
+                            ])
+                            ->columns(3)
+                            ->collapsible()
+                            ->itemLabel(fn (array $state): ?string => $state['name'] ?? null)
+                            ->defaultItems(0)
+                            ->addActionLabel('Adaugă colțuri')
+                            ->reorderableWithButtons()
+                            ->cloneable()
+                            ->deletable(),
+                    ])
+                    ->columnSpanFull()
+                    ->collapsible(),
 
                 Section::make('Setări')
                     ->schema([
@@ -116,6 +278,17 @@ class CategoryResource extends Resource
                     ->badge()
                     ->color('success')
                     ->sortable(),
+
+                Tables\Columns\TextColumn::make('formats')
+                    ->label('Formate')
+                    ->formatStateUsing(fn ($state): string => 
+                        is_array($state) && count($state) > 0
+                            ? implode(', ', array_column($state, 'name'))
+                            : '—'
+                    )
+                    ->badge()
+                    ->color('info')
+                    ->toggleable(),
 
                 Tables\Columns\IconColumn::make('is_active')
                     ->label('Activ')

@@ -20,6 +20,10 @@ interface Configuration {
     id: number;
     print_size: string;
     print_sides: string;
+    format?: string | null;
+    suport?: string | null;
+    culoare?: string | null;
+    colturi?: string | null;
     quantity: number;
     price: number;
     price_per_unit: number;
@@ -28,6 +32,7 @@ interface Configuration {
     production_date_raw: string;
     formatted_price: string;
     formatted_price_per_unit: string;
+    is_active?: boolean;
 }
 
 interface Product {
@@ -50,6 +55,12 @@ interface Product {
         slug: string;
     };
     configurations?: Configuration[];
+    categoryConfigurations?: {
+        formats?: Array<{ name: string; image?: string; description?: string }>;
+        suport?: Array<{ name: string; image?: string; description?: string }>;
+        culoare?: Array<{ name: string; image?: string; description?: string }>;
+        colturi?: Array<{ name: string; image?: string; description?: string }>;
+    } | null;
 }
 
 interface RelatedProduct {
@@ -154,6 +165,7 @@ const isOutOfStock = computed(() => {
 const loading = ref(false);
 const isModalOpen = ref(false);
 const currentImageIndex = ref(0);
+const currentMainImageIndex = ref(0); // Index pentru imaginea principală afișată
 const recentlyViewedProducts = ref<RelatedProduct[]>([]);
 const isInWishlist = ref(false);
 const wishlistLoading = ref(false);
@@ -172,10 +184,31 @@ const allImages = computed(() => {
     return images;
 });
 
-const openImageModal = (index: number) => {
-    currentImageIndex.value = index;
+const openImageModal = (index?: number) => {
+    currentImageIndex.value = index !== undefined ? index : currentMainImageIndex.value;
     isModalOpen.value = true;
     document.body.style.overflow = 'hidden';
+};
+
+// Funcții pentru caruselul imaginii principale
+const setMainImage = (index: number) => {
+    currentMainImageIndex.value = index;
+};
+
+const nextMainImage = () => {
+    if (currentMainImageIndex.value < allImages.value.length - 1) {
+        currentMainImageIndex.value++;
+    } else {
+        currentMainImageIndex.value = 0;
+    }
+};
+
+const previousMainImage = () => {
+    if (currentMainImageIndex.value > 0) {
+        currentMainImageIndex.value--;
+    } else {
+        currentMainImageIndex.value = allImages.value.length - 1;
+    }
 };
 
 const closeImageModal = () => {
@@ -189,6 +222,8 @@ const nextImage = () => {
     } else {
         currentImageIndex.value = 0;
     }
+    // Sincronizează cu imaginea principală
+    currentMainImageIndex.value = currentImageIndex.value;
 };
 
 const previousImage = () => {
@@ -197,6 +232,8 @@ const previousImage = () => {
     } else {
         currentImageIndex.value = allImages.value.length - 1;
     }
+    // Sincronizează cu imaginea principală
+    currentMainImageIndex.value = currentImageIndex.value;
 };
 
 // Navigare cu tastatura
@@ -367,6 +404,20 @@ onMounted(() => {
     saveToRecentlyViewed();
     loadRecentlyViewed();
     checkWishlistStatus();
+    
+    // Verifică dacă există parametrul image în URL pentru a seta imaginea principală
+    const urlParams = new URLSearchParams(window.location.search);
+    const imageIndex = urlParams.get('image');
+    if (imageIndex !== null) {
+        const index = parseInt(imageIndex, 10);
+        if (!isNaN(index) && index >= 0 && index < allImages.value.length) {
+            // Setează imaginea principală la index-ul specificat
+            currentMainImageIndex.value = index;
+            // Elimină parametrul din URL fără refresh
+            const newUrl = window.location.pathname;
+            window.history.replaceState({}, '', newUrl);
+        }
+    }
 });
 
 onUnmounted(() => {
@@ -394,7 +445,7 @@ const addToCart = async () => {
     // Verifică dacă produsul are configurații și dacă este selectată o configurație
     if (props.product.configurations && props.product.configurations.length > 0) {
         if (!selectedConfiguration.value) {
-            showErrorMessage('Vă rugăm să selectați o configurație pentru acest produs.');
+            showErrorMessage(t('common.select_configuration') || 'Vă rugăm să selectați o configurație completă pentru acest produs (dimensiune, laturi, format și cantitate).');
             return;
         }
     }
@@ -418,6 +469,10 @@ const addToCart = async () => {
         if (selectedConfiguration.value) {
             requestBody.print_size = selectedConfiguration.value.print_size;
             requestBody.print_sides = selectedConfiguration.value.print_sides;
+            requestBody.format = selectedConfiguration.value.format;
+            requestBody.suport = selectedConfiguration.value.suport;
+            requestBody.culoare = selectedConfiguration.value.culoare;
+            requestBody.colturi = selectedConfiguration.value.colturi;
             requestBody.configuration_quantity = selectedConfiguration.value.quantity;
             requestBody.quantity = 1; // Cantitatea din configurație este deja în configuration_quantity
         }
@@ -491,26 +546,65 @@ const addToCart = async () => {
                 <div class="grid grid-cols-1 gap-8 lg:grid-cols-2">
                     <!-- Product Images -->
                     <div class="space-y-4">
-                        <div 
-                            class="aspect-square overflow-hidden rounded-lg bg-gray-100 cursor-pointer transition-transform hover:scale-105"
-                            @click="openImageModal(0)"
-                        >
-                            <img
-                                :src="props.product.image"
-                                :alt="props.product.name"
-                                class="h-full w-full object-cover"
-                                :class="{ 'grayscale': isOutOfStock }"
-                            />
+                        <!-- Imaginea principală cu navigare carusel -->
+                        <div class="relative group">
+                            <div 
+                                class="aspect-square overflow-hidden rounded-lg bg-gray-100 cursor-pointer transition-transform hover:scale-105 relative"
+                                @click="openImageModal(currentMainImageIndex)"
+                            >
+                                <Transition
+                                    enter-active-class="transition-opacity duration-300"
+                                    enter-from-class="opacity-0"
+                                    enter-to-class="opacity-100"
+                                    leave-active-class="transition-opacity duration-300"
+                                    leave-from-class="opacity-100"
+                                    leave-to-class="opacity-0"
+                                    mode="out-in"
+                                >
+                                    <img
+                                        :key="currentMainImageIndex"
+                                        :src="allImages[currentMainImageIndex]"
+                                        :alt="`${props.product.name} - Imagine ${currentMainImageIndex + 1}`"
+                                        class="h-full w-full object-cover"
+                                        :class="{ 'grayscale': isOutOfStock }"
+                                    />
+                                </Transition>
+                            </div>
+                            
+                            <!-- Săgeți pentru navigare carusel -->
+                            <button
+                                v-if="allImages.length > 1"
+                                @click.stop="previousMainImage"
+                                class="absolute left-2 top-1/2 -translate-y-1/2 z-10 rounded-full bg-white/80 dark:bg-gray-800/80 p-2 text-gray-900 dark:text-white opacity-0 group-hover:opacity-100 transition-opacity shadow-lg hover:bg-white dark:hover:bg-gray-800"
+                                aria-label="Imaginea anterioară"
+                            >
+                                <ChevronLeft class="h-5 w-5" />
+                            </button>
+                            <button
+                                v-if="allImages.length > 1"
+                                @click.stop="nextMainImage"
+                                class="absolute right-2 top-1/2 -translate-y-1/2 z-10 rounded-full bg-white/80 dark:bg-gray-800/80 p-2 text-gray-900 dark:text-white opacity-0 group-hover:opacity-100 transition-opacity shadow-lg hover:bg-white dark:hover:bg-gray-800"
+                                aria-label="Imaginea următoare"
+                            >
+                                <ChevronRight class="h-5 w-5" />
+                            </button>
                         </div>
+                        
+                        <!-- Galeria de imagini mici -->
                         <div
-                            v-if="props.product.images && props.product.images.length > 0"
+                            v-if="allImages.length > 1"
                             class="grid grid-cols-4 gap-4"
                         >
                             <div
-                                v-for="(image, index) in props.product.images"
+                                v-for="(image, index) in allImages"
                                 :key="index"
-                                class="aspect-square overflow-hidden rounded-lg bg-gray-100 cursor-pointer transition-transform hover:scale-105"
-                                @click="openImageModal(index + 1)"
+                                @click="setMainImage(index)"
+                                :class="[
+                                    'aspect-square overflow-hidden rounded-lg bg-gray-100 cursor-pointer transition-all',
+                                    currentMainImageIndex === index
+                                        ? 'ring-2 ring-gray-900 dark:ring-white ring-offset-2 scale-105'
+                                        : 'hover:scale-105 opacity-70 hover:opacity-100'
+                                ]"
                             >
                                 <img
                                     :src="image"
@@ -608,6 +702,7 @@ const addToCart = async () => {
                         <div v-if="props.product.configurations && props.product.configurations.length > 0" class="pt-6">
                             <ProductConfiguration
                                 :configurations="props.product.configurations"
+                                :category-configurations="props.product.categoryConfigurations"
                                 @configuration-selected="selectedConfiguration = $event"
                             />
                         </div>

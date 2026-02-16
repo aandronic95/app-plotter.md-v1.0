@@ -15,6 +15,7 @@ use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Str;
+use Illuminate\Database\Eloquent\Model;
 
 class ProductResource extends Resource
 {
@@ -55,6 +56,7 @@ class ProductResource extends Resource
                             ->relationship('category', 'name')
                             ->searchable()
                             ->preload()
+                            ->live()
                             ->getOptionLabelFromRecordUsing(fn (Category $record): string => $record->parent 
                                 ? "{$record->parent->name} > {$record->name}" 
                                 : $record->name)
@@ -81,7 +83,8 @@ class ProductResource extends Resource
                         Forms\Components\RichEditor::make('description')
                             ->label('Descriere')
                             ->columnSpanFull(),
-                    ])->columns(2),
+                    ])
+                    ->columnSpanFull(),
 
                 Section::make('Preț și stoc')
                     ->schema([
@@ -192,20 +195,167 @@ class ProductResource extends Resource
                                 Forms\Components\Select::make('print_size')
                                     ->label('Dimensiune')
                                     ->options([
+                                        'A0' => 'A0 (841x1189 mm)',
+                                        'A1' => 'A1 (594x841 mm)',
+                                        'A2' => 'A2 (420x594 mm)',
                                         'A3' => 'A3 (420x297 mm)',
                                         'A4' => 'A4 (297x210 mm)',
+                                        'A5' => 'A5 (210x148 mm)',
+                                        'A6' => 'A6 (148x105 mm)',
+                                        'Personalizat' => 'Personalizat',
                                     ])
+                                    ->searchable()
                                     ->required()
-                                    ->native(false),
+                                    ->native(false)
+                                    ->live(),
 
                                 Forms\Components\Select::make('print_sides')
                                     ->label('Laturi de printare')
                                     ->options([
                                         '4+0' => '1-сторонняя печать (4+0)',
                                         '4+4' => '2-сторонняя печать (4+4)',
+                                        '5+0' => '5+0',
+                                        '5+5' => '5+5',
                                     ])
                                     ->required()
                                     ->native(false),
+
+                                Forms\Components\Select::make('format')
+                                    ->label('Format')
+                                    ->options(function (callable $get, $state, ?Model $record) {
+                                        $options = [];
+                                        
+                                        // Obține category_id din form sau din record
+                                        $categoryId = null;
+                                        
+                                        // Pentru create/edit: încearcă să obțină din formularul părinte
+                                        // În Repeater, category_id este la nivelul formularului principal
+                                        $categoryId = $get('../../category_id');
+                                        
+                                        // Dacă nu există în form (edit mode), obține din record
+                                        if (!$categoryId && $record) {
+                                            $categoryId = $record->product?->category_id;
+                                        }
+                                        
+                                        // Adaugă formatul curent dacă există (pentru edit mode)
+                                        if ($state && !empty($state)) {
+                                            $options[$state] = $state;
+                                        }
+                                        
+                                        if ($categoryId) {
+                                            // Încarcă categoria cu formatele
+                                            $category = Category::find($categoryId);
+                                            
+                                            if ($category && $category->formats && is_array($category->formats) && !empty($category->formats)) {
+                                                // Construiește opțiunile din formatele categoriei
+                                                foreach ($category->formats as $format) {
+                                                    if (isset($format['name']) && !empty($format['name'])) {
+                                                        $options[$format['name']] = $format['name'];
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        
+                                        return $options;
+                                    })
+                                    ->searchable()
+                                    ->native(false)
+                                    ->live()
+                                    ->createOptionForm([
+                                        Forms\Components\TextInput::make('name')
+                                            ->label('Nume format')
+                                            ->required()
+                                            ->maxLength(255),
+                                    ])
+                                    ->createOptionUsing(function (array $data) {
+                                        return $data['name'];
+                                    })
+                                    ->helperText('Selectați formatul disponibil pentru categoria produsului sau creați unul nou')
+                                    ->placeholder('Selectați sau introduceți formatul'),
+
+                                // Suport
+                                Forms\Components\Select::make('suport')
+                                    ->label('Suport')
+                                    ->options(function (callable $get, $state, ?Model $record) {
+                                        $categoryId = $get('../../category_id');
+                                        if (!$categoryId && $record) {
+                                            $categoryId = $record->product?->category_id;
+                                        }
+                                        if (!$categoryId) return [];
+                                        
+                                        $category = Category::find($categoryId);
+                                        if (!$category || !$category->suport || !is_array($category->suport) || empty($category->suport)) {
+                                            return [];
+                                        }
+                                        
+                                        $options = [];
+                                        foreach ($category->suport as $suport) {
+                                            if (isset($suport['name']) && !empty($suport['name'])) {
+                                                $options[$suport['name']] = $suport['name'];
+                                            }
+                                        }
+                                        return $options;
+                                    })
+                                    ->searchable()
+                                    ->native(false)
+                                    ->live()
+                                    ->placeholder('Selectați suportul'),
+
+                                // Culoare
+                                Forms\Components\Select::make('culoare')
+                                    ->label('Culoare')
+                                    ->options(function (callable $get, $state, ?Model $record) {
+                                        $categoryId = $get('../../category_id');
+                                        if (!$categoryId && $record) {
+                                            $categoryId = $record->product?->category_id;
+                                        }
+                                        if (!$categoryId) return [];
+                                        
+                                        $category = Category::find($categoryId);
+                                        if (!$category || !$category->culoare || !is_array($category->culoare) || empty($category->culoare)) {
+                                            return [];
+                                        }
+                                        
+                                        $options = [];
+                                        foreach ($category->culoare as $culoare) {
+                                            if (isset($culoare['name']) && !empty($culoare['name'])) {
+                                                $options[$culoare['name']] = $culoare['name'];
+                                            }
+                                        }
+                                        return $options;
+                                    })
+                                    ->searchable()
+                                    ->native(false)
+                                    ->live()
+                                    ->placeholder('Selectați culoarea'),
+
+                                // Colturi
+                                Forms\Components\Select::make('colturi')
+                                    ->label('Colțuri')
+                                    ->options(function (callable $get, $state, ?Model $record) {
+                                        $categoryId = $get('../../category_id');
+                                        if (!$categoryId && $record) {
+                                            $categoryId = $record->product?->category_id;
+                                        }
+                                        if (!$categoryId) return [];
+                                        
+                                        $category = Category::find($categoryId);
+                                        if (!$category || !$category->colturi || !is_array($category->colturi) || empty($category->colturi)) {
+                                            return [];
+                                        }
+                                        
+                                        $options = [];
+                                        foreach ($category->colturi as $colturi) {
+                                            if (isset($colturi['name']) && !empty($colturi['name'])) {
+                                                $options[$colturi['name']] = $colturi['name'];
+                                            }
+                                        }
+                                        return $options;
+                                    })
+                                    ->searchable()
+                                    ->native(false)
+                                    ->live()
+                                    ->placeholder('Selectați colțurile'),
 
                                 Forms\Components\TextInput::make('quantity')
                                     ->label('Cantitate (buc)')
@@ -275,7 +425,7 @@ class ProductResource extends Resource
                             ->collapsible()
                             ->itemLabel(fn (array $state): ?string => 
                                 $state['print_size'] && $state['print_sides'] && $state['quantity']
-                                    ? "{$state['print_size']} - {$state['print_sides']} - {$state['quantity']} buc"
+                                    ? ($state['format'] ?? '') . " - {$state['print_size']} - {$state['print_sides']} - {$state['quantity']} buc"
                                     : null
                             )
                             ->defaultItems(0)
@@ -283,7 +433,8 @@ class ProductResource extends Resource
                             ->reorderableWithButtons()
                             ->cloneable()
                             ->deletable(),
-                    ])->columns(1),
+                    ])
+                    ->columnSpanFull(),
             ]);
     }
 

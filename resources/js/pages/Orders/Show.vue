@@ -13,6 +13,10 @@ interface OrderItem {
     product_sku?: string;
     print_size?: string | null;
     print_sides?: string | null;
+    format?: string | null;
+    suport?: string | null;
+    culoare?: string | null;
+    colturi?: string | null;
     configuration_quantity?: number | null;
     quantity: number;
     price: number;
@@ -230,7 +234,7 @@ const getPaymentStatusLabel = (status: string) => {
                                                 
                                                 <!-- Configurații produs -->
                                                 <div
-                                                    v-if="item.print_size || item.print_sides || item.configuration_quantity"
+                                                    v-if="item.print_size || item.print_sides || item.format || item.suport || item.culoare || item.colturi || item.configuration_quantity"
                                                     class="mt-4 space-y-4"
                                                 >
                                                     <!-- Section 1: Caracteristici de printare -->
@@ -319,6 +323,54 @@ const getPaymentStatusLabel = (status: string) => {
                                                                             {{ item.print_sides === '4+0' ? t('print_sides_one_sided') : (item.print_sides === '4+4' ? t('print_sides_two_sided') : item.print_sides) }}
                                                                         </p>
                                                                     </div>
+                                                                </div>
+                                                            </div>
+                                                            
+                                                            <!-- Format -->
+                                                            <div v-if="item.format">
+                                                                <h4 class="mb-3 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                                    {{ t('format') }}
+                                                                </h4>
+                                                                <div class="rounded-lg border-2 border-green-500 bg-green-50 p-3 dark:bg-green-900/20">
+                                                                    <p class="text-sm font-medium text-gray-900 dark:text-white">
+                                                                        {{ item.format }}
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                            
+                                                            <!-- Suport -->
+                                                            <div v-if="item.suport">
+                                                                <h4 class="mb-3 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                                    {{ t('suport') || 'Suport' }}
+                                                                </h4>
+                                                                <div class="rounded-lg border-2 border-green-500 bg-green-50 p-3 dark:bg-green-900/20">
+                                                                    <p class="text-sm font-medium text-gray-900 dark:text-white">
+                                                                        {{ item.suport }}
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                            
+                                                            <!-- Culoare -->
+                                                            <div v-if="item.culoare">
+                                                                <h4 class="mb-3 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                                    {{ t('culoare') || 'Culoare' }}
+                                                                </h4>
+                                                                <div class="rounded-lg border-2 border-green-500 bg-green-50 p-3 dark:bg-green-900/20">
+                                                                    <p class="text-sm font-medium text-gray-900 dark:text-white">
+                                                                        {{ item.culoare }}
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                            
+                                                            <!-- Colturi -->
+                                                            <div v-if="item.colturi">
+                                                                <h4 class="mb-3 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                                    {{ t('colturi') || 'Colturi' }}
+                                                                </h4>
+                                                                <div class="rounded-lg border-2 border-green-500 bg-green-50 p-3 dark:bg-green-900/20">
+                                                                    <p class="text-sm font-medium text-gray-900 dark:text-white">
+                                                                        {{ item.colturi }}
+                                                                    </p>
                                                                 </div>
                                                             </div>
                                                         </CardContent>

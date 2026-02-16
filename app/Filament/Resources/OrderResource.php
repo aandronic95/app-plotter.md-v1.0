@@ -199,8 +199,14 @@ class OrderResource extends Resource
                                 Forms\Components\Select::make('print_size')
                                     ->label('Dimensiune')
                                     ->options([
+                                        'A0' => 'A0',
+                                        'A1' => 'A1',
+                                        'A2' => 'A2',
                                         'A3' => 'A3 (420x297 mm)',
                                         'A4' => 'A4 (297x210 mm)',
+                                        'A5' => 'A5',
+                                        'A6' => 'A6',
+                                        'Personalizat' => 'Personalizat',
                                     ])
                                     ->nullable()
                                     ->disabled(fn ($context) => $context === 'view')
@@ -211,10 +217,36 @@ class OrderResource extends Resource
                                     ->options([
                                         '4+0' => '1-сторонняя печать (4+0)',
                                         '4+4' => '2-сторонняя печать (4+4)',
+                                        '5+0' => '5+0',
+                                        '5+5' => '5+5',
                                     ])
                                     ->nullable()
                                     ->disabled(fn ($context) => $context === 'view')
                                     ->native(false),
+                                
+                                Forms\Components\TextInput::make('format')
+                                    ->label('Format')
+                                    ->maxLength(255)
+                                    ->nullable()
+                                    ->disabled(fn ($context) => $context === 'view'),
+                                
+                                Forms\Components\TextInput::make('suport')
+                                    ->label('Suport')
+                                    ->maxLength(100)
+                                    ->nullable()
+                                    ->disabled(fn ($context) => $context === 'view'),
+                                
+                                Forms\Components\TextInput::make('culoare')
+                                    ->label('Culoare')
+                                    ->maxLength(100)
+                                    ->nullable()
+                                    ->disabled(fn ($context) => $context === 'view'),
+                                
+                                Forms\Components\TextInput::make('colturi')
+                                    ->label('Colțuri')
+                                    ->maxLength(100)
+                                    ->nullable()
+                                    ->disabled(fn ($context) => $context === 'view'),
                                 
                                 Forms\Components\TextInput::make('configuration_quantity')
                                     ->label('Cantitate configurație')
@@ -262,13 +294,14 @@ class OrderResource extends Resource
                                     ->default(0)
                                     ->formatStateUsing(fn ($state) => $state ? number_format((float) $state, 2, '.', '') : '0.00'),
                             ])
-                            ->columns(4)
+                            ->columns(3)
                             ->addable(fn ($context) => $context !== 'view')
                             ->deletable(fn ($context) => $context !== 'view')
                             ->reorderable(fn ($context) => $context !== 'view')
                             ->collapsible()
                             ->itemLabel(fn (array $state): ?string => $state['product_name'] ?? null),
                     ])
+                    ->columnSpanFull()
                     ->collapsible()
                     ->collapsed(false),
 
@@ -376,10 +409,14 @@ class OrderResource extends Resource
                         }
                         return $items->map(function ($item) {
                             $name = ($item->product_name ?? 'N/A') . ' (x' . ($item->quantity ?? 0) . ')';
-                            if ($item->print_size || $item->print_sides) {
+                            if ($item->print_size || $item->print_sides || $item->format || $item->suport || $item->culoare || $item->colturi || $item->configuration_quantity) {
                                 $config = [];
                                 if ($item->print_size) $config[] = $item->print_size;
                                 if ($item->print_sides) $config[] = $item->print_sides;
+                                if ($item->format) $config[] = 'Format: ' . $item->format;
+                                if ($item->suport) $config[] = 'Suport: ' . $item->suport;
+                                if ($item->culoare) $config[] = 'Culoare: ' . $item->culoare;
+                                if ($item->colturi) $config[] = 'Colțuri: ' . $item->colturi;
                                 if ($item->configuration_quantity) $config[] = $item->configuration_quantity . ' buc';
                                 if (!empty($config)) {
                                     $name .= ' [' . implode(', ', $config) . ']';
@@ -400,10 +437,14 @@ class OrderResource extends Resource
                         }
                         return $items->map(function ($item) {
                             $name = ($item->product_name ?? 'N/A') . ' (x' . ($item->quantity ?? 0) . ')';
-                            if ($item->print_size || $item->print_sides) {
+                            if ($item->print_size || $item->print_sides || $item->format || $item->suport || $item->culoare || $item->colturi || $item->configuration_quantity) {
                                 $config = [];
                                 if ($item->print_size) $config[] = $item->print_size;
                                 if ($item->print_sides) $config[] = $item->print_sides;
+                                if ($item->format) $config[] = 'Format: ' . $item->format;
+                                if ($item->suport) $config[] = 'Suport: ' . $item->suport;
+                                if ($item->culoare) $config[] = 'Culoare: ' . $item->culoare;
+                                if ($item->colturi) $config[] = 'Colțuri: ' . $item->colturi;
                                 if ($item->configuration_quantity) $config[] = $item->configuration_quantity . ' buc';
                                 if (!empty($config)) {
                                     $name .= ' [' . implode(', ', $config) . ']';

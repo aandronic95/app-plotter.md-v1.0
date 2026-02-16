@@ -26,6 +26,10 @@ class Category extends Model
         'parent_id',
         'is_active',
         'sort_order',
+        'formats',
+        'suport',
+        'culoare',
+        'colturi',
     ];
 
     /**
@@ -38,6 +42,10 @@ class Category extends Model
         return [
             'is_active' => 'boolean',
             'sort_order' => 'integer',
+            'formats' => 'array',
+            'suport' => 'array',
+            'culoare' => 'array',
+            'colturi' => 'array',
         ];
     }
 
