@@ -55,7 +55,10 @@ const canScrollNext = computed(() => {
 
 const scrollPrev = () => {
     if (!carouselRef.value) return;
-    const cardWidth = carouselRef.value.clientWidth / 4;
+    // Calculate card width including gap (3 gaps between 4 cards)
+    const containerWidth = carouselRef.value.clientWidth;
+    const gap = 16; // gap-4 = 1rem = 16px
+    const cardWidth = (containerWidth - 3 * gap) / 4 + gap;
     carouselRef.value.scrollBy({
         left: -cardWidth,
         behavior: 'smooth',
@@ -64,7 +67,10 @@ const scrollPrev = () => {
 
 const scrollNext = () => {
     if (!carouselRef.value) return;
-    const cardWidth = carouselRef.value.clientWidth / 4;
+    // Calculate card width including gap (3 gaps between 4 cards)
+    const containerWidth = carouselRef.value.clientWidth;
+    const gap = 16; // gap-4 = 1rem = 16px
+    const cardWidth = (containerWidth - 3 * gap) / 4 + gap;
     carouselRef.value.scrollBy({
         left: cardWidth,
         behavior: 'smooth',
@@ -126,12 +132,16 @@ watch(carouselRef, (newRef) => {
                             <div
                                 v-for="portfolio in portfolios"
                                 :key="portfolio.id"
-                                class="flex-shrink-0 w-1/4"
+                                class="flex-shrink-0"
+                                style="width: calc((100% - 3 * 1rem) / 4); min-width: calc((100% - 3 * 1rem) / 4);"
                             >
-                                <div class="p-1 h-full">
-                                    <div class="overflow-hidden h-full flex flex-col rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm">
+                                <Link
+                                    :href="`/portfolios/${portfolio.slug}`"
+                                    class="block p-1 h-full"
+                                >
+                                    <div class="overflow-hidden h-full flex flex-col rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 cursor-pointer hover:border-gray-300 dark:hover:border-gray-600 transition-colors">
                                         <!-- Image -->
-                                        <div class="relative h-64 overflow-hidden bg-gray-200 dark:bg-gray-600 flex-shrink-0">
+                                        <div class="relative h-48 overflow-hidden bg-gray-200 dark:bg-gray-600 flex-shrink-0">
                                             <img
                                                 v-if="portfolio.image"
                                                 :src="portfolio.image"
@@ -144,28 +154,23 @@ watch(carouselRef, (newRef) => {
                                             >
                                                 <span class="text-gray-400 dark:text-gray-500">Fără imagine</span>
                                             </div>
+                                            <!-- Gradient overlay -->
+                                            <div class="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-gray-100 dark:from-gray-800 to-transparent"></div>
                                         </div>
 
                                         <!-- Content -->
-                                        <div class="p-6 flex flex-col flex-1">
-                                            <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-2 line-clamp-2">
+                                        <div class="px-4 py-4 flex flex-col flex-1">
+                                            <h3 class="text-base font-bold text-gray-800 dark:text-white mb-1.5 line-clamp-2">
                                                 {{ portfolio.name }}
                                             </h3>
                                             <div
                                                 v-if="portfolio.description"
-                                                class="text-sm leading-relaxed text-gray-600 dark:text-gray-300 line-clamp-3 mb-4 flex-1"
+                                                class="text-xs leading-relaxed text-gray-600 dark:text-gray-300 line-clamp-2 flex-1"
                                                 v-html="portfolio.description"
                                             ></div>
-                                            <Link
-                                                :href="`/portfolios/${portfolio.slug}`"
-                                                class="inline-flex items-center text-sm font-semibold text-teal-700 dark:text-teal-500 hover:text-teal-800 dark:hover:text-teal-400 transition-colors mt-auto"
-                                            >
-                                                Vezi detalii
-                                                <span class="ml-1">→</span>
-                                            </Link>
                                         </div>
                                     </div>
-                                </div>
+                                </Link>
                             </div>
                         </div>
                     </div>
