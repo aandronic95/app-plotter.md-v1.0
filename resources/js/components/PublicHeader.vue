@@ -235,26 +235,10 @@ const handleCartUpdate = () => {
     fetchCartCount();
 };
 
-// Handle scroll to hide/show top header
+// Handle scroll (disabled to keep full header visible)
 const handleScroll = () => {
-    if (typeof window === 'undefined') {
-        return;
-    }
-    
-    const currentScrollY = window.scrollY;
-    
-    // Show header when scrolling up or at top
-    if (currentScrollY < scrollThreshold) {
-        isScrolled.value = false;
-    } else if (currentScrollY > lastScrollY.value && currentScrollY > scrollThreshold) {
-        // Hide header when scrolling down
-        isScrolled.value = true;
-    } else if (currentScrollY < lastScrollY.value) {
-        // Show header when scrolling up
-        isScrolled.value = false;
-    }
-    
-    lastScrollY.value = currentScrollY;
+    // Intentionally left empty so that the entire header remains visible and sticky.
+    return;
 };
 
 const performSearch = async (query: string) => {
@@ -381,7 +365,10 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <header class="shadow-sm transition-all duration-300 mb-10" :class="isScrolled ? 'h-auto' : 'h-[100px]'">
+    <header
+        class="sticky top-0 z-40 shadow-sm transition-all duration-300 mb-10 bg-gray-50/95 dark:bg-gray-900/95 backdrop-blur-md"
+        :class="isScrolled ? 'h-auto' : 'h-[100px]'"
+    >
         <!-- Main header bar - all elements in one row -->
         <div 
             class=" dark:bg-gray-900 transition-all duration-300 overflow-hidden"

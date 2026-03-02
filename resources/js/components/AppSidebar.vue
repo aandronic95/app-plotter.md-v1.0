@@ -54,7 +54,7 @@ const footerNavItems: NavItem[] = [
         </SidebarHeader>
 
         <SidebarContent>
-            <NavMain :items="mainNavItems" />
+            <NavMain :items="mainNavItems" group="admin" />
         </SidebarContent>
 
         <SidebarFooter>

@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -18,18 +19,23 @@ class DatabaseSeeder extends Seeder
             RolePermissionSeeder::class,
         ]);
 
-        // Creează utilizatorul admin
-        $admin = User::factory()->admin()->create([
-            'name' => 'Admin',
-            'email' => 'admin@example.com',
-        ]);
+        // Creează sau actualizează utilizatorul admin (idempotent)
+        $admin = User::firstOrCreate(
+            ['email' => 'admin@admin'],
+            [
+                'name' => 'Admin',
+                'password' => Hash::make('admin'),
+            ]
+        );
         $admin->assignRole('admin');
 
-        // Creează utilizator obișnuit
-        $user = User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        // Creează sau actualizează utilizator obișnuit (idempotent)
+        $user = User::firstOrCreate(
+            ['email' => 'test@example.com'],
+            [
+                'name' => 'Test User',
+            ]
+        );
         $user->assignRole('user');
 
         $this->call([
