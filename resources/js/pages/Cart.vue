@@ -19,6 +19,11 @@ interface Configuration {
     quantity: number;
     price: number;
     price_per_unit: number;
+    price_coefficient?: number;
+    effective_price_per_unit?: number;
+    effective_price?: number;
+    formatted_effective_price_per_unit?: string;
+    formatted_effective_price?: string;
     production_days: number;
     formatted_price: string;
     formatted_price_per_unit: string;
@@ -535,12 +540,13 @@ onMounted(() => {
                                                                     {{ config.quantity }} {{ t('pieces') }}
                                                                 </div>
                                                                 <div class="text-xs text-gray-500 dark:text-gray-400">
-                                                                    {{ config.formatted_price_per_unit }} {{ t('per_piece') }}
+                                                                    {{ config.formatted_effective_price_per_unit ?? config.formatted_price_per_unit }} {{ t('per_piece') }}
+                                                                    <span v-if="config.price_coefficient && config.price_coefficient !== 1" class="text-gray-400">(×{{ config.price_coefficient }})</span>
                                                                 </div>
                                                             </div>
                                                             <div class="text-right">
                                                                 <div class="font-semibold text-gray-900 dark:text-white">
-                                                                    {{ config.formatted_price }}
+                                                                    {{ config.formatted_effective_price ?? config.formatted_price }}
                                                                 </div>
                                                             </div>
                                                         </div>

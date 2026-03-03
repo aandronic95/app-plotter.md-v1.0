@@ -54,26 +54,24 @@ class CartController extends Controller
                 continue;
             }
             
-            $product = Product::find($productId);
+            $product = Product::with('category')->find($productId);
             if (!$product || !$product->is_active || !$product->in_stock) {
                 continue;
             }
 
-            // Pentru configurații, calculează subtotalul corect
+            // Pentru configurații, calculează subtotalul: pret_bucata × coeficient × tiraj × cantitate
             $subtotal = (float) $item['price'] * $item['quantity'];
             
-            // Dacă există configurație, folosește prețul total din configurație
             if (isset($item['print_size']) && isset($item['print_sides']) && isset($item['configuration_quantity'])) {
                 $query = $product->activeConfigurations()
                     ->where('print_size', $item['print_size'])
                     ->where('print_sides', $item['print_sides'])
                     ->where('quantity', $item['configuration_quantity']);
                 
-                // Adaugă filtre pentru configurații suplimentare dacă există
                 if (isset($item['format']) && $item['format']) {
                     $query->where('format', $item['format']);
                 } else {
-                    $query->where(function($q) {
+                    $query->where(function ($q) {
                         $q->whereNull('format')->orWhere('format', '');
                     });
                 }
@@ -81,7 +79,7 @@ class CartController extends Controller
                 if (isset($item['suport']) && $item['suport']) {
                     $query->where('suport', $item['suport']);
                 } else {
-                    $query->where(function($q) {
+                    $query->where(function ($q) {
                         $q->whereNull('suport')->orWhere('suport', '');
                     });
                 }
@@ -89,7 +87,7 @@ class CartController extends Controller
                 if (isset($item['culoare']) && $item['culoare']) {
                     $query->where('culoare', $item['culoare']);
                 } else {
-                    $query->where(function($q) {
+                    $query->where(function ($q) {
                         $q->whereNull('culoare')->orWhere('culoare', '');
                     });
                 }
@@ -97,28 +95,32 @@ class CartController extends Controller
                 if (isset($item['colturi']) && $item['colturi']) {
                     $query->where('colturi', $item['colturi']);
                 } else {
-                    $query->where(function($q) {
+                    $query->where(function ($q) {
                         $q->whereNull('colturi')->orWhere('colturi', '');
                     });
                 }
                 
                 $configuration = $query->first();
                 
-                if ($configuration) {
-                    // Pentru configurații, subtotalul este prețul total din configurație
-                    $subtotal = (float) $configuration->price;
+                if ($configuration && $product->category) {
+                    $coef = $product->category->getFormatPriceCoefficient($item['format'] ?? '');
+                    $subtotal = (float) $configuration->price_per_unit * $coef * (int) $item['configuration_quantity'] * $item['quantity'];
                 }
             }
 
             $total += $subtotal;
 
-            // Obține configurațiile disponibile pentru acest produs
+            // Obține configurațiile disponibile pentru acest produs (cu preț efectiv = pret_bucata × coeficient)
             $configurations = [];
             if ($product->activeConfigurations()->exists()) {
+                $category = $product->category;
                 $configurations = $product->activeConfigurations()
                     ->orderBy('sort_order')
                     ->get()
-                    ->map(function ($config) {
+                    ->map(function ($config) use ($category) {
+                        $coef = $category ? $category->getFormatPriceCoefficient($config->format ?? '') : 1.0;
+                        $effectivePricePerUnit = (float) $config->price_per_unit * $coef;
+                        $effectivePrice = $effectivePricePerUnit * (int) $config->quantity;
                         return [
                             'id' => $config->id,
                             'print_size' => $config->print_size,
@@ -130,6 +132,11 @@ class CartController extends Controller
                             'quantity' => $config->quantity,
                             'price' => (float) $config->price,
                             'price_per_unit' => (float) $config->price_per_unit,
+                            'price_coefficient' => $coef,
+                            'effective_price_per_unit' => $effectivePricePerUnit,
+                            'effective_price' => $effectivePrice,
+                            'formatted_effective_price_per_unit' => number_format($effectivePricePerUnit, 2, ',', '.') . ' LEI',
+                            'formatted_effective_price' => number_format($effectivePrice, 2, ',', '.') . ' LEI',
                             'production_days' => $config->production_days,
                             'formatted_price' => $config->formatted_price,
                             'formatted_price_per_unit' => $config->formatted_price_per_unit,
@@ -182,7 +189,7 @@ class CartController extends Controller
             'configuration_quantity' => 'nullable|integer|min:1',
         ]);
 
-        $product = Product::findOrFail($request->product_id);
+        $product = Product::with('category')->findOrFail($request->product_id);
 
         if (!$product->is_active || !$product->in_stock) {
             return response()->json([
@@ -264,7 +271,8 @@ class CartController extends Controller
                 $configuration = $query->first();
                 
                 if ($configuration) {
-                    $price = (float) $configuration->price_per_unit;
+                    $coef = $product->category ? $product->category->getFormatPriceCoefficient($request->format ?? '') : 1.0;
+                    $price = (float) $configuration->price_per_unit * $coef * (int) $request->configuration_quantity;
                 }
             }
             
@@ -311,7 +319,7 @@ class CartController extends Controller
             'old_configuration_quantity' => 'nullable|integer',
         ]);
 
-        $product = Product::findOrFail($request->product_id);
+        $product = Product::with('category')->findOrFail($request->product_id);
         $cart = Session::get('cart', []);
         $quantity = (int) $request->quantity;
 
@@ -428,7 +436,8 @@ class CartController extends Controller
                 $configuration = $query->first();
                 
                 if ($configuration) {
-                    $price = (float) $configuration->price_per_unit;
+                    $coef = $product->category ? $product->category->getFormatPriceCoefficient($newFormat ?? '') : 1.0;
+                    $price = (float) $configuration->price_per_unit * $coef * (int) $newConfigQty;
                 }
             }
 

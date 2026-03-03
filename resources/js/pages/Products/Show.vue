@@ -27,6 +27,11 @@ interface Configuration {
     quantity: number;
     price: number;
     price_per_unit: number;
+    price_coefficient?: number;
+    effective_price_per_unit?: number;
+    effective_price?: number;
+    formatted_effective_price_per_unit?: string;
+    formatted_effective_price?: string;
     production_days: number;
     production_date: string;
     production_date_raw: string;
@@ -56,7 +61,7 @@ interface Product {
     };
     configurations?: Configuration[];
     categoryConfigurations?: {
-        formats?: Array<{ name: string; image?: string; description?: string }>;
+        formats?: Array<{ name: string; price_coefficient?: number; image?: string; description?: string }>;
         suport?: Array<{ name: string; image?: string; description?: string }>;
         culoare?: Array<{ name: string; image?: string; description?: string }>;
         colturi?: Array<{ name: string; image?: string; description?: string }>;

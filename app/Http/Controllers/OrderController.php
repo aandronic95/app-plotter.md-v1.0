@@ -183,7 +183,7 @@ class OrderController extends Controller
                         ->with('error', 'Eroare: produs invalid în coș. Te rugăm să golești coșul și să încerci din nou.');
                 }
                 
-                $product = Product::find($productId);
+                $product = Product::with('category')->find($productId);
                 if (!$product || !$product->is_active || !$product->in_stock) {
                     DB::rollBack();
                     return redirect()->route('cart.index')
@@ -196,21 +196,18 @@ class OrderController extends Controller
                         ->with('error', "Produsul '{$product->name}' nu are stoc suficient.");
                 }
 
-                // Pentru configurații, calculează subtotalul corect
                 $itemSubtotal = (float) $item['price'] * $item['quantity'];
-                
-                // Dacă există configurație, folosește prețul total din configurație
+
                 if (isset($item['print_size']) && isset($item['print_sides']) && isset($item['configuration_quantity'])) {
                     $query = $product->activeConfigurations()
                         ->where('print_size', $item['print_size'])
                         ->where('print_sides', $item['print_sides'])
                         ->where('quantity', $item['configuration_quantity']);
                     
-                    // Adaugă filtre pentru configurații suplimentare dacă există
                     if (isset($item['format']) && $item['format']) {
                         $query->where('format', $item['format']);
                     } else {
-                        $query->where(function($q) {
+                        $query->where(function ($q) {
                             $q->whereNull('format')->orWhere('format', '');
                         });
                     }
@@ -218,7 +215,7 @@ class OrderController extends Controller
                     if (isset($item['suport']) && $item['suport']) {
                         $query->where('suport', $item['suport']);
                     } else {
-                        $query->where(function($q) {
+                        $query->where(function ($q) {
                             $q->whereNull('suport')->orWhere('suport', '');
                         });
                     }
@@ -226,7 +223,7 @@ class OrderController extends Controller
                     if (isset($item['culoare']) && $item['culoare']) {
                         $query->where('culoare', $item['culoare']);
                     } else {
-                        $query->where(function($q) {
+                        $query->where(function ($q) {
                             $q->whereNull('culoare')->orWhere('culoare', '');
                         });
                     }
@@ -234,16 +231,16 @@ class OrderController extends Controller
                     if (isset($item['colturi']) && $item['colturi']) {
                         $query->where('colturi', $item['colturi']);
                     } else {
-                        $query->where(function($q) {
+                        $query->where(function ($q) {
                             $q->whereNull('colturi')->orWhere('colturi', '');
                         });
                     }
                     
                     $configuration = $query->first();
                     
-                    if ($configuration) {
-                        // Pentru configurații, subtotalul este prețul total din configurație
-                        $itemSubtotal = (float) $configuration->price;
+                    if ($configuration && $product->category) {
+                        $coef = $product->category->getFormatPriceCoefficient($item['format'] ?? '');
+                        $itemSubtotal = (float) $configuration->price_per_unit * $coef * (int) $item['configuration_quantity'] * $item['quantity'];
                     }
                 }
                 
@@ -292,21 +289,19 @@ class OrderController extends Controller
 
             // Creează articolele comenzii și actualizează stocul
             foreach ($items as $item) {
-                // Dacă există configurație, folosește prețul total din configurație
                 $price = (float) $item['price'];
                 $subtotal = $price * $item['quantity'];
-                
+
                 if ($item['print_size'] && $item['print_sides'] && $item['configuration_quantity']) {
                     $query = $item['product']->activeConfigurations()
                         ->where('print_size', $item['print_size'])
                         ->where('print_sides', $item['print_sides'])
                         ->where('quantity', $item['configuration_quantity']);
                     
-                    // Adaugă filtre pentru configurații suplimentare dacă există
                     if (isset($item['format']) && $item['format']) {
                         $query->where('format', $item['format']);
                     } else {
-                        $query->where(function($q) {
+                        $query->where(function ($q) {
                             $q->whereNull('format')->orWhere('format', '');
                         });
                     }
@@ -314,7 +309,7 @@ class OrderController extends Controller
                     if (isset($item['suport']) && $item['suport']) {
                         $query->where('suport', $item['suport']);
                     } else {
-                        $query->where(function($q) {
+                        $query->where(function ($q) {
                             $q->whereNull('suport')->orWhere('suport', '');
                         });
                     }
@@ -322,7 +317,7 @@ class OrderController extends Controller
                     if (isset($item['culoare']) && $item['culoare']) {
                         $query->where('culoare', $item['culoare']);
                     } else {
-                        $query->where(function($q) {
+                        $query->where(function ($q) {
                             $q->whereNull('culoare')->orWhere('culoare', '');
                         });
                     }
@@ -330,19 +325,17 @@ class OrderController extends Controller
                     if (isset($item['colturi']) && $item['colturi']) {
                         $query->where('colturi', $item['colturi']);
                     } else {
-                        $query->where(function($q) {
+                        $query->where(function ($q) {
                             $q->whereNull('colturi')->orWhere('colturi', '');
                         });
                     }
                     
                     $configuration = $query->first();
                     
-                    if ($configuration) {
-                        // Pentru configurații, prețul per bucată este price_per_unit
-                        $price = (float) $configuration->price_per_unit;
-                        // Subtotalul este prețul total din configurație (nu price_per_unit * quantity)
-                        // Deoarece quantity din item este de obicei 1 (când se comandă o configurație)
-                        $subtotal = (float) $configuration->price;
+                    if ($configuration && $item['product']->category) {
+                        $coef = $item['product']->category->getFormatPriceCoefficient($item['format'] ?? '');
+                        $price = (float) $configuration->price_per_unit * $coef * (int) $item['configuration_quantity'];
+                        $subtotal = $price * $item['quantity'];
                     }
                 }
                 

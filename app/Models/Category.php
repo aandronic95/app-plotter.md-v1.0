@@ -112,4 +112,28 @@ class Category extends Model
 
         return implode(' > ', $path);
     }
+
+    /**
+     * Get price coefficient for a format by name.
+     * Formula: pret_bucata × coefficient × tiraj.
+     *
+     * @return float Coefficient (default 1.0 if format not found or no coefficient)
+     */
+    public function getFormatPriceCoefficient(string $formatName): float
+    {
+        if (empty($this->formats) || !is_array($this->formats)) {
+            return 1.0;
+        }
+
+        $formatName = trim($formatName);
+        foreach ($this->formats as $format) {
+            $name = $format['name'] ?? null;
+            if ($name !== null && trim((string) $name) === $formatName) {
+                $coef = $format['price_coefficient'] ?? 1.0;
+                return (float) $coef;
+            }
+        }
+
+        return 1.0;
+    }
 }

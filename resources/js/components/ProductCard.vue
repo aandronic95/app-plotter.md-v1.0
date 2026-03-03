@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
-import { ShoppingCart, Heart } from 'lucide-vue-next';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Heart } from 'lucide-vue-next';
 import { Link } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
 import { useTranslations } from '@/composables/useTranslations';
@@ -24,7 +24,6 @@ const props = defineProps<{
 }>();
 
 const { t } = useTranslations();
-const loading = ref(false);
 const isInWishlist = ref(false);
 const wishlistLoading = ref(false);
 
@@ -38,58 +37,6 @@ const formatPrice = (price: number) => {
         style: 'currency',
         currency: 'MDL',
     }).format(price);
-};
-
-const addToCart = async (event?: Event) => {
-    if (event) {
-        event.preventDefault();
-        event.stopPropagation();
-    }
-    
-    loading.value = true;
-    try {
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-        
-        if (!csrfToken) {
-            alert(t('error_csrf_missing'));
-            loading.value = false;
-            return;
-        }
-
-        const response = await fetch('/cart/add', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'X-CSRF-TOKEN': csrfToken,
-                'X-Requested-With': 'XMLHttpRequest',
-            },
-            credentials: 'same-origin',
-            body: JSON.stringify({
-                product_id: props.product.id,
-                quantity: 1,
-            }),
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ message: t('error_unknown') }));
-            alert(errorData.message || t('error_adding_to_cart'));
-            return;
-        }
-
-        await response.json();
-
-        // Emit event pentru a actualiza header-ul
-        window.dispatchEvent(new CustomEvent('cart-updated'));
-        
-        // Mesaj de succes (opțional - poate fi înlocuit cu toast notification)
-        // alert('Produs adăugat în coș cu succes!');
-    } catch (error) {
-        console.error('Error adding to cart:', error);
-        alert(t('error_adding_to_cart_retry'));
-    } finally {
-        loading.value = false;
-    }
 };
 
 // Wishlist status will be set by parent component via provide/inject or props
@@ -247,20 +194,6 @@ defineExpose({
                     </div>
                 </CardContent>
             </Link>
-            <CardFooter class="gap-2 pt-0" @click.stop>
-                <Button
-                    class="flex-1"
-                    size="sm"
-                    :disabled="loading || !isInStock"
-                    @click.stop="addToCart"
-                >
-                    <ShoppingCart class="mr-2 h-4 w-4 text-current" />
-                    {{ !isInStock ? t('not_in_stock') : (loading ? t('adding_to_cart') : t('add_to_cart')) }}
-                </Button>
-                <Button variant="outline" size="sm" as-child>
-                    <Link :href="`/products/${product.slug || product.id}`">{{ t('details') }}</Link>
-                </Button>
-            </CardFooter>
         </Card>
     </div>
 </template>

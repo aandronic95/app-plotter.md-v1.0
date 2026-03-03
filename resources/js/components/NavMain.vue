@@ -13,7 +13,7 @@ import { urlIsActive } from '@/lib/utils';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
 import { computed, onMounted, ref } from 'vue';
-import { ChevronDown, ChevronRight, List } from 'lucide-vue-next';
+import { ChevronDown, ChevronRight, List, Percent } from 'lucide-vue-next';
 import * as lucideIcons from 'lucide-vue-next';
 import { useTranslations } from '@/composables/useTranslations';
 import { useApiCache } from '@/composables/useApiCache';
@@ -183,7 +183,21 @@ onMounted(() => {
     <SidebarGroup class="px-2 py-0">
         <SidebarGroupLabel>Platform</SidebarGroupLabel>
         <SidebarMenu v-if="!isLoading">
-            <!-- Categories Item (First) -->
+            <!-- Promoții (First) -->
+            <SidebarMenuItem key="promotions-item">
+                <SidebarMenuButton
+                    as-child
+                    :is-active="urlIsActive('/promotions', page.url)"
+                    :tooltip="t('promotions')"
+                >
+                    <Link href="/promotions">
+                        <Percent />
+                        <span>{{ t('promotions') }}</span>
+                    </Link>
+                </SidebarMenuButton>
+            </SidebarMenuItem>
+
+            <!-- Categories Item -->
             <SidebarMenuItem v-if="!isCategoriesLoading && categories.length > 0" key="categories-item">
                 <SidebarMenuButton
                     @click="toggleCategories"

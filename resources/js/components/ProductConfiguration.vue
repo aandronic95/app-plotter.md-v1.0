@@ -15,6 +15,11 @@ interface Configuration {
     quantity: number;
     price: number;
     price_per_unit: number;
+    price_coefficient?: number;
+    effective_price_per_unit?: number;
+    effective_price?: number;
+    formatted_effective_price_per_unit?: string;
+    formatted_effective_price?: string;
     production_days: number;
     production_date: string;
     production_date_raw: string;
@@ -25,6 +30,7 @@ interface Configuration {
 
 interface CategoryConfiguration {
     name: string;
+    price_coefficient?: number;
     image?: string;
     description?: string;
 }
@@ -674,9 +680,10 @@ const getSizeLabel = (size: string) => {
                                     <div>{{ config.production_date }}</div>
                                 </td>
                                 <td class="px-4 py-4 text-sm text-gray-900 dark:text-white">
-                                    <div class="font-semibold">{{ config.formatted_price }}</div>
+                                    <div class="font-semibold">{{ config.formatted_effective_price ?? config.formatted_price }}</div>
                                     <div class="text-xs text-gray-500 dark:text-gray-400">
-                                        {{ config.formatted_price_per_unit }} {{ t('per_piece') }}
+                                        {{ config.formatted_effective_price_per_unit ?? config.formatted_price_per_unit }} {{ t('per_piece') }}
+                                        <span v-if="config.price_coefficient && config.price_coefficient !== 1" class="text-gray-400">(×{{ config.price_coefficient }})</span>
                                     </div>
                                 </td>
                             </tr>

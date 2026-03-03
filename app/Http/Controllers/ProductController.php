@@ -340,7 +340,11 @@ class ProductController extends Controller
         }
 
         // Format configurations - include all configurations, not just active ones
-        $configurations = $product->configurations()->orderBy('sort_order')->get()->map(function ($config) {
+        $category = $product->category;
+        $configurations = $product->configurations()->orderBy('sort_order')->get()->map(function ($config) use ($category) {
+            $coef = $category ? $category->getFormatPriceCoefficient($config->format ?? '') : 1.0;
+            $effectivePricePerUnit = (float) $config->price_per_unit * $coef;
+            $effectivePrice = $effectivePricePerUnit * (int) $config->quantity;
             return [
                 'id' => $config->id,
                 'print_size' => $config->print_size,
@@ -352,6 +356,11 @@ class ProductController extends Controller
                 'quantity' => $config->quantity,
                 'price' => (float) $config->price,
                 'price_per_unit' => (float) $config->price_per_unit,
+                'price_coefficient' => $coef,
+                'effective_price_per_unit' => $effectivePricePerUnit,
+                'effective_price' => $effectivePrice,
+                'formatted_effective_price_per_unit' => number_format($effectivePricePerUnit, 2, ',', '.') . ' LEI',
+                'formatted_effective_price' => number_format($effectivePrice, 2, ',', '.') . ' LEI',
                 'production_days' => $config->production_days,
                 'production_date' => $config->formatted_production_date,
                 'production_date_raw' => $config->production_date->format('Y-m-d'),
@@ -370,8 +379,9 @@ class ProductController extends Controller
                 foreach ($product->category->formats as $format) {
                     $formats[] = [
                         'name' => $format['name'] ?? null,
-                        'image' => isset($format['image']) && !empty($format['image']) 
-                            ? $this->getImageUrl($format['image']) 
+                        'price_coefficient' => (float) ($format['price_coefficient'] ?? 1.0),
+                        'image' => isset($format['image']) && !empty($format['image'])
+                            ? $this->getImageUrl($format['image'])
                             : null,
                         'description' => $format['description'] ?? null,
                     ];

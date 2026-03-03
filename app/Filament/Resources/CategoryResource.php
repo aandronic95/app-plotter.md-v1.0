@@ -85,6 +85,15 @@ class CategoryResource extends Resource
                                     ->maxLength(255)
                                     ->placeholder('ex: 90x50 mm, Frontlit, etc.'),
 
+                                Forms\Components\TextInput::make('price_coefficient')
+                                    ->label('Coeficient preț')
+                                    ->numeric()
+                                    ->default(1.0)
+                                    ->minValue(0.01)
+                                    ->step(0.01)
+                                    ->suffix('×')
+                                    ->helperText('Preț bucată × coeficient × tiraj. Ex: 1,0 = preț standard; 1,5 = +50%.'),
+
                                 Forms\Components\FileUpload::make('image')
                                     ->label('Imagine')
                                     ->image()
@@ -283,7 +292,7 @@ class CategoryResource extends Resource
                     ->label('Formate')
                     ->formatStateUsing(fn ($state): string => 
                         is_array($state) && count($state) > 0
-                            ? implode(', ', array_column($state, 'name'))
+                            ? implode(', ', array_map(fn ($f) => ($f['name'] ?? '') . (isset($f['price_coefficient']) ? ' (×' . (float) $f['price_coefficient'] . ')' : ''), $state))
                             : '—'
                     )
                     ->badge()
