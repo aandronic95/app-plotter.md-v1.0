@@ -31,7 +31,7 @@ const isCurrentRoute = computed(
 </script>
 
 <template>
-    <div class="bg-gray-200 dark:bg-gray-800">
+    <div class="bg-gray-200 dark:bg-gray-800 shadow-sm">
         <div class="mx-auto max-w-7xl px-4 md:px-6">
             <nav v-if="!props.isLoading && props.menuItems.length > 0" class="flex h-12 items-center justify-center gap-1">
                 <Link

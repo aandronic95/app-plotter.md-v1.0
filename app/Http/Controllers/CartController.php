@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Storage;
 
 class CartController extends Controller
 {
+    public const MINIMUM_ORDER_AMOUNT = 300;
+
     /**
      * Get image URL from path.
      */
@@ -26,6 +28,48 @@ class CartController extends Controller
         }
 
         return Storage::disk('public')->url($image);
+    }
+
+    /**
+     * Find cart key for an item by product_id and optional config params.
+     */
+    private function findCartKey(array $cart, int $productId, ?string $printSize = null, ?string $printSides = null, ?string $format = null, ?string $suport = null, ?string $culoare = null, ?string $colturi = null, ?int $configurationQuantity = null): ?string
+    {
+        foreach ($cart as $key => $item) {
+            $itemProductId = $item['product_id'] ?? null;
+            if (!$itemProductId && is_numeric($key)) {
+                $itemProductId = (int) $key;
+            }
+            if (!$itemProductId && is_string($key) && str_contains($key, '_')) {
+                $parts = explode('_', $key);
+                $itemProductId = isset($parts[0]) && is_numeric($parts[0]) ? (int) $parts[0] : null;
+            }
+            if ((int) $itemProductId !== $productId) {
+                continue;
+            }
+            $itemSize = isset($item['print_size']) && $item['print_size'] !== '' ? $item['print_size'] : null;
+            $itemSides = isset($item['print_sides']) && $item['print_sides'] !== '' ? $item['print_sides'] : null;
+            $itemFormat = isset($item['format']) && $item['format'] !== '' ? $item['format'] : null;
+            $itemSuport = isset($item['suport']) && $item['suport'] !== '' ? $item['suport'] : null;
+            $itemCuloare = isset($item['culoare']) && $item['culoare'] !== '' ? $item['culoare'] : null;
+            $itemColturi = isset($item['colturi']) && $item['colturi'] !== '' ? $item['colturi'] : null;
+            $itemConfigQty = isset($item['configuration_quantity']) ? (int) $item['configuration_quantity'] : null;
+            if ($printSize !== null || $printSides !== null || $configurationQuantity !== null) {
+                if (($printSize !== null && $itemSize != $printSize) ||
+                    ($printSides !== null && $itemSides != $printSides) ||
+                    ($format !== null && $itemFormat != $format) ||
+                    ($suport !== null && $itemSuport != $suport) ||
+                    ($culoare !== null && $itemCuloare != $culoare) ||
+                    ($colturi !== null && $itemColturi != $colturi) ||
+                    ($configurationQuantity !== null && $itemConfigQty != $configurationQuantity)) {
+                    continue;
+                }
+            } elseif ($itemSize !== null || $itemSides !== null || $itemConfigQty !== null) {
+                continue;
+            }
+            return $key;
+        }
+        return null;
     }
 
     /**
@@ -108,6 +152,10 @@ class CartController extends Controller
                 }
             }
 
+            if (!empty($item['elaborate_mockup']) && isset($item['elaborate_mockup_price']) && (float) $item['elaborate_mockup_price'] > 0) {
+                $subtotal += (float) $item['elaborate_mockup_price'];
+            }
+
             $total += $subtotal;
 
             // Obține configurațiile disponibile pentru acest produs (cu preț efectiv = pret_bucata × coeficient)
@@ -162,6 +210,11 @@ class CartController extends Controller
                 'colturi' => $item['colturi'] ?? null,
                 'configuration_quantity' => $item['configuration_quantity'] ?? null,
                 'configurations' => $configurations,
+                'mockup_path' => $item['mockup_path'] ?? null,
+                'mockup_filename' => $item['mockup_filename'] ?? null,
+                'mockup_url' => !empty($item['mockup_path']) ? Storage::disk('public')->url($item['mockup_path']) : null,
+                'elaborate_mockup' => !empty($item['elaborate_mockup']),
+                'elaborate_mockup_price' => isset($item['elaborate_mockup_price']) ? (float) $item['elaborate_mockup_price'] : null,
             ];
         }
 
@@ -169,6 +222,8 @@ class CartController extends Controller
             'items' => $items,
             'total' => $total,
             'count' => array_sum(array_column($cart, 'quantity')),
+            'minimum_order_amount' => self::MINIMUM_ORDER_AMOUNT,
+            'meets_minimum_order' => $total >= self::MINIMUM_ORDER_AMOUNT,
         ]);
     }
 
@@ -540,6 +595,119 @@ class CartController extends Controller
             unset($cart[$foundKey]);
             Session::put('cart', $cart);
         }
+
+        return $this->index();
+    }
+
+    /**
+     * Upload mockup file for a cart item. Accepts any file format.
+     */
+    public function uploadMockup(Request $request): JsonResponse
+    {
+        $request->validate([
+            'product_id' => 'required|exists:products,id',
+            'mockup' => 'required|file|max:51200', // 50 MB, any format
+            'print_size' => 'nullable|string|max:50',
+            'print_sides' => 'nullable|string|max:50',
+            'format' => 'nullable|string|max:255',
+            'suport' => 'nullable|string|max:100',
+            'culoare' => 'nullable|string|max:100',
+            'colturi' => 'nullable|string|max:100',
+            'configuration_quantity' => 'nullable|integer|min:1',
+        ], [
+            'mockup.required' => 'Selectați un fișier pentru maketă.',
+            'mockup.file' => 'Fișierul încărcat nu este valid.',
+            'mockup.max' => 'Fișierul nu poate depăși 50 MB.',
+        ]);
+
+        $cart = Session::get('cart', []);
+        $cartKey = $this->findCartKey(
+            $cart,
+            (int) $request->product_id,
+            $request->print_size ?: null,
+            $request->print_sides ?: null,
+            $request->format ?: null,
+            $request->suport ?: null,
+            $request->culoare ?: null,
+            $request->colturi ?: null,
+            $request->configuration_quantity ? (int) $request->configuration_quantity : null
+        );
+
+        if ($cartKey === null) {
+            return response()->json([
+                'message' => 'Produsul nu se află în coș sau linia de coș nu a fost găsită. Reîncărcați pagina coșului și încercați din nou.',
+            ], 404);
+        }
+
+        $file = $request->file('mockup');
+        if (!$file || !$file->isValid()) {
+            return response()->json([
+                'message' => 'Fișierul nu a putut fi încărcat. Verificați dimensiunea (max. 50 MB) și încercați din nou.',
+            ], 422);
+        }
+        $originalName = $file->getClientOriginalName();
+        $safeName = preg_replace('/[^a-zA-Z0-9._-]/', '_', $originalName);
+        $path = $file->storeAs(
+            'cart-mockups',
+            date('Ymd_His') . '_' . $safeName,
+            'public'
+        );
+
+        if ($path === false) {
+            return response()->json(['message' => 'Eroare la încărcarea fișierului.'], 500);
+        }
+
+        if (!empty($cart[$cartKey]['mockup_path']) && Storage::disk('public')->exists($cart[$cartKey]['mockup_path'])) {
+            Storage::disk('public')->delete($cart[$cartKey]['mockup_path']);
+        }
+
+        $cart[$cartKey]['mockup_path'] = $path;
+        $cart[$cartKey]['mockup_filename'] = $originalName;
+        Session::put('cart', $cart);
+
+        return $this->index();
+    }
+
+    /**
+     * Update "Elaborați maketa" option for a cart item.
+     */
+    public function updateMockupOption(Request $request): JsonResponse
+    {
+        $request->validate([
+            'product_id' => 'required|exists:products,id',
+            'elaborate_mockup' => 'required|boolean',
+            'elaborate_mockup_price' => 'nullable|numeric|min:0',
+            'print_size' => 'nullable|string|max:50',
+            'print_sides' => 'nullable|string|max:50',
+            'format' => 'nullable|string|max:255',
+            'suport' => 'nullable|string|max:100',
+            'culoare' => 'nullable|string|max:100',
+            'colturi' => 'nullable|string|max:100',
+            'configuration_quantity' => 'nullable|integer|min:1',
+        ]);
+
+        $cart = Session::get('cart', []);
+        $cartKey = $this->findCartKey(
+            $cart,
+            (int) $request->product_id,
+            $request->print_size ?: null,
+            $request->print_sides ?: null,
+            $request->format ?: null,
+            $request->suport ?: null,
+            $request->culoare ?: null,
+            $request->colturi ?: null,
+            $request->configuration_quantity ? (int) $request->configuration_quantity : null
+        );
+
+        if ($cartKey === null) {
+            return response()->json(['message' => 'Produsul nu se află în coș.'], 404);
+        }
+
+        $cart[$cartKey]['elaborate_mockup'] = (bool) $request->elaborate_mockup;
+        $cart[$cartKey]['elaborate_mockup_price'] = $request->elaborate_mockup
+            ? (float) ($request->elaborate_mockup_price ?? 500)
+            : 0;
+        Session::put('cart', $cart);
 
         return $this->index();
     }

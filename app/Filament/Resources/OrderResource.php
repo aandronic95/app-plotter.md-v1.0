@@ -247,6 +247,41 @@ class OrderResource extends Resource
                                     ->maxLength(100)
                                     ->nullable()
                                     ->disabled(fn ($context) => $context === 'view'),
+
+                                Forms\Components\ViewField::make('mockup_download')
+                                    ->label('Maketă încărcată')
+                                    ->view('filament.forms.order-item-mockup-download')
+                                    ->visible(fn ($get) => (bool) ($get('mockup_filename') || $get('mockup_url')))
+                                    ->dehydrated(false),
+
+                                Forms\Components\Toggle::make('elaborate_mockup')
+                                    ->label('Elaborare maketă')
+                                    ->default(false)
+                                    ->disabled(fn ($context) => $context === 'view')
+                                    ->live()
+                                    ->afterStateUpdated(function ($state, callable $set, $get) {
+                                        $price = (float) ($get('price') ?? 0);
+                                        $quantity = (int) ($get('quantity') ?? 1);
+                                        $extra = $state ? (float) ($get('elaborate_mockup_price') ?? 0) : 0;
+                                        $set('subtotal', number_format($price * $quantity + $extra, 2, '.', ''));
+                                    }),
+
+                                Forms\Components\TextInput::make('elaborate_mockup_price')
+                                    ->label('Preț elaborare maketă')
+                                    ->numeric()
+                                    ->prefix('LEI')
+                                    ->step(0.01)
+                                    ->minValue(0)
+                                    ->nullable()
+                                    ->disabled(fn ($context) => $context === 'view')
+                                    ->visible(fn ($get) => (bool) $get('elaborate_mockup'))
+                                    ->live()
+                                    ->afterStateUpdated(function ($state, callable $set, $get) {
+                                        $price = (float) ($get('price') ?? 0);
+                                        $quantity = (int) ($get('quantity') ?? 1);
+                                        $extra = (float) ($state ?? 0);
+                                        $set('subtotal', number_format($price * $quantity + $extra, 2, '.', ''));
+                                    }),
                                 
                                 Forms\Components\TextInput::make('configuration_quantity')
                                     ->label('Cantitate configurație')
@@ -267,7 +302,8 @@ class OrderResource extends Resource
                                     ->afterStateUpdated(function ($state, callable $set, $get) {
                                         $price = (float) ($get('price') ?? 0);
                                         $quantity = (int) ($state ?? 1);
-                                        $set('subtotal', number_format($price * $quantity, 2, '.', ''));
+                                        $extra = (float) ($get('elaborate_mockup_price') ?? 0);
+                                        $set('subtotal', number_format($price * $quantity + $extra, 2, '.', ''));
                                     }),
                                 
                                 Forms\Components\TextInput::make('price')
@@ -282,7 +318,8 @@ class OrderResource extends Resource
                                     ->afterStateUpdated(function ($state, callable $set, $get) {
                                         $price = (float) ($state ?? 0);
                                         $quantity = (int) ($get('quantity') ?? 1);
-                                        $set('subtotal', number_format($price * $quantity, 2, '.', ''));
+                                        $extra = (float) ($get('elaborate_mockup_price') ?? 0);
+                                        $set('subtotal', number_format($price * $quantity + $extra, 2, '.', ''));
                                     }),
                                 
                                 Forms\Components\TextInput::make('subtotal')
@@ -422,6 +459,12 @@ class OrderResource extends Resource
                                     $name .= ' [' . implode(', ', $config) . ']';
                                 }
                             }
+                            if ($item->mockup_filename) {
+                                $name .= ' | Maketă: ' . $item->mockup_filename;
+                            }
+                            if ($item->elaborate_mockup && $item->elaborate_mockup_price) {
+                                $name .= ' | Elaborare: +' . number_format((float) $item->elaborate_mockup_price, 2, ',', '.') . ' LEI';
+                            }
                             return $name;
                         })->join(', ');
                     })
@@ -449,6 +492,12 @@ class OrderResource extends Resource
                                 if (!empty($config)) {
                                     $name .= ' [' . implode(', ', $config) . ']';
                                 }
+                            }
+                            if ($item->mockup_filename) {
+                                $name .= ' | Maketă: ' . $item->mockup_filename;
+                            }
+                            if ($item->elaborate_mockup && $item->elaborate_mockup_price) {
+                                $name .= ' | Elaborare: +' . number_format((float) $item->elaborate_mockup_price, 2, ',', '.') . ' LEI';
                             }
                             return $name;
                         })->join(', ');

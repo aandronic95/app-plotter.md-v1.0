@@ -21,6 +21,10 @@ interface OrderItem {
     quantity: number;
     price: number;
     subtotal: number;
+    mockup_filename?: string | null;
+    mockup_url?: string | null;
+    elaborate_mockup?: boolean;
+    elaborate_mockup_price?: number | null;
 }
 
 interface Order {
@@ -370,6 +374,22 @@ const getPaymentStatusLabel = (status: string) => {
                                                                 <div class="rounded-lg border-2 border-green-500 bg-green-50 p-3 dark:bg-green-900/20">
                                                                     <p class="text-sm font-medium text-gray-900 dark:text-white">
                                                                         {{ item.colturi }}
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                            
+                                                            <!-- Maketă -->
+                                                            <div v-if="item.mockup_filename || item.elaborate_mockup" class="mt-4 space-y-2">
+                                                                <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                                    Maketă
+                                                                </h4>
+                                                                <div class="rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-800/50 space-y-1">
+                                                                    <p v-if="item.mockup_filename" class="text-sm text-gray-900 dark:text-white">
+                                                                        {{ item.mockup_filename }}
+                                                                        <a v-if="item.mockup_url" :href="item.mockup_url" target="_blank" rel="noopener" class="ml-2 text-primary hover:underline text-xs">Descarcă</a>
+                                                                    </p>
+                                                                    <p v-if="item.elaborate_mockup && item.elaborate_mockup_price" class="text-sm text-gray-600 dark:text-gray-400">
+                                                                        Elaborare maketă: +{{ formatPrice(item.elaborate_mockup_price) }}
                                                                     </p>
                                                                 </div>
                                                             </div>

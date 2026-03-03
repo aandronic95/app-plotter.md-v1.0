@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\CartController;
 use App\Models\DeliveryMethod;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -12,6 +13,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -29,7 +31,7 @@ class OrderController extends Controller
         }
 
         $items = [];
-        $subtotal = 0;
+        $subtotal = 0.0;
 
         foreach ($cart as $cartKey => $item) {
             // Extrage product_id din key sau din item
@@ -48,20 +50,69 @@ class OrderController extends Controller
                 continue;
             }
             
-            $product = Product::find($productId);
+            $product = Product::with('category')->find($productId);
             if (!$product || !$product->is_active || !$product->in_stock) {
                 continue;
             }
 
             $itemSubtotal = (float) $item['price'] * $item['quantity'];
+
+            if (isset($item['print_size']) && isset($item['print_sides']) && isset($item['configuration_quantity'])) {
+                $query = $product->activeConfigurations()
+                    ->where('print_size', $item['print_size'])
+                    ->where('print_sides', $item['print_sides'])
+                    ->where('quantity', $item['configuration_quantity']);
+                if (isset($item['format']) && $item['format']) {
+                    $query->where('format', $item['format']);
+                } else {
+                    $query->where(function ($q) {
+                        $q->whereNull('format')->orWhere('format', '');
+                    });
+                }
+                if (isset($item['suport']) && $item['suport']) {
+                    $query->where('suport', $item['suport']);
+                } else {
+                    $query->where(function ($q) {
+                        $q->whereNull('suport')->orWhere('suport', '');
+                    });
+                }
+                if (isset($item['culoare']) && $item['culoare']) {
+                    $query->where('culoare', $item['culoare']);
+                } else {
+                    $query->where(function ($q) {
+                        $q->whereNull('culoare')->orWhere('culoare', '');
+                    });
+                }
+                if (isset($item['colturi']) && $item['colturi']) {
+                    $query->where('colturi', $item['colturi']);
+                } else {
+                    $query->where(function ($q) {
+                        $q->whereNull('colturi')->orWhere('colturi', '');
+                    });
+                }
+                $configuration = $query->first();
+                if ($configuration && $product->category) {
+                    $coef = $product->category->getFormatPriceCoefficient($item['format'] ?? '');
+                    $itemSubtotal = (float) $configuration->price_per_unit * $coef * (int) $item['configuration_quantity'] * $item['quantity'];
+                }
+            }
+
+            if (!empty($item['elaborate_mockup']) && isset($item['elaborate_mockup_price']) && (float) $item['elaborate_mockup_price'] > 0) {
+                $itemSubtotal += (float) $item['elaborate_mockup_price'];
+            }
+
             $subtotal += $itemSubtotal;
+
+            $imageUrl = $product->image
+                ? (str_starts_with($product->image, 'http') ? $product->image : Storage::disk('public')->url($product->image))
+                : '/images/placeholder.jpg';
 
             $items[] = [
                 'id' => $product->id,
                 'name' => $product->name,
                 'slug' => $product->slug,
                 'price' => (float) $item['price'],
-                'image' => $product->image ?? '/images/placeholder.jpg',
+                'image' => $imageUrl,
                 'quantity' => $item['quantity'],
                 'subtotal' => $itemSubtotal,
                 'print_size' => $item['print_size'] ?? null,
@@ -71,7 +122,16 @@ class OrderController extends Controller
                 'culoare' => $item['culoare'] ?? null,
                 'colturi' => $item['colturi'] ?? null,
                 'configuration_quantity' => $item['configuration_quantity'] ?? null,
+                'mockup_filename' => $item['mockup_filename'] ?? null,
+                'mockup_url' => !empty($item['mockup_path']) ? Storage::disk('public')->url($item['mockup_path']) : null,
+                'elaborate_mockup' => !empty($item['elaborate_mockup']),
+                'elaborate_mockup_price' => isset($item['elaborate_mockup_price']) ? (float) $item['elaborate_mockup_price'] : null,
             ];
+        }
+
+        if ($subtotal < CartController::MINIMUM_ORDER_AMOUNT) {
+            return redirect()->route('cart.index')
+                ->with('error', 'Comanda minimă: ' . CartController::MINIMUM_ORDER_AMOUNT . ' MDL. Vă sfătuim să mai adăugați produse în coș.');
         }
 
         $tax = $subtotal * 0.19; // TVA 19%
@@ -243,21 +303,34 @@ class OrderController extends Controller
                         $itemSubtotal = (float) $configuration->price_per_unit * $coef * (int) $item['configuration_quantity'] * $item['quantity'];
                     }
                 }
+
+                if (!empty($item['elaborate_mockup']) && isset($item['elaborate_mockup_price']) && (float) $item['elaborate_mockup_price'] > 0) {
+                    $itemSubtotal += (float) $item['elaborate_mockup_price'];
+                }
                 
                 $subtotal += $itemSubtotal;
 
-            $items[] = [
-                'product' => $product,
-                'quantity' => $item['quantity'],
-                'price' => (float) $item['price'],
-                'print_size' => $item['print_size'] ?? null,
-                'print_sides' => $item['print_sides'] ?? null,
-                'format' => $item['format'] ?? null,
-                'suport' => $item['suport'] ?? null,
-                'culoare' => $item['culoare'] ?? null,
-                'colturi' => $item['colturi'] ?? null,
-                'configuration_quantity' => $item['configuration_quantity'] ?? null,
-            ];
+                $items[] = [
+                    'product' => $product,
+                    'quantity' => $item['quantity'],
+                    'price' => (float) $item['price'],
+                    'print_size' => $item['print_size'] ?? null,
+                    'print_sides' => $item['print_sides'] ?? null,
+                    'format' => $item['format'] ?? null,
+                    'suport' => $item['suport'] ?? null,
+                    'culoare' => $item['culoare'] ?? null,
+                    'colturi' => $item['colturi'] ?? null,
+                    'configuration_quantity' => $item['configuration_quantity'] ?? null,
+                    'mockup_path' => $item['mockup_path'] ?? null,
+                    'mockup_filename' => $item['mockup_filename'] ?? null,
+                    'elaborate_mockup' => !empty($item['elaborate_mockup']),
+                    'elaborate_mockup_price' => isset($item['elaborate_mockup_price']) ? (float) $item['elaborate_mockup_price'] : null,
+                ];
+            }
+
+            if ($subtotal < CartController::MINIMUM_ORDER_AMOUNT) {
+                return redirect()->route('cart.index')
+                    ->with('error', 'Comanda minimă: ' . CartController::MINIMUM_ORDER_AMOUNT . ' MDL. Vă sfătuim să mai adăugați produse în coș.');
             }
 
             $tax = $subtotal * 0.19;
@@ -338,6 +411,10 @@ class OrderController extends Controller
                         $subtotal = $price * $item['quantity'];
                     }
                 }
+
+                if (!empty($item['elaborate_mockup']) && isset($item['elaborate_mockup_price']) && (float) $item['elaborate_mockup_price'] > 0) {
+                    $subtotal += (float) $item['elaborate_mockup_price'];
+                }
                 
                 OrderItem::create([
                     'order_id' => $order->id,
@@ -350,6 +427,10 @@ class OrderController extends Controller
                     'suport' => $item['suport'] ?? null,
                     'culoare' => $item['culoare'] ?? null,
                     'colturi' => $item['colturi'] ?? null,
+                    'mockup_path' => $item['mockup_path'] ?? null,
+                    'mockup_filename' => $item['mockup_filename'] ?? null,
+                    'elaborate_mockup' => !empty($item['elaborate_mockup']),
+                    'elaborate_mockup_price' => $item['elaborate_mockup_price'] ?? null,
                     'configuration_quantity' => $item['configuration_quantity'] ?? null,
                     'quantity' => $item['quantity'],
                     'price' => $price,
@@ -435,6 +516,10 @@ class OrderController extends Controller
                         'quantity' => $item->quantity,
                         'price' => (float) $item->price,
                         'subtotal' => (float) $item->subtotal,
+                        'mockup_filename' => $item->mockup_filename,
+                        'mockup_url' => $item->mockup_path ? Storage::disk('public')->url($item->mockup_path) : null,
+                        'elaborate_mockup' => (bool) $item->elaborate_mockup,
+                        'elaborate_mockup_price' => $item->elaborate_mockup_price ? (float) $item->elaborate_mockup_price : null,
                     ];
                 }),
             ],

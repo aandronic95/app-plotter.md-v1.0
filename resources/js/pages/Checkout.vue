@@ -14,6 +14,17 @@ interface CartItem {
     image: string;
     quantity: number;
     subtotal: number;
+    print_size?: string | null;
+    print_sides?: string | null;
+    format?: string | null;
+    suport?: string | null;
+    culoare?: string | null;
+    colturi?: string | null;
+    configuration_quantity?: number | null;
+    mockup_filename?: string | null;
+    mockup_url?: string | null;
+    elaborate_mockup?: boolean;
+    elaborate_mockup_price?: number | null;
 }
 
 interface DeliveryAddress {
@@ -569,18 +580,24 @@ const submit = () => {
                                     <div class="space-y-2">
                                         <div
                                             v-for="item in props.items"
-                                            :key="item.id"
-                                            class="flex items-center gap-2 text-sm"
+                                            :key="item.id + '-' + (item.print_size ?? '') + '-' + (item.configuration_quantity ?? '')"
+                                            class="flex items-start gap-2 text-sm"
                                         >
                                             <img
                                                 :src="item.image"
                                                 :alt="item.name"
-                                                class="h-12 w-12 rounded object-cover"
+                                                class="h-12 w-12 rounded object-cover flex-shrink-0"
                                             />
-                                            <div class="flex-1">
+                                            <div class="flex-1 min-w-0">
                                                 <p class="font-medium">{{ item.name }}</p>
-                                                <p class="text-gray-500">
+                                                <p class="text-gray-500 dark:text-gray-400">
                                                     {{ item.quantity }} x {{ formatPrice(item.price) }}
+                                                </p>
+                                                <p v-if="item.mockup_filename" class="mt-0.5 text-xs text-gray-600 dark:text-gray-400">
+                                                    Maketă: {{ item.mockup_filename }}
+                                                </p>
+                                                <p v-if="item.elaborate_mockup && item.elaborate_mockup_price" class="text-xs text-gray-600 dark:text-gray-400">
+                                                    Elaborare maketă: +{{ item.elaborate_mockup_price }} MDL
                                                 </p>
                                             </div>
                                         </div>

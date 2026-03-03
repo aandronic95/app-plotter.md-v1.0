@@ -136,6 +136,8 @@ return [
     'total' => 'Итого',
     'vat_included' => 'НДС включен (19%)',
     'complete_order' => 'Оформить заказ',
+    'minimum_order_title' => 'Минимальный заказ',
+    'minimum_order_message' => 'Минимальный заказ: :amount MDL. Рекомендуем добавить больше товаров в корзину.',
     'per_item' => '/ шт',
     'remove_item_confirm' => 'Вы уверены, что хотите удалить этот товар из корзины?',
     'error_updating_quantity' => 'Ошибка обновления количества',

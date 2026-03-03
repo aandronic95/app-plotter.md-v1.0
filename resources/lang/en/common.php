@@ -136,9 +136,14 @@ return [
     'total' => 'Total',
     'vat_included' => 'VAT included (19%)',
     'complete_order' => 'Complete Order',
+    'minimum_order_title' => 'Minimum order',
+    'minimum_order_message' => 'Minimum order: :amount MDL. We recommend adding more products to your cart.',
     'per_item' => '/ item',
     'remove_item_confirm' => 'Are you sure you want to remove this item from cart?',
     'error_updating_quantity' => 'Error updating quantity',
+    'upload_personal_mockup' => 'Upload personal mockup',
+    'elaborate_mockup' => 'Elaborate a mockup',
+    'error_uploading_mockup' => 'Error uploading mockup',
     'error_removing_item' => 'Error removing item',
     
     // Product Card

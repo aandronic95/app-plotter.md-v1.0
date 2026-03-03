@@ -3,9 +3,11 @@ import AppFooter from '@/components/AppFooter.vue';
 import PublicHeader from '@/components/PublicHeader.vue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Head, Link } from '@inertiajs/vue3';
-import { ShoppingCart, Trash2, Plus, Minus, ArrowLeft, Edit2 } from 'lucide-vue-next';
-import { onMounted, ref, computed } from 'vue';
+import Dialog from '@/components/ui/dialog/Dialog.vue';
+import DialogContent from '@/components/ui/dialog/DialogContent.vue';
+import { Head, Link, usePage } from '@inertiajs/vue3';
+import { ShoppingCart, Trash2, Plus, Minus, ArrowLeft, Edit2, Upload, FileCheck, AlertCircle } from 'lucide-vue-next';
+import { onMounted, ref, computed, watch } from 'vue';
 import { useTranslations } from '@/composables/useTranslations';
 
 interface Configuration {
@@ -46,24 +48,142 @@ interface CartItem {
     colturi?: string | null;
     configuration_quantity?: number | null;
     configurations?: Configuration[];
+    mockup_path?: string | null;
+    mockup_filename?: string | null;
+    mockup_url?: string | null;
+    elaborate_mockup?: boolean;
+    elaborate_mockup_price?: number | null;
 }
 
 interface CartData {
     items: CartItem[];
     total: number;
     count: number;
+    minimum_order_amount?: number;
+    meets_minimum_order?: boolean;
 }
 
 const cart = ref<CartData>({
     items: [],
     total: 0,
     count: 0,
+    minimum_order_amount: 300,
+    meets_minimum_order: true,
 });
 
 const loading = ref(false);
+const mockupUploadingForId = ref<number | null>(null);
 const editingConfigItemId = ref<number | null>(null);
 const pendingConfigChanges = ref<Map<number, Configuration | null>>(new Map());
 const { t } = useTranslations();
+const page = usePage();
+const flashError = computed(() => (page.props.flash as { error?: string })?.error);
+const showMinimumOrderDialog = ref(false);
+
+const defaultElaborateMockupPrice = 500;
+
+// Deschide dialogul când coșul are produse dar nu atinge minimul
+watch(
+    () => [cart.value.items.length, cart.value.meets_minimum_order],
+    ([count, meets]) => {
+        if (count > 0 && meets === false) {
+            showMinimumOrderDialog.value = true;
+        }
+    },
+    { immediate: false }
+);
+
+function triggerMockupInput(cartIndex: number) {
+    if (typeof document === 'undefined') return;
+    const el = document.getElementById(`mockup-input-${cartIndex}`);
+    if (el instanceof HTMLInputElement) el.click();
+}
+
+function getMockupPayload(item: CartItem) {
+    const payload: Record<string, string | number | null> = {
+        product_id: item.id,
+    };
+    if (item.print_size) payload.print_size = item.print_size;
+    if (item.print_sides) payload.print_sides = item.print_sides;
+    if (item.format) payload.format = item.format;
+    if (item.suport) payload.suport = item.suport;
+    if (item.culoare) payload.culoare = item.culoare;
+    if (item.colturi) payload.colturi = item.colturi;
+    if (item.configuration_quantity) payload.configuration_quantity = item.configuration_quantity;
+    return payload;
+}
+
+const onMockupFileSelect = async (item: CartItem, event: Event) => {
+    const input = event.target as HTMLInputElement;
+    const file = input?.files?.[0];
+    if (!file) return;
+    mockupUploadingForId.value = item.id;
+    try {
+        const formData = new FormData();
+        formData.append('product_id', String(item.id));
+        formData.append('mockup', file);
+        if (item.print_size) formData.append('print_size', item.print_size);
+        if (item.print_sides) formData.append('print_sides', item.print_sides);
+        if (item.format) formData.append('format', item.format);
+        if (item.suport) formData.append('suport', item.suport);
+        if (item.culoare) formData.append('culoare', item.culoare);
+        if (item.colturi) formData.append('colturi', item.colturi);
+        if (item.configuration_quantity) formData.append('configuration_quantity', String(item.configuration_quantity));
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+        const response = await fetch('/cart/mockup', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            body: formData,
+            credentials: 'same-origin',
+        });
+        if (response.ok) {
+            await fetchCart();
+        } else {
+            const data = await response.json().catch(() => ({}));
+            const msg = data.errors?.mockup?.[0] ?? data.message ?? t('error_uploading_mockup');
+            alert(msg);
+        }
+    } catch (e) {
+        console.error(e);
+        alert(t('error_uploading_mockup'));
+    } finally {
+        mockupUploadingForId.value = null;
+        input.value = '';
+    }
+};
+
+const toggleElaborateMockup = async (item: CartItem, checked: boolean) => {
+    loading.value = true;
+    try {
+        const payload = getMockupPayload(item);
+        (payload as Record<string, unknown>).elaborate_mockup = checked;
+        (payload as Record<string, unknown>).elaborate_mockup_price = checked ? (item.elaborate_mockup_price ?? defaultElaborateMockupPrice) : 0;
+        const response = await fetch('/cart/mockup-option', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify(payload),
+        });
+        if (response.ok) {
+            await fetchCart();
+        } else {
+            const data = await response.json().catch(() => ({}));
+            alert(data.message || t('error_updating_quantity'));
+        }
+    } catch (e) {
+        console.error(e);
+        alert(t('error_updating_quantity'));
+    } finally {
+        loading.value = false;
+    }
+};
 
 const getSizeLabel = (size: string) => {
     if (size === 'A3') return t('print_size_a3');
@@ -322,8 +442,11 @@ const formatPrice = (price: number) => {
     }).format(price);
 };
 
-onMounted(() => {
-    fetchCart();
+onMounted(async () => {
+    await fetchCart();
+    if (cart.value.items.length > 0 && cart.value.meets_minimum_order === false) {
+        showMinimumOrderDialog.value = true;
+    }
 });
 </script>
 
@@ -349,6 +472,13 @@ onMounted(() => {
                 </h1>
 
                 <div
+                    v-if="flashError"
+                    class="mb-6 rounded-lg bg-amber-50 p-4 text-amber-800 dark:bg-amber-900/20 dark:text-amber-200"
+                >
+                    {{ flashError }}
+                </div>
+
+                <div
                     v-if="cart.items.length === 0"
                     class="flex flex-col items-center justify-center py-12"
                 >
@@ -370,8 +500,8 @@ onMounted(() => {
                     <!-- Cart Items -->
                     <div class="lg:col-span-2 space-y-4">
                         <Card
-                            v-for="item in cart.items"
-                            :key="item.id"
+                            v-for="(item, cartIndex) in cart.items"
+                            :key="item.id + '-' + (item.print_size ?? '') + '-' + (item.configuration_quantity ?? '')"
                         >
                             <CardContent class="p-4">
                                 <div class="flex gap-4">
@@ -573,6 +703,46 @@ onMounted(() => {
                                                 </Button>
                                             </div>
                                         </div>
+
+                                        <!-- Maketă: încarcă fișier sau elaborare -->
+                                        <div class="mt-4 flex flex-wrap items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-800/50">
+                                            <div class="flex items-center gap-2">
+                                                <input
+                                                    :id="`mockup-input-${cartIndex}`"
+                                                    type="file"
+                                                    class="hidden"
+                                                    accept="*/*"
+                                                    @change="onMockupFileSelect(item, $event)"
+                                                />
+                                                <Button
+                                                    type="button"
+                                                    size="sm"
+                                                    variant="default"
+                                                    class="bg-green-600 hover:bg-green-700"
+                                                    :disabled="loading || mockupUploadingForId === item.id"
+                                                    @click="triggerMockupInput(cartIndex)"
+                                                >
+                                                    <Upload class="mr-1.5 h-4 w-4" />
+                                                    {{ mockupUploadingForId === item.id ? t('loading') : t('upload_personal_mockup') }}
+                                                </Button>
+                                                <span v-if="item.mockup_filename" class="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400">
+                                                    <FileCheck class="h-3.5 w-3.5" />
+                                                    {{ item.mockup_filename }}
+                                                </span>
+                                            </div>
+                                            <label class="flex cursor-pointer items-center gap-2">
+                                                <input
+                                                    type="checkbox"
+                                                    :checked="!!item.elaborate_mockup"
+                                                    :disabled="loading"
+                                                    class="h-4 w-4 rounded border-gray-300"
+                                                    @change="toggleElaborateMockup(item, ($event.target as HTMLInputElement).checked)"
+                                                />
+                                                <span class="text-sm text-gray-700 dark:text-gray-300">{{ t('elaborate_mockup') }}</span>
+                                                <span class="text-sm font-medium text-gray-600 dark:text-gray-400">+{{ item.elaborate_mockup_price ?? defaultElaborateMockupPrice }} MDL</span>
+                                            </label>
+                                        </div>
+
                                         <div class="mt-4 flex items-center justify-between">
                                             <div class="flex items-center gap-2">
                                                 <Button
@@ -653,6 +823,7 @@ onMounted(() => {
                                     </p>
                                 </div>
                                 <Link
+                                    v-if="cart.meets_minimum_order !== false"
                                     href="/checkout"
                                     class="block"
                                 >
@@ -664,6 +835,18 @@ onMounted(() => {
                                         {{ t('complete_order') }}
                                     </Button>
                                 </Link>
+                                <div
+                                    v-else
+                                    class="block"
+                                >
+                                    <Button
+                                        class="w-full bg-gray-200 border border-gray-300 text-gray-900 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:hover:bg-gray-700 cursor-not-allowed opacity-60"
+                                        size="lg"
+                                        disabled
+                                    >
+                                        {{ t('complete_order') }}
+                                    </Button>
+                                </div>
                                 <p
                                     v-if="hasUnsavedChanges"
                                     class="mt-2 text-xs text-amber-600 dark:text-amber-400 text-center"
@@ -689,6 +872,29 @@ onMounted(() => {
         </main>
 
         <AppFooter />
+
+        <!-- Dialog comandă minimă -->
+        <Dialog v-model:open="showMinimumOrderDialog">
+            <DialogContent class="max-w-md">
+                <div class="flex flex-col items-center text-center space-y-4">
+                    <div class="flex items-center justify-center w-14 h-14 rounded-full bg-amber-100 dark:bg-amber-900/30">
+                        <AlertCircle class="w-8 h-8 text-amber-600 dark:text-amber-400" />
+                    </div>
+                    <h2 class="text-xl font-bold text-gray-900 dark:text-white">
+                        {{ t('minimum_order_title') }}
+                    </h2>
+                    <p class="text-gray-600 dark:text-gray-400">
+                        {{ t('minimum_order_message', { amount: cart.minimum_order_amount ?? 300 }) }}
+                    </p>
+                    <Button
+                        class="w-full"
+                        @click="showMinimumOrderDialog = false"
+                    >
+                        {{ t('understood_thanks') }}
+                    </Button>
+                </div>
+            </DialogContent>
+        </Dialog>
     </div>
 </template>
 

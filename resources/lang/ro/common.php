@@ -136,9 +136,14 @@ return [
     'total' => 'Total',
     'vat_included' => 'TVA inclus (19%)',
     'complete_order' => 'Finalizează comanda',
+    'minimum_order_title' => 'Comandă minimă',
+    'minimum_order_message' => 'Comanda minimă: :amount MDL. Vă sfătuim să mai adăugați produse în coș.',
     'per_item' => '/ bucată',
     'remove_item_confirm' => 'Sigur dorești să ștergi acest produs din coș?',
     'error_updating_quantity' => 'Eroare la actualizarea cantității',
+    'upload_personal_mockup' => 'Încarcă maketă personală',
+    'elaborate_mockup' => 'Elaborați o maketă',
+    'error_uploading_mockup' => 'Eroare la încărcarea maketei',
     'error_removing_item' => 'Eroare la ștergerea produsului',
     
     // Product Card

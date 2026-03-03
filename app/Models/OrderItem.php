@@ -28,6 +28,10 @@ class OrderItem extends Model
         'suport',
         'culoare',
         'colturi',
+        'mockup_path',
+        'mockup_filename',
+        'elaborate_mockup',
+        'elaborate_mockup_price',
         'configuration_quantity',
         'quantity',
         'price',
@@ -44,6 +48,8 @@ class OrderItem extends Model
         return [
             'configuration_quantity' => 'integer',
             'quantity' => 'integer',
+            'elaborate_mockup' => 'boolean',
+            'elaborate_mockup_price' => 'decimal:2',
             'price' => 'decimal:2',
             'subtotal' => 'decimal:2',
         ];
@@ -57,7 +63,10 @@ class OrderItem extends Model
         parent::boot();
 
         static::saving(function (OrderItem $orderItem): void {
-            $orderItem->subtotal = $orderItem->price * $orderItem->quantity;
+            $orderItem->subtotal = (float) $orderItem->price * (int) $orderItem->quantity;
+            if (!empty($orderItem->elaborate_mockup) && $orderItem->elaborate_mockup_price > 0) {
+                $orderItem->subtotal += (float) $orderItem->elaborate_mockup_price;
+            }
         });
     }
 

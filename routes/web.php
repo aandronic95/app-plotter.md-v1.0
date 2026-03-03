@@ -61,6 +61,8 @@ Route::get('cart', function () {
 })->name('cart.index');
 Route::post('cart/add', [CartController::class, 'add'])->name('cart.add');
 Route::put('cart/update', [CartController::class, 'update'])->name('cart.update');
+Route::post('cart/mockup', [CartController::class, 'uploadMockup'])->name('cart.mockup.upload');
+Route::put('cart/mockup-option', [CartController::class, 'updateMockupOption'])->name('cart.mockup.option');
 Route::delete('cart/remove/{productId}', [CartController::class, 'remove'])->name('cart.remove');
 Route::delete('cart/clear', [CartController::class, 'clear'])->name('cart.clear');
 Route::get('cart/data', [CartController::class, 'index'])->name('cart.data');
@@ -160,6 +162,11 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureUserIsAdmin::class])
     ->group(function () {
         Route::get('/', [\App\Http\Controllers\AdminerController::class, 'index'])->name('adminer.index');
     });
+
+// Download order item mockup (admin only)
+Route::get('order-item-mockup/{orderItem}', \App\Http\Controllers\OrderItemMockupController::class)
+    ->middleware(['auth', \App\Http\Middleware\EnsureUserIsAdmin::class])
+    ->name('admin.order-item.download-mockup');
 
 // Settings routes (must be before catch-all route)
 require __DIR__.'/settings.php';
