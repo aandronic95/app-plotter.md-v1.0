@@ -139,11 +139,15 @@ class WishlistController extends Controller
     }
 
     /**
-     * Check if a product is in wishlist.
+     * Check if a product is in wishlist. Public: returns in_wishlist false for guests.
      */
     public function check(Request $request, int $productId): JsonResponse
     {
         $user = $request->user();
+
+        if (!$user) {
+            return response()->json(['in_wishlist' => false]);
+        }
 
         $inWishlist = Wishlist::where('user_id', $user->id)
             ->where('product_id', $productId)
@@ -167,9 +171,11 @@ class WishlistController extends Controller
         $user = $request->user();
 
         if (!$user) {
-            return response()->json([
-                'data' => [],
-            ]);
+            $result = [];
+            foreach ($validated['product_ids'] as $productId) {
+                $result[$productId] = false;
+            }
+            return response()->json(['data' => $result]);
         }
 
         $wishlistProductIds = Wishlist::where('user_id', $user->id)

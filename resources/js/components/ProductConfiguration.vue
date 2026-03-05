@@ -61,7 +61,8 @@ const selectedFormat = ref<string | null>(null);
 const selectedSuport = ref<string | null>(null);
 const selectedCuloare = ref<string | null>(null);
 const selectedColturi = ref<string | null>(null);
-const selectedQuantity = ref<number | null>(null);
+/** Index in availableQuantities so we can select exact config (quantity + production term) */
+const selectedConfigIndex = ref(0);
 
 // Get unique sizes
 const availableSizes = computed(() => {
@@ -156,55 +157,12 @@ const availableQuantities = computed(() => {
         .sort((a, b) => a.quantity - b.quantity);
 });
 
-// Get selected configuration
+// Get selected configuration (by row index so quantity + termen are both selected)
 const selectedConfiguration = computed(() => {
-    if (!selectedSize.value || !selectedSides.value || !selectedQuantity.value) {
-        return null;
-    }
-    
-    // Dacă există formate disponibile, trebuie să fie selectat un format
-    if (availableFormatsForSelection.value.length > 0 && !selectedFormat.value) {
-        return null;
-    }
-    
-    return props.configurations.find(
-        c => {
-            const matchesSize = c.print_size === selectedSize.value;
-            const matchesSides = c.print_sides === selectedSides.value;
-            
-            if (!matchesSize || !matchesSides) return false;
-            
-            // Format matching
-            let matchesFormat = true;
-            if (availableFormatsForSelection.value.length > 0) {
-                matchesFormat = selectedFormat.value !== null && c.format === selectedFormat.value;
-            }
-            
-            if (!matchesFormat) return false;
-            
-            // Suport matching: dacă este selectat, trebuie să se potrivească; altfel acceptă orice
-            let matchesSuport = true;
-            if (selectedSuport.value !== null) {
-                matchesSuport = c.suport === selectedSuport.value;
-            }
-            
-            // Culoare matching: dacă este selectată, trebuie să se potrivească; altfel acceptă orice
-            let matchesCuloare = true;
-            if (selectedCuloare.value !== null) {
-                matchesCuloare = c.culoare === selectedCuloare.value;
-            }
-            
-            // Colturi matching: dacă sunt selectate, trebuie să se potrivească; altfel acceptă orice
-            let matchesColturi = true;
-            if (selectedColturi.value !== null) {
-                matchesColturi = c.colturi === selectedColturi.value;
-            }
-            
-            const matchesQuantity = c.quantity === selectedQuantity.value;
-            
-            return matchesSuport && matchesCuloare && matchesColturi && matchesQuantity;
-        }
-    ) || null;
+    const list = availableQuantities.value;
+    if (list.length === 0) return null;
+    const idx = Math.max(0, Math.min(selectedConfigIndex.value, list.length - 1));
+    return list[idx] ?? null;
 });
 
 // Get unique formats for selected size and sides
@@ -244,7 +202,7 @@ watch(selectedSize, () => {
     selectedSuport.value = null;
     selectedCuloare.value = null;
     selectedColturi.value = null;
-    selectedQuantity.value = null;
+    selectedConfigIndex.value = 0;
 });
 
 watch(selectedSides, () => {
@@ -254,23 +212,24 @@ watch(selectedSides, () => {
     } else {
         selectedFormat.value = null;
     }
-    selectedQuantity.value = null;
+    selectedConfigIndex.value = 0;
 });
 
 watch(selectedFormat, () => {
-    selectedQuantity.value = null;
+    selectedConfigIndex.value = 0;
 });
 
 watch([selectedSuport, selectedCuloare, selectedColturi], () => {
-    selectedQuantity.value = null;
+    selectedConfigIndex.value = 0;
 });
 
-watch(availableQuantities, () => {
-    // Auto-select prima cantitate disponibilă când se schimbă configurațiile
-    if (availableQuantities.value.length > 0 && !selectedQuantity.value) {
-        selectedQuantity.value = availableQuantities.value[0].quantity;
+watch(availableQuantities, (list) => {
+    if (list.length === 0) return;
+    const maxIdx = list.length - 1;
+    if (selectedConfigIndex.value > maxIdx) {
+        selectedConfigIndex.value = maxIdx;
     }
-});
+}, { immediate: true });
 
 watch(selectedConfiguration, (config) => {
     emit('configuration-selected', config);
@@ -300,9 +259,50 @@ const selectColturi = (colturi: string | null) => {
     selectedColturi.value = colturi;
 };
 
-const selectQuantity = (quantity: number) => {
-    selectedQuantity.value = quantity;
+const selectConfigIndex = (index: number) => {
+    const list = availableQuantities.value;
+    if (list.length === 0) return;
+    selectedConfigIndex.value = Math.max(0, Math.min(index, list.length - 1));
 };
+
+function setTirajFromInput(val: string | number) {
+    const num = typeof val === 'string' ? parseInt(val, 10) : val;
+    if (Number.isNaN(num) || num < 1) return;
+    const list = availableQuantities.value;
+    if (list.length === 0) return;
+    const idx = list.findIndex(c => c.quantity === num);
+    if (idx >= 0) {
+        selectedConfigIndex.value = idx;
+    } else {
+        const nearest = list.reduce((best, c, i) =>
+            Math.abs(c.quantity - num) < Math.abs((list[best]?.quantity ?? 0) - num) ? i : best
+        , 0);
+        selectedConfigIndex.value = nearest;
+    }
+}
+
+function tirajPrev() {
+    const list = availableQuantities.value;
+    if (list.length === 0) return;
+    const next = selectedConfigIndex.value - 1;
+    selectedConfigIndex.value = Math.max(0, next);
+}
+
+function tirajNext() {
+    const list = availableQuantities.value;
+    if (list.length === 0) return;
+    const next = selectedConfigIndex.value + 1;
+    selectedConfigIndex.value = Math.min(next, list.length - 1);
+}
+
+const canTirajPrev = computed(() => {
+    const list = availableQuantities.value;
+    return list.length > 0 && selectedConfigIndex.value > 0;
+});
+const canTirajNext = computed(() => {
+    const list = availableQuantities.value;
+    return list.length > 0 && selectedConfigIndex.value < list.length - 1;
+});
 
 const getConfigImage = (type: 'suport' | 'culoare' | 'colturi', name: string): string | undefined => {
     const configs = props.categoryConfigurations?.[type];
@@ -563,7 +563,7 @@ const getSizeLabel = (size: string) => {
             </CardContent>
         </Card>
 
-        <!-- Section 2: Select quantity -->
+        <!-- Section 2: Select quantity and production term (TIRAJ) -->
         <Card v-if="selectedSize && selectedSides && (availableFormatsForSelection.length === 0 || selectedFormat !== null) && availableQuantities.length > 0">
             <CardHeader>
                 <div class="flex items-center gap-2">
@@ -572,8 +572,44 @@ const getSizeLabel = (size: string) => {
                     </div>
                     <h3 class="text-lg font-semibold">{{ t('select_quantity') }}</h3>
                 </div>
+                <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                    {{ t('choose_quantity_and_deadline_hint') || 'Prețurile din tabel depind de urgența comenzii. Data afișată este termenul de producție (fără livrare). Termenul de livrare depinde de serviciul ales ulterior. Livrăm în toată lumea.' }}
+                </p>
             </CardHeader>
-            <CardContent>
+            <CardContent class="space-y-4">
+                <!-- TIRAJ input with +/- -->
+                <div class="flex items-center gap-2">
+                    <label class="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">{{ t('tiraj') || 'TIRAJ' }}</label>
+                    <div class="flex items-center rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 overflow-hidden">
+                        <button
+                            type="button"
+                            :disabled="!canTirajPrev"
+                            class="flex h-10 w-10 items-center justify-center text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:pointer-events-none"
+                            aria-label="-"
+                            @click.prevent="tirajPrev"
+                        >
+                            −
+                        </button>
+                        <input
+                            type="number"
+                            :value="selectedConfiguration?.quantity ?? ''"
+                            min="1"
+                            class="h-10 w-20 border-x border-gray-300 dark:border-gray-600 bg-transparent text-center text-sm font-medium text-gray-900 dark:text-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            @input="setTirajFromInput(($event.target as HTMLInputElement).value)"
+                            @blur="(e) => setTirajFromInput((e.target as HTMLInputElement).value)"
+                        />
+                        <button
+                            type="button"
+                            :disabled="!canTirajNext"
+                            class="flex h-10 w-10 items-center justify-center text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:pointer-events-none"
+                            aria-label="+"
+                            @click.prevent="tirajNext"
+                        >
+                            +
+                        </button>
+                    </div>
+                    <span class="text-sm text-gray-500 dark:text-gray-400">{{ t('quantity_pcs') || 'buc.' }}</span>
+                </div>
                 <div class="overflow-x-auto">
                     <table class="w-full">
                         <thead>
@@ -615,15 +651,15 @@ const getSizeLabel = (size: string) => {
                         </thead>
                         <tbody>
                             <tr
-                                v-for="config in availableQuantities"
+                                v-for="(config, index) in availableQuantities"
                                 :key="config.id"
                                 :class="[
                                     'cursor-pointer border-b border-gray-100 dark:border-gray-800 transition-colors',
-                                    selectedQuantity === config.quantity
+                                    selectedConfiguration?.id === config.id
                                         ? 'bg-green-50 dark:bg-green-900/20 border-green-500 border-2'
                                         : 'hover:bg-gray-50 dark:hover:bg-gray-800'
                                 ]"
-                                @click="selectQuantity(config.quantity)"
+                                @click="selectConfigIndex(index)"
                             >
                                 <td class="px-4 py-4 text-sm font-medium text-gray-900 dark:text-white">
                                     {{ config.quantity }}

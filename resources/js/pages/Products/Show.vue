@@ -163,6 +163,25 @@ const formatPrice = (price: number) => {
     }).format(price);
 };
 
+/** Price without VAT (20%) from configuration effective price */
+const resultPriceWithoutVat = computed(() => {
+    const config = selectedConfiguration.value;
+    if (!config?.effective_price) return null;
+    return config.effective_price / 1.2;
+});
+
+/** Summary lines for Rezultat: product name, quantity, format, suport, culoare, colturi */
+const resultConfigLines = computed(() => {
+    const config = selectedConfiguration.value;
+    if (!config) return [];
+    const lines: string[] = [props.product.name, `${config.quantity} ${t('pieces') || 'buc.'}`];
+    if (config.format) lines.push(`${t('format') || 'Format'}: ${config.format}`);
+    if (config.suport) lines.push(`${t('cardboard_quality') || 'Alege calitatea cartonului'}: ${config.suport}`);
+    if (config.culoare) lines.push(`${t('cardboard_type') || 'Alege tipul de carton'}: ${config.culoare}`);
+    if (config.colturi) lines.push(`${t('colturi') || 'Colțuri'}: ${config.colturi}`);
+    return lines;
+});
+
 const isOutOfStock = computed(() => {
     return !props.product.inStock || props.product.stockQuantity === 0;
 });
@@ -704,12 +723,38 @@ const addToCart = async () => {
                         </div>
 
                         <!-- Product Configuration -->
-                        <div v-if="props.product.configurations && props.product.configurations.length > 0" class="pt-6">
+                        <div v-if="props.product.configurations && props.product.configurations.length > 0" class="pt-6 space-y-6">
                             <ProductConfiguration
                                 :configurations="props.product.configurations"
                                 :category-configurations="props.product.categoryConfigurations"
                                 @configuration-selected="selectedConfiguration = $event"
                             />
+
+                            <!-- Rezultat: price and full config after tiraj selection -->
+                            <div
+                                v-if="selectedConfiguration"
+                                class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm"
+                            >
+                                <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
+                                    {{ t('result') || 'Rezultat' }}
+                                </h3>
+                                <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                                    <div class="space-y-1">
+                                        <div class="text-2xl font-bold text-gray-900 dark:text-white">
+                                            {{ resultPriceWithoutVat != null ? formatPrice(resultPriceWithoutVat) : '—' }}
+                                        </div>
+                                        <div class="text-sm text-gray-600 dark:text-gray-400">
+                                            {{ selectedConfiguration.formatted_effective_price ?? selectedConfiguration.formatted_price }}
+                                            {{ t('with_vat_20') || '(cu TVA 20%)' }}
+                                        </div>
+                                    </div>
+                                    <ul class="list-inside list-disc space-y-1 text-sm text-gray-700 dark:text-gray-300">
+                                        <li v-for="(line, i) in resultConfigLines" :key="i">
+                                            {{ line }}
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="flex gap-4">

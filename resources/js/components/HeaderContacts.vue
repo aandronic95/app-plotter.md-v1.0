@@ -27,7 +27,7 @@ const hasHeaderContacts = computed(() => {
                 <a
                     v-if="siteSettings?.header_contact_1_phone"
                     :href="`tel:${siteSettings.header_contact_1_phone.replace(/\s/g, '')}`"
-                    class="text-sm font-bold text-gray-900 dark:text-white hover:text-gray-900/80 dark:hover:text-white/80 transition-colors duration-200 whitespace-nowrap"
+                    class="text-xl font-bold text-gray-900 dark:text-white hover:text-gray-900/80 dark:hover:text-white/80 transition-colors duration-200 whitespace-nowrap"
                 >
                     {{ siteSettings.header_contact_1_phone }}
                 </a>
@@ -46,7 +46,7 @@ const hasHeaderContacts = computed(() => {
                 <a
                     v-if="siteSettings?.header_contact_2_phone"
                     :href="`tel:${siteSettings.header_contact_2_phone.replace(/\s/g, '')}`"
-                    class="text-sm font-bold text-gray-900 dark:text-white hover:text-gray-900/80 dark:hover:text-white/80 transition-colors duration-200 whitespace-nowrap"
+                    class="text-xl font-bold text-gray-900 dark:text-white hover:text-gray-900/80 dark:hover:text-white/80 transition-colors duration-200 whitespace-nowrap"
                 >
                     {{ siteSettings.header_contact_2_phone }}
                 </a>
@@ -65,7 +65,7 @@ const hasHeaderContacts = computed(() => {
                 <a
                     v-if="siteSettings?.header_contact_3_phone"
                     :href="`tel:${siteSettings.header_contact_3_phone.replace(/\s/g, '')}`"
-                    class="text-sm font-bold text-gray-900 dark:text-white hover:text-gray-900/80 dark:hover:text-white/80 transition-colors duration-200 whitespace-nowrap"
+                    class="text-xl font-bold text-gray-900 dark:text-white hover:text-gray-900/80 dark:hover:text-white/80 transition-colors duration-200 whitespace-nowrap"
                 >
                     {{ siteSettings.header_contact_3_phone }}
                 </a>

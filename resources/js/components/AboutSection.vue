@@ -82,7 +82,7 @@ onMounted(() => {
                     <!-- Left Section: Text Content -->
                     <div class="space-y-6">
                         <!-- Title -->
-                        <h1 class="text-lg font-bold uppercase tracking-tight text-gray-800 dark:text-white">
+                        <h1 class="text-3xl font-bold uppercase tracking-tight text-gray-800 dark:text-white">
                             {{ section.name }}
                         </h1>
 
